@@ -82,11 +82,12 @@ export class AuthRepository extends Repository<UserEntity> {
         const refresh_token: string = this.jwtService.sign(payload, {
           expiresIn: '7d',
         });
+        const avatar = `${process.env.HOST}/public/images/${user.avatar_url}.png`;
         return {
           username: user.username,
           email,
           full_name: user.full_name,
-          avatar_url: user.avatar_url,
+          avatar_url: avatar,
           role: user.role,
           access_token: access_token,
           refresh_token: refresh_token,
