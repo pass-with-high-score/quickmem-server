@@ -45,7 +45,11 @@ jobs:
           DB_DATABASE: ${{ secrets.DB_DATABASE }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           HOST: ${{ secrets.HOST }}
-        run: npm run start:dev
+        run: |
+          #          run and cancel the server after 5 seconds
+               npm run start:dev &
+               sleep 5
+               kill %1
   notify:
     runs-on: ubuntu-latest
     needs: run-dev
@@ -56,6 +60,7 @@ jobs:
 
       - name: Send Telegram Notification on Success
         uses: appleboy/telegram-action@master
+        if: success()
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -68,3 +73,20 @@ jobs:
             <b>Branch</b>: ${{ github.ref_name }}
             <b>Changes</b>: <a href="https://github.com/pass-with-high-score/quickmem-server/commit/${{github.sha}}">View Changes</a>
             <b>Action</b>: <a href="https://github.com/pass-with-high-score/quickmem-server/actions/runs/${{ github.run_id }}">View Action</a>
+
+      - name: Send Telegram Notification on Failure
+        uses: appleboy/telegram-action@master
+        if: failure()
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          format: html
+          message: |
+            <b>QuickMem Server Update</b>
+            <b>Repository</b>: ${{ github.repository }}
+            <b>Committer</b>: ${{ github.actor }}
+            <b>Commit Message</b>: ${{ github.event.head_commit.message }}
+            <b>Branch</b>: ${{ github.ref_name }}
+             <b>Changes</b>: <a href="https://github.com/pass-with-high-score/quickmem-server/commit/${{github.sha}}">View Changes</a>
+            <b>Action</b>: <a href="https://github.com/pass-with-high-score/quickmem-server/actions/runs/${{ github.run_id }}">View Action</a>
+      
