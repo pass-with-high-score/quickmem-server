@@ -40,11 +40,13 @@ export class AuthRepository extends Repository<UserEntity> {
       role,
       birthday,
     });
-    const accessToken = this.jwtService.sign({ username });
-    const refreshToken = this.jwtService.sign(
+    const access_token = this.jwtService.sign({ username });
+    const refresh_token = this.jwtService.sign(
       { username },
       { expiresIn: '7d' },
     );
+    // return avatar: current host + /public/images/ + avatar_url + .png
+    const avatar = `${process.env.HOST}/public/images/${avatar_url}.png`;
     try {
       await this.save(user);
       return {
@@ -52,12 +54,13 @@ export class AuthRepository extends Repository<UserEntity> {
         username,
         email,
         full_name: full_name,
-        avatar_url,
+        avatar_url: avatar,
         role,
-        accessToken,
-        refreshToken,
+        access_token: access_token,
+        refresh_token: refresh_token,
       };
     } catch (error) {
+      console.log();
       if (error.code === '23505') {
         throw new ConflictException('Username or email already exists');
       } else {
@@ -75,8 +78,8 @@ export class AuthRepository extends Repository<UserEntity> {
 
       if (user && (await bcrypt.compare(password, user.password))) {
         const payload: { email: string } = { email };
-        const accessToken: string = this.jwtService.sign(payload);
-        const refreshToken: string = this.jwtService.sign(payload, {
+        const access_token: string = this.jwtService.sign(payload);
+        const refresh_token: string = this.jwtService.sign(payload, {
           expiresIn: '7d',
         });
         return {
@@ -85,8 +88,8 @@ export class AuthRepository extends Repository<UserEntity> {
           full_name: user.full_name,
           avatar_url: user.avatar_url,
           role: user.role,
-          accessToken,
-          refreshToken,
+          access_token: access_token,
+          refresh_token: refresh_token,
           birthday: user.birthday,
         };
       } else {
@@ -106,18 +109,19 @@ export class AuthRepository extends Repository<UserEntity> {
 
       if (user && (await bcrypt.compare(password, user.password))) {
         const payload: { username: string } = { username };
-        const accessToken: string = this.jwtService.sign(payload);
-        const refreshToken: string = this.jwtService.sign(payload, {
+        const access_token: string = this.jwtService.sign(payload);
+        const refresh_token: string = this.jwtService.sign(payload, {
           expiresIn: '7d',
         });
+        const avatar = `${process.env.HOST}/public/images/${user.avatar_url}.png`;
         return {
           username,
           email: user.email,
           full_name: user.full_name,
-          avatar_url: user.avatar_url,
+          avatar_url: avatar,
           role: user.role,
-          accessToken,
-          refreshToken,
+          access_token: access_token,
+          refresh_token: refresh_token,
           birthday: user.birthday,
         };
       } else {
@@ -147,5 +151,4 @@ export class AuthRepository extends Repository<UserEntity> {
       throw new UnauthorizedException('Invalid refresh token' + error);
     }
   }
-
 }

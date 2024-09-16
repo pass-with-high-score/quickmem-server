@@ -1,4 +1,5 @@
 import {
+  IsDateString,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -35,6 +36,7 @@ export class SignupCredentialsDto {
   full_name: string;
 
   @IsNotEmpty({ message: 'Birthday is required' })
+  @IsDateString({}, { message: 'Invalid date' })
   birthday: Date;
 
   @IsNotEmpty({ message: 'Avatar URL is required' })

@@ -7,6 +7,6 @@ export class AuthResponseInterface {
   avatar_url: string;
   birthday: Date;
   role: UserRoleEnum;
-  accessToken: string;
-  refreshToken: string;
+  access_token: string;
+  refresh_token: string;
 }
