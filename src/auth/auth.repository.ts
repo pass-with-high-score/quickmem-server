@@ -1,6 +1,7 @@
 import { DataSource, Repository } from 'typeorm';
 import { UserEntity } from './user.entity';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import {
   ConflictException,
   Injectable,
@@ -14,6 +15,8 @@ import { LoginCredentialsDto } from './dto/login-credentials.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { EmailDto } from './dto/email.dto';
 import { ConfigService } from '@nestjs/config';
+import { SignupResponseDto } from './dto/signup-response.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -28,13 +31,15 @@ export class AuthRepository extends Repository<UserEntity> {
 
   async createUser(
     authCredentialsDto: SignupCredentialsDto,
-  ): Promise<AuthResponseInterface> {
+  ): Promise<SignupResponseDto> {
     const { email, username, password, full_name, avatar_url, role, birthday } =
       authCredentialsDto;
 
     // hash the password
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
+
+    const otp = crypto.randomInt(100000, 999999).toString(); // Generate a 6-digit OTP
 
     const user = this.create({
       email,
@@ -44,30 +49,22 @@ export class AuthRepository extends Repository<UserEntity> {
       avatar_url,
       role,
       birthday,
+      otp, // Store OTP
+      otpExpires: new Date(Date.now() + 10 * 60 * 1000), // OTP expires in 10 minutes
     });
-    const access_token = this.jwtService.sign({ username });
-    const refresh_token = this.jwtService.sign(
-      { username },
-      { expiresIn: '7d' },
-    );
-    const avatar = `${process.env.HOST}/public/images/${avatar_url}.png`;
+
     try {
       await this.save(user);
-      return {
-        birthday: birthday,
-        username,
-        email,
-        full_name: full_name,
-        avatar_url: avatar,
-        role,
-        access_token: access_token,
-        refresh_token: refresh_token,
-      };
+      await this.sendOtpEmail(email, otp); // Send OTP email
+      const response = new SignupResponseDto();
+      response.message = 'User created successfully';
+      response.success = true;
+      return response;
     } catch (error) {
-      console.log();
       if (error.code === '23505') {
         throw new ConflictException('Username or email already exists');
       } else {
+        console.log(error);
         throw new InternalServerErrorException();
       }
     }
@@ -155,6 +152,33 @@ export class AuthRepository extends Repository<UserEntity> {
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token' + error);
     }
+  }
+
+  async sendOtpEmail(email: string, otp: string): Promise<void> {
+    await this.mailerService.sendMail({
+      to: email,
+      from: `NestJs <${this.configService.get('MAILER_USER')}>`,
+      subject: 'Your OTP Code',
+      html: `<h1>Your OTP Code</h1><p>${otp}</p>`,
+    });
+  }
+
+  async verifyOtp(dto: VerifyOtpDto): Promise<{ accessToken: string }> {
+    const { email, otp } = dto;
+    const user = await this.findOne({ where: { email, otp } });
+
+    if (!user || user.otpExpires < new Date()) {
+      throw new UnauthorizedException('Invalid or expired OTP');
+    }
+
+    user.otp = null; // Clear OTP after verification
+    user.otpExpires = null;
+    await this.save(user);
+
+    const payload = { email: user.email };
+    const accessToken = this.jwtService.sign(payload);
+
+    return { accessToken };
   }
 
   async sendEmail(dto: EmailDto): Promise<any> {

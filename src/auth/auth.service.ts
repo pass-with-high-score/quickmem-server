@@ -4,6 +4,8 @@ import { SignupCredentialsDto } from './dto/signup-credentials.dto';
 import { AuthResponseInterface } from './dto/auth-response.interface';
 import { LoginCredentialsDto } from './dto/login-credentials.dto';
 import { EmailDto } from './dto/email.dto';
+import { SignupResponseDto } from './dto/signup-response.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 
 @Injectable()
 export class AuthService {
@@ -11,7 +13,7 @@ export class AuthService {
 
   async signUp(
     authCredentialsDto: SignupCredentialsDto,
-  ): Promise<AuthResponseInterface> {
+  ): Promise<SignupResponseDto> {
     return await this.usersRepository.createUser(authCredentialsDto);
   }
 
@@ -36,5 +38,9 @@ export class AuthService {
   }
   async sendEmail(dto: EmailDto): Promise<any> {
     return this.usersRepository.sendEmail(dto);
+  }
+
+  async verifyOtp(dto: VerifyOtpDto): Promise<{ accessToken: string }> {
+    return this.usersRepository.verifyOtp(dto);
   }
 }

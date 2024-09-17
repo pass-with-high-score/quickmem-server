@@ -4,6 +4,8 @@ import { SignupCredentialsDto } from './dto/signup-credentials.dto';
 import { AuthResponseInterface } from './dto/auth-response.interface';
 import { LoginCredentialsDto } from './dto/login-credentials.dto';
 import { EmailDto } from './dto/email.dto';
+import { SignupResponseDto } from './dto/signup-response.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -12,7 +14,7 @@ export class AuthController {
   @Post('/signup')
   async signUp(
     @Body() authCredentialsDto: SignupCredentialsDto,
-  ): Promise<AuthResponseInterface> {
+  ): Promise<SignupResponseDto> {
     return this.authService.signUp(authCredentialsDto);
   }
 
@@ -41,5 +43,10 @@ export class AuthController {
   async sendEmail(@Body() dto: EmailDto): Promise<any> {
     console.log('Controller - DTO:', dto);
     return this.authService.sendEmail(dto);
+  }
+
+  @Post('/verify-otp')
+  async verifyOtp(@Body() dto: VerifyOtpDto): Promise<{ accessToken: string }> {
+    return this.authService.verifyOtp(dto);
   }
 }

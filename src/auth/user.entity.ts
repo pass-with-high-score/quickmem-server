@@ -16,6 +16,12 @@ export class UserEntity {
   password: string;
 
   @Column({ nullable: true })
+  otp: string;
+
+  @Column({ nullable: true })
+  otpExpires: Date;
+
+  @Column({ nullable: true })
   full_name: string;
 
   @Column()
