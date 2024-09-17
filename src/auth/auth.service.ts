@@ -3,6 +3,7 @@ import { AuthRepository } from './auth.repository';
 import { SignupCredentialsDto } from './dto/signup-credentials.dto';
 import { AuthResponseInterface } from './dto/auth-response.interface';
 import { LoginCredentialsDto } from './dto/login-credentials.dto';
+import { EmailDto } from './dto/email.dto';
 
 @Injectable()
 export class AuthService {
@@ -32,5 +33,8 @@ export class AuthService {
     return await this.usersRepository.createAccessTokenFromRefreshToken(
       refreshToken,
     );
+  }
+  async sendEmail(dto: EmailDto): Promise<any> {
+    return this.usersRepository.sendEmail(dto);
   }
 }

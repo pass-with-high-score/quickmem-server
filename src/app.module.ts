@@ -6,6 +6,8 @@ import * as dotenv from 'dotenv';
 import { configValidationSchema } from './config.schema';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 
 dotenv.config();
 
@@ -15,6 +17,20 @@ dotenv.config();
       envFilePath: [`.env.stage.${process.env.STAGE}`],
       validationSchema: configValidationSchema,
       isGlobal: true,
+    }),
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        transport: {
+          service: 'gmail',
+          auth: {
+            user: configService.get('MAILER_USER'),
+            pass: configService.get('MAILER_PASS'),
+          },
+        },
+        defaults: {},
+      }),
+      inject: [ConfigService],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

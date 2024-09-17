@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { SignupCredentialsDto } from './dto/signup-credentials.dto';
 import { AuthResponseInterface } from './dto/auth-response.interface';
 import { LoginCredentialsDto } from './dto/login-credentials.dto';
+import { EmailDto } from './dto/email.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -34,5 +35,11 @@ export class AuthController {
     @Body('refreshToken') refreshToken: string,
   ): Promise<{ accessToken: string }> {
     return this.authService.refreshToken(refreshToken);
+  }
+
+  @Post('/send-email')
+  async sendEmail(@Body() dto: EmailDto): Promise<any> {
+    console.log('Controller - DTO:', dto);
+    return this.authService.sendEmail(dto);
   }
 }

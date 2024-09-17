@@ -11,12 +11,17 @@ import { SignupCredentialsDto } from './dto/signup-credentials.dto';
 import { JwtService } from '@nestjs/jwt';
 import { AuthResponseInterface } from './dto/auth-response.interface';
 import { LoginCredentialsDto } from './dto/login-credentials.dto';
+import { MailerService } from '@nestjs-modules/mailer';
+import { EmailDto } from './dto/email.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
   constructor(
     private dataSource: DataSource,
     private jwtService: JwtService,
+    private readonly mailerService: MailerService,
+    private configService: ConfigService,
   ) {
     super(UserEntity, dataSource.createEntityManager());
   }
@@ -45,7 +50,6 @@ export class AuthRepository extends Repository<UserEntity> {
       { username },
       { expiresIn: '7d' },
     );
-    // return avatar: current host + /public/images/ + avatar_url + .png
     const avatar = `${process.env.HOST}/public/images/${avatar_url}.png`;
     try {
       await this.save(user);
@@ -151,5 +155,25 @@ export class AuthRepository extends Repository<UserEntity> {
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token' + error);
     }
+  }
+
+  async sendEmail(dto: EmailDto): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      await this.mailerService
+        .sendMail({
+          to: dto.email,
+          from: `NestJs <${this.configService.get('MAILER_USER')}>`,
+          subject: 'This is a test email',
+          html: `<h1>Hello!</h1>
+                    <p>This is a test email from NestJs</p>
+                    `,
+        })
+        .then((resp) => {
+          resolve(resp);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
   }
 }
