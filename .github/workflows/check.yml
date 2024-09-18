@@ -52,13 +52,6 @@ jobs:
                npm run start:dev &
                sleep 5
                kill %1
-  notify:
-    runs-on: ubuntu-latest
-    needs: run-dev
-    if: always()
-
-    steps:
-      - uses: actions/checkout@v4
 
       - name: Send Telegram Notification on Success
         uses: appleboy/telegram-action@master
