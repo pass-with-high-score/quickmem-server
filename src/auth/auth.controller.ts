@@ -43,11 +43,6 @@ export class AuthController {
     return this.authService.refreshToken(refreshToken);
   }
 
-  @Post('/send-email')
-  async sendEmail(@Body() dto: EmailDto): Promise<any> {
-    return this.authService.sendEmail(dto);
-  }
-
   @Post('/verify-otp')
   async verifyOtp(@Body() dto: VerifyOtpDto): Promise<AuthResponseInterface> {
     return this.authService.verifyOtp(dto);

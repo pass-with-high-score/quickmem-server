@@ -41,10 +41,6 @@ export class AuthService {
     );
   }
 
-  async sendEmail(dto: EmailDto): Promise<any> {
-    return this.usersRepository.sendEmail(dto);
-  }
-
   async verifyOtp(dto: VerifyOtpDto): Promise<AuthResponseInterface> {
     return this.usersRepository.verifyOtp(dto);
   }
@@ -55,7 +51,9 @@ export class AuthService {
     return this.usersRepository.sendResetPasswordEmail(sendResetPasswordDto);
   }
 
-  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<ResetPasswordResponseDto> {
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto,
+  ): Promise<ResetPasswordResponseDto> {
     return this.usersRepository.resetPassword(resetPasswordDto);
   }
 }

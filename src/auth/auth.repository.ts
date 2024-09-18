@@ -65,7 +65,7 @@ export class AuthRepository extends Repository<UserEntity> {
       await this.save(user);
       await this.sendEmailQueue.add('send-otp-email', {
         from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
-        to: email,
+        email: email,
         otp: otp,
         full_name: full_name,
       });
@@ -98,7 +98,11 @@ export class AuthRepository extends Repository<UserEntity> {
           expiresIn: '7d',
         });
         const avatar = `${process.env.HOST}/public/images/${user.avatar_url}.png`;
-        await this.sendLoginEmail(user.full_name, email); // Send login email
+        await this.sendEmailQueue.add('send-login-email', {
+          full_name: user.full_name,
+          email: user.email,
+          from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+        });
         return {
           username: user.username,
           email,
@@ -131,7 +135,11 @@ export class AuthRepository extends Repository<UserEntity> {
           expiresIn: '7d',
         });
         const avatar = `${process.env.HOST}/public/images/${user.avatar_url}.png`;
-        await this.sendLoginEmail(user.full_name, user.email); // Send login email
+        await this.sendEmailQueue.add('send-login-email', {
+          full_name: user.full_name,
+          email: user.email,
+          from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+        });
         return {
           username,
           email: user.email,
@@ -170,84 +178,6 @@ export class AuthRepository extends Repository<UserEntity> {
     }
   }
 
-  async sendOtpEmail(name: string, email: string, otp: string): Promise<void> {
-    await this.mailerService.sendMail({
-      to: email,
-      from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
-      subject: 'Your OTP Code',
-      html: `
-      <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-          <h2 style="color: #333;">Hello, ${name}</h2>
-          <p style="font-size: 16px; color: #555;">
-            Welcome to QuickMem! To complete your verification process, please use the OTP code below.
-          </p>
-          <div style="text-align: center; margin: 20px 0;">
-            <p style="font-size: 24px; font-weight: bold; color: #007bff; letter-spacing: 2px;">${otp}</p>
-          </div>
-          <p style="font-size: 16px; color: #555;">
-            This OTP is valid for <strong>10 minutes</strong>. Please enter it before the time expires.
-          </p>
-          <p style="font-size: 14px; color: #999;">
-            If you did not request this code, please ignore this email or contact our support team if you have any concerns.
-          </p>
-        </div>
-        <div style="max-width: 600px; margin: 20px auto; text-align: center; font-size: 12px; color: #999;">
-          <p>© 2024 QuickMem. All rights reserved.</p>
-        </div>
-      </div>
-    `,
-    });
-  }
-
-  async sendLoginEmail(name: string, email: string): Promise<void> {
-    await this.mailerService.sendMail({
-      to: email,
-      from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
-      subject: 'Login Notification',
-      html: `
-      <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-          <h2 style="color: #333;">Hello, ${name}</h2>
-          <p style="font-size: 16px; color: #555;">
-            You have successfully logged in to your QuickMem account.
-          </p>
-          <p style="font-size: 14px; color: #999;">
-            If you did not log in, please contact our support team immediately.
-          </p>
-        </div>
-        <div style="max-width: 600px; margin: 20px auto; text-align: center; font-size: 12px; color: #999;">
-          <p>© 2024 QuickMem. All rights reserved.</p>
-        </div>
-      </div>
-    `,
-    });
-  }
-
-  async sendSignupEmail(name: string, email: string): Promise<void> {
-    await this.mailerService.sendMail({
-      to: email,
-      from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
-      subject: 'Welcome to QuickMem',
-      html: `
-      <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-          <h2 style="color: #333;">Hello, ${name}</h2>
-          <p style="font-size: 16px; color: #555;">
-            Welcome to QuickMem! We are excited to have you on board.
-          </p>
-          <p style="font-size: 14px; color: #999;">
-            If you have any questions or need assistance, please feel free to contact our support team.
-          </p>
-        </div>
-        <div style="max-width: 600px; margin: 20px auto; text-align: center; font-size: 12px; color: #999;">
-          <p>© 2024 QuickMem. All rights reserved.</p>
-        </div>
-      </div>
-    `,
-    });
-  }
-
   async verifyOtp(dto: VerifyOtpDto): Promise<AuthResponseInterface> {
     const { email, otp } = dto;
     const user = await this.findOne({ where: { email, otp } });
@@ -267,7 +197,11 @@ export class AuthRepository extends Repository<UserEntity> {
     const avatar = `${process.env.HOST}/public/images/${user.avatar_url}.png`;
     user.refreshToken = refreshToken;
     await this.save(user);
-    await this.sendSignupEmail(user.full_name, user.email); // Send welcome email
+    await this.sendEmailQueue.add('send-signup-email', {
+      full_name: user.full_name,
+      email: user.email,
+      from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+    });
 
     return {
       username: user.username,
@@ -301,32 +235,11 @@ export class AuthRepository extends Repository<UserEntity> {
     console.log('Reset Password Token:', token + ' OTP:', otp);
 
     // send otp to email
-    await this.mailerService.sendMail({
-      to: email,
+    await this.sendEmailQueue.add('send-reset-password-email', {
+      full_name: user.full_name,
+      email: user.email,
       from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
-      subject: 'Password Reset OTP',
-      html: `
-      <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-          <h2 style="color: #333;">Password Reset OTP</h2>
-          <p style="font-size: 16px; color: #555;">
-            To reset your password, please use the OTP code below.
-          </p>
-          <div style="text-align: center; margin: 20px 0;">
-            <p style="font-size: 24px; font-weight: bold; color: #007bff; letter-spacing: 2px;">${otp}</p>
-          </div>
-          <p style="font-size: 16px; color: #555;">
-            This OTP is valid for <strong>10 minutes</strong>. Please enter it before the time expires.
-          </p>
-          <p style="font-size: 14px; color: #999;">
-            If you did not request this code, please ignore this email or contact our support team if you have any concerns.
-          </p>
-        </div>
-        <div style="max-width: 600px; margin: 20px auto; text-align: center; font-size: 12px; color: #999;">
-          <p>© 2024 QuickMem. All rights reserved.</p>
-        </div>
-      </div>
-    `,
+      otp: otp,
     });
 
     const response = new SendResetPasswordResponseDto();
@@ -362,24 +275,10 @@ export class AuthRepository extends Repository<UserEntity> {
     user.otpExpires = null;
     user.refreshToken = null;
     await this.save(user);
-
-    await this.mailerService.sendMail({
-      to: user.email,
+    await this.sendEmailQueue.add('reset-password-success', {
+      full_name: user.full_name,
+      email: user.email,
       from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
-      subject: 'Password Reset Confirmation',
-      html: `
-      <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-          <h2 style="color: #333;">Password Reset Successful</h2>
-          <p style="font-size: 16px; color: #555;">
-            Your password has been successfully reset. If you did not make this change, please contact our support team immediately.
-          </p>
-        </div>
-        <div style="max-width: 600px; margin: 20px auto; text-align: center; font-size: 12px; color: #999;">
-          <p>© 2024 QuickMem. All rights reserved.</p>
-        </div>
-      </div>
-    `,
     });
 
     const response = new ResetPasswordResponseDto();
@@ -387,25 +286,5 @@ export class AuthRepository extends Repository<UserEntity> {
     response.message = 'Password reset successful';
     response.email = user.email;
     return response;
-  }
-
-  async sendEmail(dto: EmailDto): Promise<any> {
-    return new Promise(async (resolve, reject) => {
-      await this.mailerService
-        .sendMail({
-          to: dto.email,
-          from: `NestJs <${this.configService.get('MAILER_USER')}>`,
-          subject: 'This is a test email',
-          html: `<h1>Hello!</h1>
-                    <p>This is a test email from NestJs</p>
-                    `,
-        })
-        .then((resp) => {
-          resolve(resp);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
   }
 }
