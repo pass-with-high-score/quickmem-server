@@ -40,7 +40,7 @@ export class AuthService {
     return this.usersRepository.sendEmail(dto);
   }
 
-  async verifyOtp(dto: VerifyOtpDto): Promise<{ accessToken: string }> {
+  async verifyOtp(dto: VerifyOtpDto): Promise<AuthResponseInterface> {
     return this.usersRepository.verifyOtp(dto);
   }
 }

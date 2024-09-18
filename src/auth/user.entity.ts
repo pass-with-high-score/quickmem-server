@@ -44,6 +44,12 @@ export class UserEntity {
   @Column({ nullable: true })
   refreshToken: string;
 
+  @Column({ nullable: true })
+  resetPasswordToken: string;
+
+  @Column({ nullable: true })
+  resetPasswordExpires: Date;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 

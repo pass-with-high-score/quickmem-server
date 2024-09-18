@@ -46,7 +46,7 @@ export class AuthController {
   }
 
   @Post('/verify-otp')
-  async verifyOtp(@Body() dto: VerifyOtpDto): Promise<{ accessToken: string }> {
+  async verifyOtp(@Body() dto: VerifyOtpDto): Promise<AuthResponseInterface> {
     return this.authService.verifyOtp(dto);
   }
 }
