@@ -49,4 +49,17 @@ export class AuthController {
   async verifyOtp(@Body() dto: VerifyOtpDto): Promise<AuthResponseInterface> {
     return this.authService.verifyOtp(dto);
   }
+
+  @Post('/send-reset-password')
+  async sendResetPassword(@Body('email') email: string): Promise<any> {
+    return this.authService.sendResetPassword(email);
+  }
+
+  @Post('/reset-password')
+  async resetPassword(
+    @Body('token') token: string,
+    @Body('password') password: string,
+  ): Promise<any> {
+    return this.authService.resetPassword(token, password);
+  }
 }

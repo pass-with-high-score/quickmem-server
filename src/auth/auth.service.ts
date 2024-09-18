@@ -36,11 +36,20 @@ export class AuthService {
       refreshToken,
     );
   }
+
   async sendEmail(dto: EmailDto): Promise<any> {
     return this.usersRepository.sendEmail(dto);
   }
 
   async verifyOtp(dto: VerifyOtpDto): Promise<AuthResponseInterface> {
     return this.usersRepository.verifyOtp(dto);
+  }
+
+  async sendResetPassword(email: string): Promise<any> {
+    return this.usersRepository.sendResetPasswordEmail(email);
+  }
+
+  async resetPassword(token: string, password: string): Promise<any> {
+    return this.usersRepository.resetPassword(token, password);
   }
 }
