@@ -12,6 +12,7 @@ import { FlashcardModule } from './flashcard/flashcard.module';
 import { CardModule } from './card/card.module';
 import { FolderModule } from './folder/folder.module';
 import { ClassModule } from './class/class.module';
+import { BullModule } from '@nestjs/bull';
 
 dotenv.config();
 
@@ -60,6 +61,12 @@ dotenv.config();
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..'),
       renderPath: '/public',
+    }),
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
     }),
     AuthModule,
     FlashcardModule,

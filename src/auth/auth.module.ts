@@ -8,6 +8,9 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullModule } from '@nestjs/bull';
+import { join } from 'path';
+import { EmailConsumer } from './email-consumer';
 
 @Module({
   imports: [
@@ -26,8 +29,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         };
       },
     }),
+    BullModule.registerQueue({
+      name: 'send-email',
+    }),
   ],
-  providers: [AuthService, AuthRepository, JwtStrategy],
+  providers: [AuthService, AuthRepository, JwtStrategy, EmailConsumer],
   controllers: [AuthController],
   exports: [JwtStrategy, PassportModule],
 })

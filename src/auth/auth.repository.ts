@@ -21,6 +21,8 @@ import { SendResetPasswordDto } from './dto/send-reset-password.dto';
 import { SendResetPasswordResponseDto } from './dto/send-reset-password-response.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -28,6 +30,7 @@ export class AuthRepository extends Repository<UserEntity> {
     private dataSource: DataSource,
     private jwtService: JwtService,
     private readonly mailerService: MailerService,
+    @InjectQueue('send-email') private readonly sendEmailQueue: Queue,
     private configService: ConfigService,
   ) {
     super(UserEntity, dataSource.createEntityManager());
@@ -60,7 +63,12 @@ export class AuthRepository extends Repository<UserEntity> {
 
     try {
       await this.save(user);
-      await this.sendOtpEmail(full_name, email, otp); // Send OTP email
+      await this.sendEmailQueue.add('send-otp-email', {
+        from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+        to: email,
+        otp: otp,
+        full_name: full_name,
+      });
       const response = new SignupResponseDto();
       response.message = 'User created successfully. Check your email for OTP';
       response.is_verified = false;
