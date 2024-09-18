@@ -2,7 +2,6 @@ import { Column } from 'typeorm';
 import {
   IsEmail,
   IsNotEmpty,
-  IsNumber,
   IsStrongPassword,
 } from 'class-validator';
 

@@ -350,6 +350,9 @@ export class AuthRepository extends Repository<UserEntity> {
     user.password = hashedPassword;
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
+    user.otp = null;
+    user.otpExpires = null;
+    user.refreshToken = null;
     await this.save(user);
 
     await this.mailerService.sendMail({
