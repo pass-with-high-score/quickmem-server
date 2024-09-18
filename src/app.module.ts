@@ -8,6 +8,10 @@ import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
+import { FlashcardModule } from './flashcard/flashcard.module';
+import { CardModule } from './card/card.module';
+import { FolderModule } from './folder/folder.module';
+import { ClassModule } from './class/class.module';
 
 dotenv.config();
 
@@ -58,6 +62,10 @@ dotenv.config();
       renderPath: '/public',
     }),
     AuthModule,
+    FlashcardModule,
+    CardModule,
+    FolderModule,
+    ClassModule,
   ],
   providers: [],
   controllers: [],
