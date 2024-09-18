@@ -6,6 +6,10 @@ import { LoginCredentialsDto } from './dto/login-credentials.dto';
 import { EmailDto } from './dto/email.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { SendResetPasswordDto } from './dto/send-reset-password.dto';
+import { SendResetPasswordResponseDto } from './dto/send-reset-password-response.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -41,7 +45,6 @@ export class AuthController {
 
   @Post('/send-email')
   async sendEmail(@Body() dto: EmailDto): Promise<any> {
-    console.log('Controller - DTO:', dto);
     return this.authService.sendEmail(dto);
   }
 
@@ -51,15 +54,16 @@ export class AuthController {
   }
 
   @Post('/send-reset-password')
-  async sendResetPassword(@Body('email') email: string): Promise<any> {
-    return this.authService.sendResetPassword(email);
+  async sendResetPassword(
+    @Body() sendResetPasswordDto: SendResetPasswordDto,
+  ): Promise<SendResetPasswordResponseDto> {
+    return this.authService.sendResetPassword(sendResetPasswordDto);
   }
 
   @Post('/reset-password')
   async resetPassword(
-    @Body('token') token: string,
-    @Body('password') password: string,
-  ): Promise<any> {
-    return this.authService.resetPassword(token, password);
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ): Promise<ResetPasswordResponseDto> {
+    return this.authService.resetPassword(resetPasswordDto);
   }
 }

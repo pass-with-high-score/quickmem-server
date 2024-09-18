@@ -17,6 +17,10 @@ import { EmailDto } from './dto/email.dto';
 import { ConfigService } from '@nestjs/config';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { SendResetPasswordDto } from './dto/send-reset-password.dto';
+import { SendResetPasswordResponseDto } from './dto/send-reset-password-response.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -269,11 +273,10 @@ export class AuthRepository extends Repository<UserEntity> {
     };
   }
 
-  async sendResetPasswordEmail(email: string): Promise<void> {
-    if (!email) {
-      throw new UnauthorizedException('Email is required');
-    }
-
+  async sendResetPasswordEmail(
+    sendResetPasswordDto: SendResetPasswordDto,
+  ): Promise<SendResetPasswordResponseDto> {
+    const { email } = sendResetPasswordDto;
     const user = await this.findOne({ where: { email } });
 
     if (!user) {
@@ -281,49 +284,68 @@ export class AuthRepository extends Repository<UserEntity> {
     }
 
     const token = crypto.randomBytes(20).toString('hex');
+    const otp = crypto.randomInt(100000, 999999).toString(); // Generate a 6-digit OTP
     user.resetPasswordToken = token;
-    user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
+    user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000); // Token expires in 10 minutes
+    user.otp = otp; // Store OTP
+    user.otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
     await this.save(user);
-    console.log('Reset Password Token:', token);
+    console.log('Reset Password Token:', token + ' OTP:', otp);
 
+    // send otp to email
     await this.mailerService.sendMail({
       to: email,
       from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
-      subject: 'Reset Password',
+      subject: 'Password Reset OTP',
       html: `
-    <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-      <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-        <h2 style="color: #333;">Reset Your Password</h2>
-        <p style="font-size: 16px; color: #555;">
-          You are receiving this email because you have requested to reset your password.
-        </p>
-        <p style="font-size: 16px; color: #555;">
-          Please click the link below to reset your password. This link will expire in 1 hour.
-        </p>
-        <div style="text-align: center; margin: 20px 0;">
-          <a href="${process.env.HOST}/reset-password/${token}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Reset Password</a>
+      <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+          <h2 style="color: #333;">Password Reset OTP</h2>
+          <p style="font-size: 16px; color: #555;">
+            To reset your password, please use the OTP code below.
+          </p>
+          <div style="text-align: center; margin: 20px 0;">
+            <p style="font-size: 24px; font-weight: bold; color: #007bff; letter-spacing: 2px;">${otp}</p>
+          </div>
+          <p style="font-size: 16px; color: #555;">
+            This OTP is valid for <strong>10 minutes</strong>. Please enter it before the time expires.
+          </p>
+          <p style="font-size: 14px; color: #999;">
+            If you did not request this code, please ignore this email or contact our support team if you have any concerns.
+          </p>
         </div>
-        <p style="font-size: 14px; color: #999;">
-          If you did not request this, please ignore this email and your password will remain unchanged.
-        </p>
+        <div style="max-width: 600px; margin: 20px auto; text-align: center; font-size: 12px; color: #999;">
+          <p>© 2024 QuickMem. All rights reserved.</p>
+        </div>
       </div>
-      <div style="max-width: 600px; margin: 20px auto; text-align: center; font-size: 12px; color: #999;">
-        <p>© 2024 QuickMem. All rights reserved.</p>
-      </div>
-    </div>
     `,
     });
+
+    const response = new SendResetPasswordResponseDto();
+    response.message = 'OTP sent to your email';
+    response.is_sent = true;
+    response.reset_password_token = token;
+    return response;
   }
 
-  async resetPassword(token: string, password: string): Promise<void> {
-    const user = await this.findOne({ where: { resetPasswordToken: token } });
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto,
+  ): Promise<ResetPasswordResponseDto> {
+    const { email, new_password, reset_password_token, otp } = resetPasswordDto;
+    const user = await this.findOne({
+      where: { resetPasswordToken: reset_password_token, otp, email },
+    });
 
-    if (!user || user.resetPasswordExpires < new Date()) {
+    if (
+      !user ||
+      user.resetPasswordExpires < new Date() ||
+      user.otpExpires < new Date()
+    ) {
       throw new UnauthorizedException('Invalid or expired token');
     }
 
     const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(new_password, salt);
 
     user.password = hashedPassword;
     user.resetPasswordToken = null;
@@ -348,6 +370,12 @@ export class AuthRepository extends Repository<UserEntity> {
       </div>
     `,
     });
+
+    const response = new ResetPasswordResponseDto();
+    response.is_reset = true;
+    response.message = 'Password reset successful';
+    response.email = user.email;
+    return response;
   }
 
   async sendEmail(dto: EmailDto): Promise<any> {

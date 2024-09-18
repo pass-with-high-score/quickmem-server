@@ -6,6 +6,10 @@ import { LoginCredentialsDto } from './dto/login-credentials.dto';
 import { EmailDto } from './dto/email.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { SendResetPasswordDto } from './dto/send-reset-password.dto';
+import { SendResetPasswordResponseDto } from './dto/send-reset-password-response.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -45,11 +49,13 @@ export class AuthService {
     return this.usersRepository.verifyOtp(dto);
   }
 
-  async sendResetPassword(email: string): Promise<any> {
-    return this.usersRepository.sendResetPasswordEmail(email);
+  async sendResetPassword(
+    sendResetPasswordDto: SendResetPasswordDto,
+  ): Promise<SendResetPasswordResponseDto> {
+    return this.usersRepository.sendResetPasswordEmail(sendResetPasswordDto);
   }
 
-  async resetPassword(token: string, password: string): Promise<any> {
-    return this.usersRepository.resetPassword(token, password);
+  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<ResetPasswordResponseDto> {
+    return this.usersRepository.resetPassword(resetPasswordDto);
   }
 }
