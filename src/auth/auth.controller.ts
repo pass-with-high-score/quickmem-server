@@ -3,7 +3,6 @@ import { AuthService } from './auth.service';
 import { SignupCredentialsDto } from './dto/signup-credentials.dto';
 import { AuthResponseInterface } from './dto/auth-response.interface';
 import { LoginCredentialsDto } from './dto/login-credentials.dto';
-import { EmailDto } from './dto/email.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { SendResetPasswordDto } from './dto/send-reset-password.dto';

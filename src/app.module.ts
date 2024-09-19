@@ -64,8 +64,9 @@ dotenv.config();
     }),
     BullModule.forRoot({
       redis: {
-        host: 'localhost',
-        port: 6379,
+        host: 'redis-17991.c16.us-east-1-2.ec2.redns.redis-cloud.com',
+        port: 17991,
+        password: 'yEJcaGoUpGB1FKM9nrgSTvkXc6UKEPMs'
       },
     }),
     AuthModule,
