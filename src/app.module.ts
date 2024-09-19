@@ -62,12 +62,16 @@ dotenv.config();
       rootPath: join(__dirname, '..'),
       renderPath: '/public',
     }),
-    BullModule.forRoot({
-      redis: {
-        host: 'redis-17991.c16.us-east-1-2.ec2.redns.redis-cloud.com',
-        port: 17991,
-        password: 'yEJcaGoUpGB1FKM9nrgSTvkXc6UKEPMs'
-      },
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        redis: {
+          host: configService.get('REDIS_HOST'),
+          port: configService.get('REDIS_PORT'),
+          password: configService.get('REDIS_PASSWORD'),
+        },
+      }),
     }),
     AuthModule,
     FlashcardModule,

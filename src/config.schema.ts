@@ -11,4 +11,7 @@ export const configValidationSchema = Joi.object({
   JWT_SECRET: Joi.string().required(),
   MAILER_USER: Joi.string().required(),
   MAILER_PASS: Joi.string().required(),
+  REDIS_HOST: Joi.string().required(),
+  REDIS_PORT: Joi.number().default(6379).required(),
+  REDIS_PASSWORD: Joi.string().required(),
 });

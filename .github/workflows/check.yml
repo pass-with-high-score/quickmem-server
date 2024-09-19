@@ -47,8 +47,10 @@ jobs:
           HOST: ${{ secrets.HOST }}
           MAILER_USER: ${{ secrets.MAILER_USER }}
           MAILER_PASS: ${{ secrets.MAILER_PASS }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
         run: |
-          #          run and cancel the server after 5 seconds
                npm run start:dev &
                sleep 5
                kill %1
