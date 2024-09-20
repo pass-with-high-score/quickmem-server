@@ -9,6 +9,7 @@ import { SendResetPasswordDto } from './dto/send-reset-password.dto';
 import { SendResetPasswordResponseDto } from './dto/send-reset-password-response.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -42,11 +43,13 @@ export class AuthController {
     return this.authService.refreshToken(refreshToken);
   }
 
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('/verify-otp')
   async verifyOtp(@Body() dto: VerifyOtpDto): Promise<AuthResponseInterface> {
     return this.authService.verifyOtp(dto);
   }
 
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('/send-reset-password')
   async sendResetPassword(
     @Body() sendResetPasswordDto: SendResetPasswordDto,

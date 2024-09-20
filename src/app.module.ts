@@ -7,12 +7,13 @@ import { configValidationSchema } from './config.schema';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 import { FlashcardModule } from './flashcard/flashcard.module';
 import { CardModule } from './card/card.module';
 import { FolderModule } from './folder/folder.module';
 import { ClassModule } from './class/class.module';
 import { BullModule } from '@nestjs/bull';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 dotenv.config();
 
@@ -23,6 +24,12 @@ dotenv.config();
       validationSchema: configValidationSchema,
       isGlobal: true,
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -79,7 +86,12 @@ dotenv.config();
     FolderModule,
     ClassModule,
   ],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
   controllers: [],
   exports: [],
 })

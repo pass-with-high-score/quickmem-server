@@ -13,7 +13,6 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthResponseInterface } from './dto/auth-response.interface';
 import { LoginCredentialsDto } from './dto/login-credentials.dto';
 import { MailerService } from '@nestjs-modules/mailer';
-import { EmailDto } from './dto/email.dto';
 import { ConfigService } from '@nestjs/config';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
@@ -41,6 +40,14 @@ export class AuthRepository extends Repository<UserEntity> {
   ): Promise<SignupResponseDto> {
     const { email, username, password, full_name, avatar_url, role, birthday } =
       authCredentialsDto;
+
+    const userExists = await this.findOne({
+      where: [{ email }, { username }],
+    });
+
+    if (userExists) {
+      throw new ConflictException('User already exists');
+    }
 
     // hash the password
     const salt = await bcrypt.genSalt();
@@ -75,12 +82,8 @@ export class AuthRepository extends Repository<UserEntity> {
       response.success = true;
       return response;
     } catch (error) {
-      if (error.code === '23505') {
-        throw new ConflictException('Username or email already exists');
-      } else {
-        console.log(error);
-        throw new InternalServerErrorException();
-      }
+      console.log(error);
+      throw new InternalServerErrorException();
     }
   }
 
@@ -114,9 +117,10 @@ export class AuthRepository extends Repository<UserEntity> {
           birthday: user.birthday,
         };
       } else {
-        throw new UnauthorizedException('Invalid credentials');
+        throw new UnauthorizedException('User not found');
       }
     } catch (error) {
+      console.log(error);
       throw new UnauthorizedException('Invalid credentials' + error);
     }
   }
@@ -151,7 +155,7 @@ export class AuthRepository extends Repository<UserEntity> {
           refresh_token: refresh_token,
         };
       } else {
-        throw new UnauthorizedException('Invalid credentials');
+        throw new UnauthorizedException('User not found');
       }
     } catch (error) {
       throw new UnauthorizedException('Invalid credentials' + error);

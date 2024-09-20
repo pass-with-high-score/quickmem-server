@@ -17,8 +17,6 @@ async function bootstrap() {
     .setTitle('Task Management')
     .setDescription('The Task Management API description')
     .setVersion('1.0')
-    .addTag('tasks')
-    .addTag('auth')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -36,7 +34,8 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   logger.log(`About to start listening on port ${port}`);
   await app.listen(port);
-  logger.log(`Application is listening on port ${port}`);
 }
 
-bootstrap();
+bootstrap().then(() => {
+  console.log('Application started');
+});
