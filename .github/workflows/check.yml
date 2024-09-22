@@ -32,11 +32,12 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }} 
           port: 22  # Cổng SSH (mặc định là 22)
           script: |
-            cd api/quickmem-server  
+            export PATH="/root/.bun/bin:$PATH"  
+            cd /api/quickmem-server  
             git pull origin main  # Pull code mới
-            bun install  # Cài đặt lại dependencies nếu cần
+            bun install  # Cài đặt lại dependencies
             bun run build  # Build dự án
-            pm2 restart quickmem-server  # Restart server với PM2
+            pm2 restart quickmem-server 
 
       - name: Send Telegram Notification on Success
         uses: appleboy/telegram-action@master
