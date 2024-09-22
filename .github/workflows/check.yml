@@ -32,7 +32,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }} 
           port: 22  # Cổng SSH (mặc định là 22)
           script: |
-            cd /api/quickmem-server  
+            cd api/quickmem-server  
             git pull origin main  # Pull code mới
             bun install  # Cài đặt lại dependencies nếu cần
             bun run build  # Build dự án
