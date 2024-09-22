@@ -6,13 +6,13 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { SignupCredentialsDto } from './dto/signup-credentials.dto';
 import { JwtService } from '@nestjs/jwt';
 import { AuthResponseInterface } from './dto/auth-response.interface';
 import { LoginCredentialsDto } from './dto/login-credentials.dto';
-import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
@@ -22,13 +22,16 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { MailerService } from '@nestjs-modules/mailer';
+import { SetNewPasswordDto } from './dto/set-new-password.dto';
+import { SetNewPasswordResponseDto } from './dto/set-new-password-response.dto';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
   constructor(
     private dataSource: DataSource,
     private jwtService: JwtService,
-    private readonly mailerService: MailerService,
+    private readonly mailService: MailerService,
     @InjectQueue('send-email') private readonly sendEmailQueue: Queue,
     private configService: ConfigService,
   ) {
@@ -93,9 +96,16 @@ export class AuthRepository extends Repository<UserEntity> {
     const { email, password } = authCredentialsDto;
     try {
       const user = await this.findOne({ where: { email } });
+      console.log(user);
 
-      if (user && (await bcrypt.compare(password, user.password))) {
-        const payload: { email: string } = { email };
+      if (user) {
+        if (!(await bcrypt.compare(password, user.password))) {
+          throw new UnauthorizedException('Wrong password');
+        }
+        const payload: { email: string; user_id: string } = {
+          email,
+          user_id: user.id,
+        };
         const access_token: string = this.jwtService.sign(payload);
         const refresh_token: string = this.jwtService.sign(payload, {
           expiresIn: '7d',
@@ -117,48 +127,11 @@ export class AuthRepository extends Repository<UserEntity> {
           birthday: user.birthday,
         };
       } else {
-        throw new UnauthorizedException('User not found');
+        throw new NotFoundException('User not found');
       }
     } catch (error) {
       console.log(error);
-      throw new UnauthorizedException('Invalid credentials' + error);
-    }
-  }
-
-  async validateUsernamePassword(
-    authCredentialsDto: LoginCredentialsDto,
-  ): Promise<AuthResponseInterface> {
-    const { username, password } = authCredentialsDto;
-    try {
-      const user = await this.findOne({ where: { username } });
-
-      if (user && (await bcrypt.compare(password, user.password))) {
-        const payload: { username: string } = { username };
-        const access_token: string = this.jwtService.sign(payload);
-        const refresh_token: string = this.jwtService.sign(payload, {
-          expiresIn: '7d',
-        });
-        const avatar = `${process.env.HOST}/public/images/${user.avatar_url}.png`;
-        await this.sendEmailQueue.add('send-login-email', {
-          full_name: user.full_name,
-          email: user.email,
-          from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
-        });
-        return {
-          username,
-          email: user.email,
-          full_name: user.full_name,
-          avatar_url: avatar,
-          role: user.role,
-          birthday: user.birthday,
-          access_token: access_token,
-          refresh_token: refresh_token,
-        };
-      } else {
-        throw new UnauthorizedException('User not found');
-      }
-    } catch (error) {
-      throw new UnauthorizedException('Invalid credentials' + error);
+      throw new InternalServerErrorException("Something's wrong");
     }
   }
 
@@ -175,10 +148,14 @@ export class AuthRepository extends Repository<UserEntity> {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      const accessToken = this.jwtService.sign({ username: payload.username });
+      const accessToken = this.jwtService.sign({
+        email: payload.email,
+        id: user.id,
+      });
       return { accessToken };
     } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token' + error);
+      console.log(error);
+      throw new UnauthorizedException('Invalid refresh token');
     }
   }
 
@@ -195,7 +172,10 @@ export class AuthRepository extends Repository<UserEntity> {
     user.is_verified = true;
     await this.save(user);
 
-    const payload = { email: user.email };
+    const payload: { email: string; user_id: string } = {
+      email,
+      user_id: user.id,
+    };
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
     const avatar = `${process.env.HOST}/public/images/${user.avatar_url}.png`;
@@ -226,7 +206,7 @@ export class AuthRepository extends Repository<UserEntity> {
     const user = await this.findOne({ where: { email } });
 
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new NotFoundException('User not found');
     }
 
     const token = crypto.randomBytes(20).toString('hex');
@@ -269,25 +249,70 @@ export class AuthRepository extends Repository<UserEntity> {
       throw new UnauthorizedException('Invalid or expired token');
     }
 
+    try {
+      const salt = await bcrypt.genSalt();
+
+      user.password = await bcrypt.hash(new_password, salt);
+      user.resetPasswordToken = null;
+      user.resetPasswordExpires = null;
+      user.otp = null;
+      user.otpExpires = null;
+      user.refreshToken = null;
+      await this.save(user);
+      await this.sendEmailQueue.add('reset-password-success', {
+        full_name: user.full_name,
+        email: user.email,
+        from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+      });
+
+      const response = new ResetPasswordResponseDto();
+      response.is_reset = true;
+      response.message = 'Password reset successful';
+      response.email = user.email;
+      return response;
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Failed to reset password');
+    }
+  }
+
+  async setNewPassword(
+    setNewPasswordDto: SetNewPasswordDto,
+  ): Promise<SetNewPasswordResponseDto> {
+    const { email, old_password, new_password } = setNewPasswordDto;
+    const user = await this.findOne({ where: { email } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!(await bcrypt.compare(old_password, user.password))) {
+      throw new UnauthorizedException('Old password is incorrect');
+    }
+
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(new_password, salt);
 
+    // check if the new password is the same as the old password
+    if (await bcrypt.compare(new_password, user.password)) {
+      throw new ConflictException(
+        'New password cannot be the same as old password',
+      );
+    }
+
     user.password = hashedPassword;
-    user.resetPasswordToken = null;
-    user.resetPasswordExpires = null;
-    user.otp = null;
-    user.otpExpires = null;
-    user.refreshToken = null;
     await this.save(user);
-    await this.sendEmailQueue.add('reset-password-success', {
+
+    // send email
+    await this.sendEmailQueue.add('update-password-success', {
       full_name: user.full_name,
       email: user.email,
       from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
     });
 
-    const response = new ResetPasswordResponseDto();
-    response.is_reset = true;
-    response.message = 'Password reset successful';
+    const response = new SetNewPasswordResponseDto();
+    response.is_set = true;
+    response.message = 'Password set successfully';
     response.email = user.email;
     return response;
   }

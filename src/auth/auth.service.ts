@@ -3,13 +3,14 @@ import { AuthRepository } from './auth.repository';
 import { SignupCredentialsDto } from './dto/signup-credentials.dto';
 import { AuthResponseInterface } from './dto/auth-response.interface';
 import { LoginCredentialsDto } from './dto/login-credentials.dto';
-import { EmailDto } from './dto/email.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { SendResetPasswordDto } from './dto/send-reset-password.dto';
 import { SendResetPasswordResponseDto } from './dto/send-reset-password-response.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
+import { SetNewPasswordResponseDto } from './dto/set-new-password-response.dto';
+import { SetNewPasswordDto } from './dto/set-new-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -25,14 +26,6 @@ export class AuthService {
     authCredentialsDto: LoginCredentialsDto,
   ): Promise<AuthResponseInterface> {
     return await this.usersRepository.validateEmailPassword(authCredentialsDto);
-  }
-
-  async logInWithUsername(
-    authCredentialsDto: LoginCredentialsDto,
-  ): Promise<AuthResponseInterface> {
-    return await this.usersRepository.validateUsernamePassword(
-      authCredentialsDto,
-    );
   }
 
   async refreshToken(refreshToken: string): Promise<{ accessToken: string }> {
@@ -55,5 +48,11 @@ export class AuthService {
     resetPasswordDto: ResetPasswordDto,
   ): Promise<ResetPasswordResponseDto> {
     return this.usersRepository.resetPassword(resetPasswordDto);
+  }
+
+  async setNewPassword(
+    setNewPasswordDto: SetNewPasswordDto,
+  ): Promise<SetNewPasswordResponseDto> {
+    return this.usersRepository.setNewPassword(setNewPasswordDto);
   }
 }

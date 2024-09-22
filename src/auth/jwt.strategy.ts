@@ -6,7 +6,7 @@ import { UserEntity } from './user.entity';
 import { ConfigService } from '@nestjs/config';
 
 class JwtPayloadInterface {
-  username: string;
+  user_id: string;
   email: string;
 }
 
@@ -23,10 +23,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayloadInterface): Promise<UserEntity> {
-    const { username, email } = payload;
+    const { user_id, email } = payload;
 
     const user: UserEntity = await this.usersRepository.findOne({
-      where: { username, email },
+      where: { id: user_id, email },
     });
 
     if (!user) {

@@ -1,4 +1,11 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupCredentialsDto } from './dto/signup-credentials.dto';
 import { AuthResponseInterface } from './dto/auth-response.interface';
@@ -9,12 +16,17 @@ import { SendResetPasswordDto } from './dto/send-reset-password.dto';
 import { SendResetPasswordResponseDto } from './dto/send-reset-password-response.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
-import { Throttle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import { AuthGuard } from '@nestjs/passport';
+import { SetNewPasswordResponseDto } from './dto/set-new-password-response.dto';
+import { SetNewPasswordDto } from './dto/set-new-password.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @SkipThrottle()
+  @HttpCode(HttpStatus.CREATED)
   @Post('/signup')
   async signUp(
     @Body() authCredentialsDto: SignupCredentialsDto,
@@ -22,20 +34,17 @@ export class AuthController {
     return this.authService.signUp(authCredentialsDto);
   }
 
+  @SkipThrottle()
+  @HttpCode(HttpStatus.OK)
   @Post('/login')
   async logIn(
     @Body() authCredentialsDto: LoginCredentialsDto,
   ): Promise<AuthResponseInterface> {
-    const { email } = authCredentialsDto;
-    if (email) {
-      console.log('email');
-      return this.authService.logInWithEmail(authCredentialsDto);
-    } else {
-      console.log('username');
-      return this.authService.logInWithUsername(authCredentialsDto);
-    }
+    return this.authService.logInWithEmail(authCredentialsDto);
   }
 
+  @SkipThrottle()
+  @HttpCode(HttpStatus.OK)
   @Post('/refresh-token')
   async refreshToken(
     @Body('refreshToken') refreshToken: string,
@@ -50,6 +59,7 @@ export class AuthController {
   }
 
   @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Post('/send-reset-password')
   async sendResetPassword(
     @Body() sendResetPasswordDto: SendResetPasswordDto,
@@ -57,10 +67,22 @@ export class AuthController {
     return this.authService.sendResetPassword(sendResetPasswordDto);
   }
 
+  @SkipThrottle()
+  @HttpCode(HttpStatus.OK)
   @Post('/reset-password')
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
   ): Promise<ResetPasswordResponseDto> {
     return this.authService.resetPassword(resetPasswordDto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @SkipThrottle()
+  @HttpCode(HttpStatus.OK)
+  @Post('/set-new-password')
+  async setNewPassword(
+    @Body() setNewPasswordDto: SetNewPasswordDto,
+  ): Promise<SetNewPasswordResponseDto> {
+    return this.authService.setNewPassword(setNewPasswordDto);
   }
 }

@@ -6,6 +6,7 @@ import { MailLoginInterface } from './dto/mail-login.interface';
 import { MailSignupInterface } from './dto/mail-signup.interface';
 import { MailResetPasswordInterface } from './dto/mail-reset-password.interface';
 import { MailResetPasswordSuccessInterface } from './dto/mail-reset-password-success.interface';
+import { MailUpdatePasswordSuccessInterface } from './dto/mail-update-password-successs.interface';
 
 @Processor('send-email')
 export class EmailConsumer {
@@ -174,6 +175,37 @@ export class EmailConsumer {
           <h2 style="color: #333;">Password Reset Successful</h2>
           <p style="font-size: 16px; color: #555;">
             Your password has been successfully reset. If you did not make this change, please contact our support team immediately.
+          </p>
+        </div>
+        <div style="max-width: 600px; margin: 20px auto; text-align: center; font-size: 12px; color: #999;">
+          <p>© 2024 QuickMem. All rights reserved.</p>
+        </div>
+      </div>
+      `,
+      });
+      console.log('Email sent successfully');
+    } catch (error) {
+      console.error('Error sending email:', error);
+    }
+  }
+  @Process('update-password-success')
+  async sendUpdatePasswordSuccessEmail(
+    job: Job<MailUpdatePasswordSuccessInterface>,
+  ) {
+    const { data } = job;
+    console.log('Sending email to', data);
+
+    try {
+      await this.mailService.sendMail({
+        to: data.email,
+        from: data.from,
+        subject: 'Password Update Successful',
+        html: `
+        <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+          <h2 style="color: #333;">Hello, ${data.full_name}</h2>
+          <p style="font-size: 16px; color: #555;">
+            Your password has been successfully updated. If you did not make this change, please contact our support team immediately.
           </p>
         </div>
         <div style="max-width: 600px; margin: 20px auto; text-align: center; font-size: 12px; color: #999;">
