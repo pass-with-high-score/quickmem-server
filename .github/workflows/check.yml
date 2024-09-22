@@ -1,3 +1,5 @@
+name: Deploy to Server
+
 on:
   push:
     branches:
@@ -7,23 +9,9 @@ on:
       - main
 
 jobs:
-  run-dev:
+  deploy:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:13
-        env:
-          POSTGRES_DB: ${{ secrets.DB_DATABASE }}
-          POSTGRES_USER: ${{ secrets.DB_USERNAME }}
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4.1.7
@@ -36,24 +24,19 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Run development server
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_DATABASE: ${{ secrets.DB_DATABASE }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          HOST: ${{ secrets.HOST }}
-          MAILER_USER: ${{ secrets.MAILER_USER }}
-          MAILER_PASS: ${{ secrets.MAILER_PASS }}
-          REDIS_HOST: ${{ secrets.REDIS_HOST }}
-          REDIS_PORT: ${{ secrets.REDIS_PORT }}
-          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-        run: |
-               npm run start:dev &
-               sleep 5
-               kill %1
+      - name: Deploy to Server via SSH with password
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}  
+          username: ${{ secrets.SERVER_USER }} 
+          password: ${{ secrets.SERVER_PASSWORD }} 
+          port: 22  # Cổng SSH (mặc định là 22)
+          script: |
+            cd /api/quickmem-server  
+            git pull origin main  # Pull code mới
+            bun install  # Cài đặt lại dependencies nếu cần
+            bun run build  # Build dự án
+            pm2 restart quickmem-server  # Restart server với PM2
 
       - name: Send Telegram Notification on Success
         uses: appleboy/telegram-action@master
@@ -63,7 +46,7 @@ jobs:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           format: html
           message: |
-            <b>QuickMem Server Update</b>
+            <b>QuickMem Server Deployed Successfully</b>
             <b>Repository</b>: ${{ github.repository }}
             <b>Committer</b>: ${{ github.actor }}
             <b>Commit Message</b>: ${{ github.event.head_commit.message }}
@@ -79,11 +62,10 @@ jobs:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           format: html
           message: |
-            <b>QuickMem Server Update</b>
+            <b>QuickMem Server Deployment Failed</b>
             <b>Repository</b>: ${{ github.repository }}
             <b>Committer</b>: ${{ github.actor }}
             <b>Commit Message</b>: ${{ github.event.head_commit.message }}
             <b>Branch</b>: ${{ github.ref_name }}
-             <b>Changes</b>: <a href="https://github.com/pass-with-high-score/quickmem-server/commit/${{github.sha}}">View Changes</a>
+            <b>Changes</b>: <a href="https://github.com/pass-with-high-score/quickmem-server/commit/${{github.sha}}">View Changes</a>
             <b>Action</b>: <a href="https://github.com/pass-with-high-score/quickmem-server/actions/runs/${{ github.run_id }}">View Action</a>
-      
