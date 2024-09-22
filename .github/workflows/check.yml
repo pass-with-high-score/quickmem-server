@@ -33,7 +33,7 @@ jobs:
           port: 22  # Cổng SSH (mặc định là 22)
           script: |
             export PATH="/root/.bun/bin:$PATH"  
-            cd /api/quickmem-server  
+            cd api/quickmem-server  
             git pull origin main  # Pull code mới
             bun install  # Cài đặt lại dependencies
             bun run build  # Build dự án
