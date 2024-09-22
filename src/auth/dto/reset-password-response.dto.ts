@@ -1,5 +1,5 @@
 export class ResetPasswordResponseDto {
   email: string;
-  is_reset: boolean;
+  isReset: boolean;
   message: string;
 }

@@ -17,10 +17,10 @@ export class ResetPasswordDto {
 
   @IsNotEmpty()
   @Column()
-  reset_password_token: string;
+  resetPasswordToken: string;
 
   @IsNotEmpty()
   @IsStrongPassword()
   @Column()
-  new_password: string;
+  newPassword: string;
 }

@@ -33,7 +33,7 @@ export class SignupCredentialsDto {
 
   @IsNotEmpty({ message: 'Name is required' })
   @IsString({ message: 'Name must be a string' })
-  full_name: string;
+  fullName: string;
 
   @IsNotEmpty({ message: 'Birthday is required' })
   @IsDateString({}, { message: 'Invalid date' })
@@ -41,7 +41,7 @@ export class SignupCredentialsDto {
 
   @IsNotEmpty({ message: 'Avatar URL is required' })
   @IsString({ message: 'Avatar URL must be a string' })
-  avatar_url: string;
+  avatarUrl: string;
 
   @IsEnum(UserRoleEnum)
   @IsNotEmpty({ message: 'Role is required' })

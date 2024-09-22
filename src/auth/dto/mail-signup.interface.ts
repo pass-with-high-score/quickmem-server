@@ -1,5 +1,5 @@
 export interface MailSignupInterface {
-  full_name: string;
+  fullName: string;
   email: string;
   from: string;
 }

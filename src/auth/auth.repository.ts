@@ -41,7 +41,7 @@ export class AuthRepository extends Repository<UserEntity> {
   async createUser(
     authCredentialsDto: SignupCredentialsDto,
   ): Promise<SignupResponseDto> {
-    const { email, username, password, full_name, avatar_url, role, birthday } =
+    const { email, username, password, fullName, avatarUrl, role, birthday } =
       authCredentialsDto;
 
     const userExists = await this.findOne({
@@ -62,12 +62,12 @@ export class AuthRepository extends Repository<UserEntity> {
       email,
       username,
       password: hashedPassword,
-      full_name,
-      avatar_url,
+      fullName: fullName,
+      avatarUrl: avatarUrl,
       role,
       birthday,
       otp, // Store OTP
-      is_verified: false,
+      isVerified: false,
       otpExpires: new Date(Date.now() + 10 * 60 * 1000), // OTP expires in 10 minutes
     });
 
@@ -77,11 +77,11 @@ export class AuthRepository extends Repository<UserEntity> {
         from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
         email: email,
         otp: otp,
-        full_name: full_name,
+        fullName: fullName,
       });
       const response = new SignupResponseDto();
       response.message = 'User created successfully. Check your email for OTP';
-      response.is_verified = false;
+      response.isVerified = false;
       response.success = true;
       return response;
     } catch (error) {
@@ -99,28 +99,31 @@ export class AuthRepository extends Repository<UserEntity> {
       console.log(user);
 
       if (user) {
+        if (!user.isVerified) {
+          throw new UnauthorizedException('User is not verified');
+        }
         if (!(await bcrypt.compare(password, user.password))) {
           throw new UnauthorizedException('Wrong password');
         }
-        const payload: { email: string; user_id: string } = {
+        const payload: { email: string; userId: string } = {
           email,
-          user_id: user.id,
+          userId: user.id,
         };
         const access_token: string = this.jwtService.sign(payload);
         const refresh_token: string = this.jwtService.sign(payload, {
           expiresIn: '7d',
         });
-        const avatar = `${process.env.HOST}/public/images/${user.avatar_url}.png`;
+        const avatar = `${process.env.HOST}/public/images/${user.avatarUrl}.png`;
         await this.sendEmailQueue.add('send-login-email', {
-          full_name: user.full_name,
+          fullName: user.fullName,
           email: user.email,
           from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
         });
         return {
           username: user.username,
           email,
-          full_name: user.full_name,
-          avatar_url: avatar,
+          fullName: user.fullName,
+          avatarUrl: avatar,
           role: user.role,
           access_token: access_token,
           refresh_token: refresh_token,
@@ -130,6 +133,11 @@ export class AuthRepository extends Repository<UserEntity> {
         throw new NotFoundException('User not found');
       }
     } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      } else if (error instanceof NotFoundException) {
+        throw error;
+      }
       console.log(error);
       throw new InternalServerErrorException("Something's wrong");
     }
@@ -169,20 +177,20 @@ export class AuthRepository extends Repository<UserEntity> {
 
     user.otp = null; // Clear OTP after verification
     user.otpExpires = null;
-    user.is_verified = true;
+    user.isVerified = true;
     await this.save(user);
 
-    const payload: { email: string; user_id: string } = {
+    const payload: { email: string; userId: string } = {
       email,
-      user_id: user.id,
+      userId: user.id,
     };
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-    const avatar = `${process.env.HOST}/public/images/${user.avatar_url}.png`;
+    const avatar = `${process.env.HOST}/public/images/${user.avatarUrl}.png`;
     user.refreshToken = refreshToken;
     await this.save(user);
     await this.sendEmailQueue.add('send-signup-email', {
-      full_name: user.full_name,
+      fullName: user.fullName,
       email: user.email,
       from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
     });
@@ -190,8 +198,8 @@ export class AuthRepository extends Repository<UserEntity> {
     return {
       username: user.username,
       email: user.email,
-      full_name: user.full_name,
-      avatar_url: avatar,
+      fullName: user.fullName,
+      avatarUrl: avatar,
       role: user.role,
       access_token: accessToken,
       refresh_token: refreshToken,
@@ -220,7 +228,7 @@ export class AuthRepository extends Repository<UserEntity> {
 
     // send otp to email
     await this.sendEmailQueue.add('send-reset-password-email', {
-      full_name: user.full_name,
+      fullName: user.fullName,
       email: user.email,
       from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
       otp: otp,
@@ -228,17 +236,17 @@ export class AuthRepository extends Repository<UserEntity> {
 
     const response = new SendResetPasswordResponseDto();
     response.message = 'OTP sent to your email';
-    response.is_sent = true;
-    response.reset_password_token = token;
+    response.isSent = true;
+    response.resetPasswordToken = token;
     return response;
   }
 
   async resetPassword(
     resetPasswordDto: ResetPasswordDto,
   ): Promise<ResetPasswordResponseDto> {
-    const { email, new_password, reset_password_token, otp } = resetPasswordDto;
+    const { email, newPassword, resetPasswordToken, otp } = resetPasswordDto;
     const user = await this.findOne({
-      where: { resetPasswordToken: reset_password_token, otp, email },
+      where: { resetPasswordToken: resetPasswordToken, otp, email },
     });
 
     if (
@@ -252,7 +260,7 @@ export class AuthRepository extends Repository<UserEntity> {
     try {
       const salt = await bcrypt.genSalt();
 
-      user.password = await bcrypt.hash(new_password, salt);
+      user.password = await bcrypt.hash(newPassword, salt);
       user.resetPasswordToken = null;
       user.resetPasswordExpires = null;
       user.otp = null;
@@ -260,13 +268,13 @@ export class AuthRepository extends Repository<UserEntity> {
       user.refreshToken = null;
       await this.save(user);
       await this.sendEmailQueue.add('reset-password-success', {
-        full_name: user.full_name,
+        fullName: user.fullName,
         email: user.email,
         from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
       });
 
       const response = new ResetPasswordResponseDto();
-      response.is_reset = true;
+      response.isReset = true;
       response.message = 'Password reset successful';
       response.email = user.email;
       return response;
@@ -279,22 +287,22 @@ export class AuthRepository extends Repository<UserEntity> {
   async setNewPassword(
     setNewPasswordDto: SetNewPasswordDto,
   ): Promise<SetNewPasswordResponseDto> {
-    const { email, old_password, new_password } = setNewPasswordDto;
+    const { email, oldPassword, newPassword } = setNewPasswordDto;
     const user = await this.findOne({ where: { email } });
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    if (!(await bcrypt.compare(old_password, user.password))) {
+    if (!(await bcrypt.compare(oldPassword, user.password))) {
       throw new UnauthorizedException('Old password is incorrect');
     }
 
     const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(new_password, salt);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     // check if the new password is the same as the old password
-    if (await bcrypt.compare(new_password, user.password)) {
+    if (await bcrypt.compare(newPassword, user.password)) {
       throw new ConflictException(
         'New password cannot be the same as old password',
       );
@@ -305,13 +313,13 @@ export class AuthRepository extends Repository<UserEntity> {
 
     // send email
     await this.sendEmailQueue.add('update-password-success', {
-      full_name: user.full_name,
+      fullName: user.fullName,
       email: user.email,
       from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
     });
 
     const response = new SetNewPasswordResponseDto();
-    response.is_set = true;
+    response.isSet = true;
     response.message = 'Password set successfully';
     response.email = user.email;
     return response;

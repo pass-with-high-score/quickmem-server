@@ -6,9 +6,9 @@ export class SetNewPasswordDto {
   email: string;
 
   @IsNotEmpty()
-  old_password: string;
+  oldPassword: string;
 
   @IsNotEmpty()
   @IsStrongPassword()
-  new_password: string;
+  newPassword: string;
 }

@@ -1,5 +1,13 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { UserRoleEnum } from './user-role.enum';
+import { StudySetEntity } from '../study-set/study-set.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -22,11 +30,11 @@ export class UserEntity {
   otpExpires: Date;
 
   @Column({ nullable: true })
-  full_name: string;
+  fullName: string;
 
   @Column()
   @Column({ nullable: true })
-  avatar_url: string;
+  avatarUrl: string;
 
   @Column({
     enum: UserRoleEnum,
@@ -39,7 +47,7 @@ export class UserEntity {
   birthday: Date;
 
   @Column({ default: false })
-  is_verified: boolean;
+  isVerified: boolean;
 
   @Column({ nullable: true })
   refreshToken: string;
@@ -50,9 +58,12 @@ export class UserEntity {
   @Column({ nullable: true })
   resetPasswordExpires: Date;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created_at: Date;
+  @OneToMany(() => StudySetEntity, (studySet) => studySet.owner)
+  studySets: StudySetEntity[];
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updated_at: Date;
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

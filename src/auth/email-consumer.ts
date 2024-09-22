@@ -26,7 +26,7 @@ export class EmailConsumer {
         <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
         <div
           style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-          <h2 style="color: #333;">Hello, ${data.full_name}</h2>
+          <h2 style="color: #333;">Hello, ${data.fullName}</h2>
           <p style="font-size: 16px; color: #555;">
             Welcome to QuickMem! To complete your verification process, please use the OTP code below.
           </p>
@@ -65,7 +65,7 @@ export class EmailConsumer {
         html: `
         <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-          <h2 style="color: #333;">Hello, ${data.full_name}</h2>
+          <h2 style="color: #333;">Hello, ${data.fullName}</h2>
           <p style="font-size: 16px; color: #555;">
             You have successfully logged in to your QuickMem account.
           </p>
@@ -98,7 +98,7 @@ export class EmailConsumer {
         html: `
         <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-          <h2 style="color: #333;">Hello, ${data.full_name}</h2>
+          <h2 style="color: #333;">Hello, ${data.fullName}</h2>
           <p style="font-size: 16px; color: #555;">
             Welcome to QuickMem! You have successfully created an account.
           </p>
@@ -203,7 +203,7 @@ export class EmailConsumer {
         html: `
         <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-          <h2 style="color: #333;">Hello, ${data.full_name}</h2>
+          <h2 style="color: #333;">Hello, ${data.fullName}</h2>
           <p style="font-size: 16px; color: #555;">
             Your password has been successfully updated. If you did not make this change, please contact our support team immediately.
           </p>

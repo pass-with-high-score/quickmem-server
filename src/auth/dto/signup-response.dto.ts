@@ -1,5 +1,5 @@
 export class SignupResponseDto {
   message: string;
-  is_verified: boolean;
+  isVerified: boolean;
   success: boolean;
 }

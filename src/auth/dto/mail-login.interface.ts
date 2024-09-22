@@ -1,5 +1,5 @@
 export interface MailLoginInterface {
-  full_name: string;
+  fullName: string;
   email: string;
   from: string;
 }

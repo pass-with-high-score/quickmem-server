@@ -1,5 +1,5 @@
 export interface MailOtpInterface {
-  full_name: string;
+  fullName: string;
   email: string;
   from: string;
   otp: string;

@@ -1,5 +1,5 @@
 export class SetNewPasswordResponseDto {
   email: string;
-  is_set: boolean;
+  isSet: boolean;
   message: string;
 }

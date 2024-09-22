@@ -8,7 +8,7 @@ import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { FlashcardModule } from './flashcard/flashcard.module';
-import { CardModule } from './card/card.module';
+import { StudySetModule } from './study-set/study-set.module';
 import { FolderModule } from './folder/folder.module';
 import { ClassModule } from './class/class.module';
 import { BullModule } from '@nestjs/bull';
@@ -82,7 +82,7 @@ dotenv.config();
     }),
     AuthModule,
     FlashcardModule,
-    CardModule,
+    StudySetModule,
     FolderModule,
     ClassModule,
   ],
