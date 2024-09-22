@@ -34,10 +34,9 @@ jobs:
           script: |
             export PATH="/root/.bun/bin:$PATH"  
             cd api/quickmem-server  
-            git pull origin main  # Pull code mới
-            bun install  # Cài đặt lại dependencies
-            bun run build  # Build dự án
-            pm2 restart quickmem-server 
+            git pull origin main  
+            bun install  
+            bun run start:dev
 
       - name: Send Telegram Notification on Success
         uses: appleboy/telegram-action@master
