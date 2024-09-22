@@ -5,12 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ColorEntity } from './color.entity';
 import { SubjectEntity } from './subject.entity';
 import { StudySetEntity } from './study-set.entity';
+import { StudySetRepository } from './study-set.repository';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ColorEntity, SubjectEntity, StudySetEntity]),
   ],
-  providers: [StudySetService],
+  providers: [StudySetService, StudySetRepository],
   controllers: [StudySetController],
 })
 export class StudySetModule {}

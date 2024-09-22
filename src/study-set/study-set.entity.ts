@@ -14,22 +14,21 @@ export class StudySetEntity {
   @Column()
   description: string;
 
-
-  @ManyToOne(() => SubjectEntity, subject => subject.studySets)
+  @ManyToOne(() => SubjectEntity, (subject) => subject.studySets)
   subject: SubjectEntity;
 
-  @ManyToOne(() => ColorEntity, color => color.studySets)
+  @ManyToOne(() => ColorEntity, (color) => color.studySets)
   color: ColorEntity;
 
   @Column()
-  is_public: boolean;
+  isPublic: boolean;
 
   @ManyToOne(() => UserEntity, (user) => user.studySets)
   owner: UserEntity;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created_at: Date;
+  createdAt: Date;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updated_at: Date;
+  updatedAt: Date;
 }

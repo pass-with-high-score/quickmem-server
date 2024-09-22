@@ -25,6 +25,8 @@ import { Queue } from 'bull';
 import { MailerService } from '@nestjs-modules/mailer';
 import { SetNewPasswordDto } from './dto/set-new-password.dto';
 import { SetNewPasswordResponseDto } from './dto/set-new-password-response.dto';
+import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
+import { ResendVerificationEmailResponseDto } from './dto/resend-verification-email-response.dto';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -113,20 +115,21 @@ export class AuthRepository extends Repository<UserEntity> {
         const refresh_token: string = this.jwtService.sign(payload, {
           expiresIn: '7d',
         });
-        const avatar = `${process.env.HOST}/public/images/${user.avatarUrl}.png`;
+        const avatar = `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.png`;
         await this.sendEmailQueue.add('send-login-email', {
           fullName: user.fullName,
           email: user.email,
           from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
         });
         return {
+          id: user.id,
           username: user.username,
           email,
           fullName: user.fullName,
           avatarUrl: avatar,
           role: user.role,
-          access_token: access_token,
-          refresh_token: refresh_token,
+          accessToken: access_token,
+          refreshToken: refresh_token,
           birthday: user.birthday,
         };
       } else {
@@ -186,7 +189,7 @@ export class AuthRepository extends Repository<UserEntity> {
     };
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-    const avatar = `${process.env.HOST}/public/images/${user.avatarUrl}.png`;
+    const avatar = `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.png`;
     user.refreshToken = refreshToken;
     await this.save(user);
     await this.sendEmailQueue.add('send-signup-email', {
@@ -196,13 +199,14 @@ export class AuthRepository extends Repository<UserEntity> {
     });
 
     return {
+      id: user.id,
       username: user.username,
       email: user.email,
       fullName: user.fullName,
       avatarUrl: avatar,
       role: user.role,
-      access_token: accessToken,
-      refresh_token: refreshToken,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
       birthday: user.birthday,
     };
   }
@@ -323,5 +327,50 @@ export class AuthRepository extends Repository<UserEntity> {
     response.message = 'Password set successfully';
     response.email = user.email;
     return response;
+  }
+
+  async resendVerificationEmail(
+    resendVerificationEmailDto: ResendVerificationEmailDto,
+  ): Promise<ResendVerificationEmailResponseDto> {
+    const { email } = resendVerificationEmailDto;
+    const user = await this.findOne({ where: { email } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.isVerified) {
+      throw new ConflictException('User is already verified');
+    }
+
+    if (user.otpExpires > new Date()) {
+      await this.sendEmailQueue.add('send-otp-email', {
+        from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+        email: email,
+        otp: user.otp,
+        fullName: user.fullName,
+      });
+      const response = new ResendVerificationEmailResponseDto();
+      response.message = 'Resend OTP successful';
+      response.isVerified = false;
+      response.success = true;
+      return response;
+    } else {
+      const otp = crypto.randomInt(100000, 999999).toString(); // Generate a 6-digit OTP
+      user.otp = otp;
+      user.otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
+      await this.save(user);
+      await this.sendEmailQueue.add('send-otp-email', {
+        from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+        email: email,
+        otp: otp,
+        fullName: user.fullName,
+      });
+      const response = new ResendVerificationEmailResponseDto();
+      response.message = 'Resend OTP successful';
+      response.isVerified = false;
+      response.success = true;
+      return response;
+    }
   }
 }

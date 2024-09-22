@@ -11,6 +11,8 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
 import { SetNewPasswordResponseDto } from './dto/set-new-password-response.dto';
 import { SetNewPasswordDto } from './dto/set-new-password.dto';
+import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
+import { ResendVerificationEmailResponseDto } from './dto/resend-verification-email-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -54,5 +56,13 @@ export class AuthService {
     setNewPasswordDto: SetNewPasswordDto,
   ): Promise<SetNewPasswordResponseDto> {
     return this.usersRepository.setNewPassword(setNewPasswordDto);
+  }
+
+  async resendVerificationEmail(
+    resendVerificationEmailDto: ResendVerificationEmailDto,
+  ): Promise<ResendVerificationEmailResponseDto> {
+    return this.usersRepository.resendVerificationEmail(
+      resendVerificationEmailDto,
+    );
   }
 }

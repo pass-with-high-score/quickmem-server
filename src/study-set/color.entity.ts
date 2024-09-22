@@ -10,7 +10,7 @@ import { StudySetEntity } from './study-set.entity';
 
 @Entity('colors')
 export class ColorEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('identity')
   id: number;
 
   @Column({ unique: true })

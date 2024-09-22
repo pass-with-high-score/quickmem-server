@@ -10,7 +10,7 @@ import { StudySetEntity } from './study-set.entity';
 
 @Entity('subjects')
 export class SubjectEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('identity')
   id: number;
 
   @Column({ unique: true })

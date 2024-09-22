@@ -20,6 +20,8 @@ import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { SetNewPasswordResponseDto } from './dto/set-new-password-response.dto';
 import { SetNewPasswordDto } from './dto/set-new-password.dto';
+import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
+import { ResendVerificationEmailResponseDto } from './dto/resend-verification-email-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -84,5 +86,14 @@ export class AuthController {
     @Body() setNewPasswordDto: SetNewPasswordDto,
   ): Promise<SetNewPasswordResponseDto> {
     return this.authService.setNewPassword(setNewPasswordDto);
+  }
+
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  @Post('/resend-verification-email')
+  async resendVerificationEmail(
+    @Body() resendVerificationEmailDto: ResendVerificationEmailDto,
+  ): Promise<ResendVerificationEmailResponseDto> {
+    return this.authService.resendVerificationEmail(resendVerificationEmailDto);
   }
 }
