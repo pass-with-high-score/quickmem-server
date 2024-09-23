@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -22,6 +23,8 @@ import { SetNewPasswordResponseDto } from './dto/set-new-password-response.dto';
 import { SetNewPasswordDto } from './dto/set-new-password.dto';
 import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
 import { ResendVerificationEmailResponseDto } from './dto/resend-verification-email-response.dto';
+import { UpdateFullnameDto } from './dto/update-fullname.dto';
+import { UpdateFullnameResponseInterfaceDto } from './dto/update-fullname-response.interface.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -34,6 +37,15 @@ export class AuthController {
     @Body() authCredentialsDto: SignupCredentialsDto,
   ): Promise<SignupResponseDto> {
     return this.authService.signUp(authCredentialsDto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  @Patch('/user/fullname')
+  async updateFullname(
+    @Body() updateFullnameDto: UpdateFullnameDto,
+  ): Promise<UpdateFullnameResponseInterfaceDto> {
+    return await this.authService.updateFullname(updateFullnameDto);
   }
 
   @SkipThrottle()

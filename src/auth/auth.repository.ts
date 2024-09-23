@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import {
   ConflictException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -27,6 +28,8 @@ import { SetNewPasswordDto } from './dto/set-new-password.dto';
 import { SetNewPasswordResponseDto } from './dto/set-new-password-response.dto';
 import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
 import { ResendVerificationEmailResponseDto } from './dto/resend-verification-email-response.dto';
+import { UpdateFullnameResponseInterfaceDto } from './dto/update-fullname-response.interface.dto';
+import { UpdateFullnameDto } from './dto/update-fullname.dto';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -51,7 +54,17 @@ export class AuthRepository extends Repository<UserEntity> {
     });
 
     if (userExists) {
-      throw new ConflictException('User already exists');
+      if (userExists.isVerified === false) {
+        throw new ConflictException({
+          statusCode: HttpStatus.PRECONDITION_FAILED,
+          message: 'User already exists but not verified',
+        });
+      } else {
+        throw new ConflictException({
+          statusCode: HttpStatus.CONFLICT,
+          message: 'User already exists',
+        });
+      }
     }
 
     // hash the password
@@ -88,7 +101,10 @@ export class AuthRepository extends Repository<UserEntity> {
       return response;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Failed to create user',
+      });
     }
   }
 
@@ -102,10 +118,16 @@ export class AuthRepository extends Repository<UserEntity> {
 
       if (user) {
         if (!user.isVerified) {
-          throw new UnauthorizedException('User is not verified');
+          throw new UnauthorizedException({
+            statusCode: HttpStatus.UNAUTHORIZED,
+            message: 'User is not verified',
+          });
         }
         if (!(await bcrypt.compare(password, user.password))) {
-          throw new UnauthorizedException('Wrong password');
+          throw new UnauthorizedException({
+            statusCode: HttpStatus.UNAUTHORIZED,
+            message: 'Password is incorrect',
+          });
         }
         const payload: { email: string; userId: string } = {
           email,
@@ -133,7 +155,10 @@ export class AuthRepository extends Repository<UserEntity> {
           birthday: user.birthday,
         };
       } else {
-        throw new NotFoundException('User not found');
+        throw new NotFoundException({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'User not found',
+        });
       }
     } catch (error) {
       if (error instanceof UnauthorizedException) {
@@ -142,7 +167,48 @@ export class AuthRepository extends Repository<UserEntity> {
         throw error;
       }
       console.log(error);
-      throw new InternalServerErrorException("Something's wrong");
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Failed to validate user',
+      });
+    }
+  }
+
+  async updateFullname(
+    updateFullnameDto: UpdateFullnameDto,
+  ): Promise<UpdateFullnameResponseInterfaceDto> {
+    const { userId, fullname } = updateFullnameDto;
+    const user = await this.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
+    } else if (user.isVerified === false) {
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'User is not verified',
+      });
+    } else if (user.fullName === fullname) {
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        message: 'Full name is the same as the old full name',
+      });
+    }
+    user.fullName = fullname;
+    try {
+      await this.save(user);
+      const response = new UpdateFullnameResponseInterfaceDto();
+      response.message = 'Full name updated successfully';
+      response.success = true;
+      response.fullname = fullname;
+      return response;
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Failed to update full name',
+      });
     }
   }
 
@@ -156,7 +222,10 @@ export class AuthRepository extends Repository<UserEntity> {
       });
 
       if (!user) {
-        throw new UnauthorizedException('Invalid refresh token');
+        throw new UnauthorizedException({
+          statusCode: HttpStatus.UNAUTHORIZED,
+          message: 'Invalid refresh token',
+        });
       }
 
       const accessToken = this.jwtService.sign({
@@ -166,7 +235,10 @@ export class AuthRepository extends Repository<UserEntity> {
       return { accessToken };
     } catch (error) {
       console.log(error);
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Invalid refresh token',
+      });
     }
   }
 
@@ -175,7 +247,10 @@ export class AuthRepository extends Repository<UserEntity> {
     const user = await this.findOne({ where: { email, otp } });
 
     if (!user || user.otpExpires < new Date()) {
-      throw new UnauthorizedException('Invalid or expired OTP');
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Invalid or expired OTP',
+      });
     }
 
     user.otp = null; // Clear OTP after verification
@@ -218,7 +293,10 @@ export class AuthRepository extends Repository<UserEntity> {
     const user = await this.findOne({ where: { email } });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
     }
 
     const token = crypto.randomBytes(20).toString('hex');
@@ -258,7 +336,10 @@ export class AuthRepository extends Repository<UserEntity> {
       user.resetPasswordExpires < new Date() ||
       user.otpExpires < new Date()
     ) {
-      throw new UnauthorizedException('Invalid or expired token');
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Invalid or expired token or OTP',
+      });
     }
 
     try {
@@ -284,7 +365,10 @@ export class AuthRepository extends Repository<UserEntity> {
       return response;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Failed to reset password');
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Failed to reset password',
+      });
     }
   }
 
@@ -295,11 +379,17 @@ export class AuthRepository extends Repository<UserEntity> {
     const user = await this.findOne({ where: { email } });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
     }
 
     if (!(await bcrypt.compare(oldPassword, user.password))) {
-      throw new UnauthorizedException('Old password is incorrect');
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Old password is incorrect',
+      });
     }
 
     const salt = await bcrypt.genSalt();
@@ -307,9 +397,10 @@ export class AuthRepository extends Repository<UserEntity> {
 
     // check if the new password is the same as the old password
     if (await bcrypt.compare(newPassword, user.password)) {
-      throw new ConflictException(
-        'New password cannot be the same as old password',
-      );
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        message: 'New password is the same as the old password',
+      });
     }
 
     user.password = hashedPassword;
@@ -336,11 +427,17 @@ export class AuthRepository extends Repository<UserEntity> {
     const user = await this.findOne({ where: { email } });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
     }
 
     if (user.isVerified) {
-      throw new ConflictException('User is already verified');
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        message: 'User is already verified',
+      });
     }
 
     if (user.otpExpires > new Date()) {

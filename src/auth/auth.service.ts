@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthRepository } from './auth.repository';
 import { SignupCredentialsDto } from './dto/signup-credentials.dto';
 import { AuthResponseInterface } from './dto/auth-response.interface';
@@ -13,6 +13,8 @@ import { SetNewPasswordResponseDto } from './dto/set-new-password-response.dto';
 import { SetNewPasswordDto } from './dto/set-new-password.dto';
 import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
 import { ResendVerificationEmailResponseDto } from './dto/resend-verification-email-response.dto';
+import { UpdateFullnameDto } from './dto/update-fullname.dto';
+import { UpdateFullnameResponseInterfaceDto } from './dto/update-fullname-response.interface.dto';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +24,12 @@ export class AuthService {
     authCredentialsDto: SignupCredentialsDto,
   ): Promise<SignupResponseDto> {
     return await this.usersRepository.createUser(authCredentialsDto);
+  }
+
+  async updateFullname(
+    updateFullnameDto: UpdateFullnameDto,
+  ): Promise<UpdateFullnameResponseInterfaceDto> {
+    return await this.usersRepository.updateFullname(updateFullnameDto);
   }
 
   async logInWithEmail(
