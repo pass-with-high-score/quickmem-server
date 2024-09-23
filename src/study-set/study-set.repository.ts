@@ -116,6 +116,105 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     }
   }
 
+  // get study set by id
+  async getStudySetById(id: string): Promise<GetAllStudySetResponseInterface> {
+    try {
+      const studySet = await this.dataSource
+        .getRepository(StudySetEntity)
+        .findOne({
+          where: { id }, // Filter by study set ID
+          relations: ['owner', 'subject', 'color'], // Load related entities
+        });
+
+      if (!studySet) {
+        throw new NotFoundException('Study set not found');
+      }
+
+      return this.mapStudySetToResponse(studySet);
+    } catch (error) {
+      console.log('Error getting study set', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error getting study set');
+    }
+  }
+
+  async updateStudySetById(
+    id: string,
+    updateStudySetDto: Partial<CreateStudySetDto>,
+  ): Promise<GetAllStudySetResponseInterface> {
+    try {
+      const studySet = await this.dataSource
+        .getRepository(StudySetEntity)
+        .findOne({
+          where: { id },
+          relations: ['owner', 'subject', 'color'],
+        });
+
+      if (!studySet) {
+        throw new NotFoundException('Study set not found');
+      }
+
+      studySet.title = updateStudySetDto.title || studySet.title;
+      studySet.description =
+        updateStudySetDto.description || studySet.description;
+      studySet.isPublic = updateStudySetDto.isPublic || studySet.isPublic;
+
+      if (updateStudySetDto.subjectId) {
+        const subject = await this.dataSource
+          .getRepository(SubjectEntity)
+          .findOneBy({ id: updateStudySetDto.subjectId });
+        if (!subject) {
+          throw new NotFoundException('Subject not found');
+        }
+        studySet.subject = subject;
+      }
+
+      if (updateStudySetDto.colorId) {
+        const color = await this.dataSource
+          .getRepository(ColorEntity)
+          .findOneBy({ id: updateStudySetDto.colorId });
+        if (!color) {
+          throw new NotFoundException('Color not found');
+        }
+        studySet.color = color;
+      }
+
+      await this.dataSource.getRepository(StudySetEntity).save(studySet);
+
+      return this.mapStudySetToResponse(studySet);
+    } catch (error) {
+      console.log('Error updating study set', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error updating study set');
+    }
+  }
+
+  async deleteStudySetById(id: string): Promise<void> {
+    try {
+      const studySet = await this.dataSource
+        .getRepository(StudySetEntity)
+        .findOne({
+          where: { id },
+        });
+
+      if (!studySet) {
+        throw new NotFoundException('Study set not found');
+      }
+
+      await this.dataSource.getRepository(StudySetEntity).delete(id);
+    } catch (error) {
+      console.log('Error deleting study set', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error deleting study set');
+    }
+  }
+
   private mapStudySetToResponse(
     studySet: StudySetEntity,
   ): GetAllStudySetResponseInterface {

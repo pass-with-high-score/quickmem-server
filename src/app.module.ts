@@ -14,7 +14,7 @@ import { ClassModule } from './class/class.module';
 import { BullModule } from '@nestjs/bull';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-
+import { AppController } from './app.controller';
 dotenv.config();
 
 @Module({
@@ -92,7 +92,7 @@ dotenv.config();
       useClass: ThrottlerGuard,
     },
   ],
-  controllers: [],
+  controllers: [AppController],
   exports: [],
 })
 export class AppModule {}
