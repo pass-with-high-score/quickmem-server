@@ -32,11 +32,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }} 
           port: 22  # Cổng SSH (mặc định là 22)
           script: |
-            export PATH="/root/.bun/bin:$PATH"  
-            cd api/quickmem-server  
-            git pull origin main  
-            bun install  
-            bun run start:dev
+            ./deploy.sh
 
       - name: Send Telegram Notification on Success
         uses: appleboy/telegram-action@master
@@ -53,6 +49,7 @@ jobs:
             <b>Branch</b>: ${{ github.ref_name }}
             <b>Changes</b>: <a href="https://github.com/pass-with-high-score/quickmem-server/commit/${{github.sha}}">View Changes</a>
             <b>Action</b>: <a href="https://github.com/pass-with-high-score/quickmem-server/actions/runs/${{ github.run_id }}">View Action</a>
+            <b>Link server</b>: <a href="http://103.171.91.94:3009/">http://103.171.91.94:3009/</a>
 
       - name: Send Telegram Notification on Failure
         uses: appleboy/telegram-action@master
