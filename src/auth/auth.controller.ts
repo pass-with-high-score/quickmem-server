@@ -25,6 +25,7 @@ import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto'
 import { ResendVerificationEmailResponseDto } from './dto/resend-verification-email-response.dto';
 import { UpdateFullnameDto } from './dto/update-fullname.dto';
 import { UpdateFullnameResponseInterfaceDto } from './dto/update-fullname-response.interface.dto';
+import { OwnershipGuard } from './ownership-guard';
 
 @Controller('auth')
 export class AuthController {
@@ -39,7 +40,7 @@ export class AuthController {
     return this.authService.signUp(authCredentialsDto);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(OwnershipGuard)
   @HttpCode(HttpStatus.OK)
   @Patch('/user/fullname')
   async updateFullname(
@@ -90,10 +91,10 @@ export class AuthController {
     return this.authService.resetPassword(resetPasswordDto);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(OwnershipGuard)
   @SkipThrottle()
   @HttpCode(HttpStatus.OK)
-  @Post('/set-new-password')
+  @Patch('/user/password')
   async setNewPassword(
     @Body() setNewPasswordDto: SetNewPasswordDto,
   ): Promise<SetNewPasswordResponseDto> {
