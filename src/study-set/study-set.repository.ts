@@ -11,6 +11,12 @@ import { CreateStudySetResponseInterface } from './dto/create-study-set-response
 import { SubjectEntity } from './subject.entity';
 import { ColorEntity } from './color.entity';
 import { GetAllStudySetResponseInterface } from './dto/get-all-study-set-response.interface';
+import { GetStudySetsByOwnerIdDto } from './dto/get-study-sets-by-ownerId.dto';
+import { GetStudySetByIdDto } from './dto/get-study-set-by-id.dto';
+import { UpdateStudySetByIdBodyDto } from './dto/update-study-set-by-id-body.dto';
+import { UpdateStudySetByIdParamDto } from './dto/update-study-set-by-id-param.dto';
+import { DeleteStudySetByIdParamDto } from './dto/delete-study-set-by-id-param.dto';
+import { DeleteStudySetResponseInterface } from './dto/delete-study-set-response.interface';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -98,8 +104,9 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
   // get all by owner id
   async getStudySetsByOwnerId(
-    ownerId: string,
+    getStudySetsByOwnerIdDto: GetStudySetsByOwnerIdDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
+    const { ownerId } = getStudySetsByOwnerIdDto;
     try {
       const studySets = await this.dataSource
         .getRepository(StudySetEntity)
@@ -117,7 +124,10 @@ export class StudySetRepository extends Repository<StudySetEntity> {
   }
 
   // get study set by id
-  async getStudySetById(id: string): Promise<GetAllStudySetResponseInterface> {
+  async getStudySetById(
+    getStudySetByIdDto: GetStudySetByIdDto,
+  ): Promise<GetAllStudySetResponseInterface> {
+    const { id } = getStudySetByIdDto;
     try {
       const studySet = await this.dataSource
         .getRepository(StudySetEntity)
@@ -141,9 +151,21 @@ export class StudySetRepository extends Repository<StudySetEntity> {
   }
 
   async updateStudySetById(
-    id: string,
-    updateStudySetDto: Partial<CreateStudySetDto>,
+    updateStudySetByIdParamDto: UpdateStudySetByIdParamDto,
+    updateStudySetByIdBodyDto: UpdateStudySetByIdBodyDto,
   ): Promise<GetAllStudySetResponseInterface> {
+    const { id } = updateStudySetByIdParamDto;
+    // if content are empty, return the original content
+    if (
+      !updateStudySetByIdBodyDto.title &&
+      !updateStudySetByIdBodyDto.description &&
+      !updateStudySetByIdBodyDto.isPublic &&
+      !updateStudySetByIdBodyDto.subjectId &&
+      !updateStudySetByIdBodyDto.colorId
+    ) {
+      console.log('No content to update');
+      return this.getStudySetById({ id });
+    }
     try {
       const studySet = await this.dataSource
         .getRepository(StudySetEntity)
@@ -156,25 +178,26 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         throw new NotFoundException('Study set not found');
       }
 
-      studySet.title = updateStudySetDto.title || studySet.title;
+      studySet.title = updateStudySetByIdBodyDto.title || studySet.title;
       studySet.description =
-        updateStudySetDto.description || studySet.description;
-      studySet.isPublic = updateStudySetDto.isPublic || studySet.isPublic;
+        updateStudySetByIdBodyDto.description || studySet.description;
+      studySet.isPublic =
+        updateStudySetByIdBodyDto.isPublic || studySet.isPublic;
 
-      if (updateStudySetDto.subjectId) {
+      if (updateStudySetByIdBodyDto.subjectId) {
         const subject = await this.dataSource
           .getRepository(SubjectEntity)
-          .findOneBy({ id: updateStudySetDto.subjectId });
+          .findOneBy({ id: updateStudySetByIdBodyDto.subjectId });
         if (!subject) {
           throw new NotFoundException('Subject not found');
         }
         studySet.subject = subject;
       }
 
-      if (updateStudySetDto.colorId) {
+      if (updateStudySetByIdBodyDto.colorId) {
         const color = await this.dataSource
           .getRepository(ColorEntity)
-          .findOneBy({ id: updateStudySetDto.colorId });
+          .findOneBy({ id: updateStudySetByIdBodyDto.colorId });
         if (!color) {
           throw new NotFoundException('Color not found');
         }
@@ -193,7 +216,10 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     }
   }
 
-  async deleteStudySetById(id: string): Promise<void> {
+  async deleteStudySetById(
+    deleteStudySetByIdParamDto: DeleteStudySetByIdParamDto,
+  ): Promise<DeleteStudySetResponseInterface> {
+    const { id } = deleteStudySetByIdParamDto;
     try {
       const studySet = await this.dataSource
         .getRepository(StudySetEntity)
@@ -206,6 +232,12 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       }
 
       await this.dataSource.getRepository(StudySetEntity).delete(id);
+      const response: DeleteStudySetResponseInterface = {
+        message: 'Study set deleted successfully',
+        studySetId: id,
+      };
+      console.log('response', response);
+      return response;
     } catch (error) {
       console.log('Error deleting study set', error);
       if (error instanceof NotFoundException) {

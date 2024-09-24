@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -14,6 +16,12 @@ import { StudySetService } from './study-set.service';
 import { CreateStudySetDto } from './dto/create-study-set.dto';
 import { CreateStudySetResponseInterface } from './dto/create-study-set-response.interface';
 import { GetAllStudySetResponseInterface } from './dto/get-all-study-set-response.interface';
+import { GetStudySetsByOwnerIdDto } from './dto/get-study-sets-by-ownerId.dto';
+import { GetStudySetByIdDto } from './dto/get-study-set-by-id.dto';
+import { UpdateStudySetByIdParamDto } from './dto/update-study-set-by-id-param.dto';
+import { UpdateStudySetByIdBodyDto } from './dto/update-study-set-by-id-body.dto';
+import { DeleteStudySetByIdParamDto } from './dto/delete-study-set-by-id-param.dto';
+import { DeleteStudySetResponseInterface } from './dto/delete-study-set-response.interface';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -39,8 +47,40 @@ export class StudySetController {
   @Get('/owner/:ownerId')
   @HttpCode(HttpStatus.OK)
   async getStudySetsByOwnerId(
-    @Param('ownerId') ownerId: string,
+    @Param() getStudySetsByOwnerIdDto: GetStudySetsByOwnerIdDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
-    return await this.studySetService.getStudySetsByOwnerId(ownerId);
+    return await this.studySetService.getStudySetsByOwnerId(
+      getStudySetsByOwnerIdDto,
+    );
+  }
+
+  @Get('/:id')
+  @HttpCode(HttpStatus.OK)
+  async getStudySetById(
+    @Param() getStudySetByIdDto: GetStudySetByIdDto,
+  ): Promise<GetAllStudySetResponseInterface> {
+    return await this.studySetService.getStudySetById(getStudySetByIdDto);
+  }
+
+  @Patch('/:id')
+  @HttpCode(HttpStatus.OK)
+  async updateStudySetById(
+    @Param() updateStudySetByIdParamDto: UpdateStudySetByIdParamDto,
+    @Body() updateStudySetByIdBodyDto: UpdateStudySetByIdBodyDto,
+  ): Promise<GetAllStudySetResponseInterface> {
+    return await this.studySetService.updateStudySetById(
+      updateStudySetByIdParamDto,
+      updateStudySetByIdBodyDto,
+    );
+  }
+
+  @Delete('/:id')
+  @HttpCode(HttpStatus.OK) // can change to 204 (No Content) but it will not return any response
+  async deleteStudySetById(
+    @Param() deleteStudySetByIdParamDto: DeleteStudySetByIdParamDto,
+  ): Promise<DeleteStudySetResponseInterface> {
+    return await this.studySetService.deleteStudySetById(
+      deleteStudySetByIdParamDto,
+    );
   }
 }

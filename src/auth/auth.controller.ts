@@ -18,7 +18,6 @@ import { SendResetPasswordResponseDto } from './dto/send-reset-password-response
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
-import { AuthGuard } from '@nestjs/passport';
 import { SetNewPasswordResponseDto } from './dto/set-new-password-response.dto';
 import { SetNewPasswordDto } from './dto/set-new-password.dto';
 import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
