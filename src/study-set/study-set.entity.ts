@@ -12,7 +12,7 @@ export class StudySetEntity {
   title: string;
 
   @Column()
-  description: string;
+  description?: string;
 
   @ManyToOne(() => SubjectEntity, (subject) => subject.studySets)
   subject: SubjectEntity;

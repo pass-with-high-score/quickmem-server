@@ -24,7 +24,7 @@ import { EmailConsumer } from './email-consumer';
           global: true,
           secret: configService.get('JWT_SECRET'),
           signOptions: {
-            expiresIn: 3600,
+            expiresIn: '30d',
           },
         };
       },
