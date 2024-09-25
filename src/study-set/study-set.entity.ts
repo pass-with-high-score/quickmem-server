@@ -3,7 +3,7 @@ import { UserEntity } from '../auth/user.entity';
 import { SubjectEntity } from './subject.entity';
 import { ColorEntity } from './color.entity';
 
-@Entity('study_set')
+@Entity('study_sets')
 export class StudySetEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
