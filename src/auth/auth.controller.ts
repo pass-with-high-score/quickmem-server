@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Req,
+  Res,
   Session,
   UseGuards,
 } from '@nestjs/common';
@@ -29,7 +30,7 @@ import { UpdateFullnameDto } from './dto/update-fullname.dto';
 import { UpdateFullnameResponseInterfaceDto } from './dto/update-fullname-response.interface.dto';
 import { OwnershipGuard } from './guard/ownership.guard';
 import { GoogleAuthGuard } from './guard/google-auth.guard';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { FacebookAuthGuard } from './guard/facebook-auth.guard';
 
 @Controller('auth')
@@ -38,12 +39,20 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
-  googleAuthRedirect(@Req() request: Request) {
+  googleAuthRedirect(@Req() request: Request, @Res() response: Response) {
     console.log('User information from Google', request.user);
-    return {
-      message: 'User information from Google',
-      user: request.user,
-    };
+    const user = request.user as any;
+
+    // Serialize user information into query string
+    const params = new URLSearchParams({
+      token: user.accessToken,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      picture: user.picture,
+    });
+    const deepLinkUrl = `quickmem://oauth/google/callback?${params.toString()}`;
+    return response.redirect(deepLinkUrl);
   }
 
   @Get('google')
