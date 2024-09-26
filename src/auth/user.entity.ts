@@ -20,7 +20,7 @@ export class UserEntity {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   password: string;
 
   @Column({ nullable: true })
@@ -43,11 +43,14 @@ export class UserEntity {
   })
   role: UserRoleEnum;
 
-  @Column({ type: 'date' })
-  birthday: Date;
+  @Column({ type: 'date', nullable: true })
+  birthday?: Date;
 
-  @Column({ default: false })
-  isVerified: boolean;
+  @Column({ default: false, nullable: true })
+  isVerified?: boolean;
+
+  @Column({ nullable: true })
+  provider: string;
 
   @Column({ nullable: true })
   refreshToken: string;

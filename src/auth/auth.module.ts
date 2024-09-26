@@ -6,10 +6,12 @@ import { UserEntity } from './user.entity';
 import { AuthRepository } from './auth.repository';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './jwt.strategy';
+import { JwtStrategy } from './strategy/jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { EmailConsumer } from './email-consumer';
+import { GoogleStrategy } from './strategy/google.strategy';
+import { FacebookStrategy } from './strategy/facebook.strategy';
 
 @Module({
   imports: [
@@ -33,7 +35,14 @@ import { EmailConsumer } from './email-consumer';
       name: 'send-email',
     }),
   ],
-  providers: [AuthService, AuthRepository, JwtStrategy, EmailConsumer],
+  providers: [
+    AuthService,
+    AuthRepository,
+    JwtStrategy,
+    EmailConsumer,
+    GoogleStrategy,
+    FacebookStrategy,
+  ],
   controllers: [AuthController],
   exports: [JwtStrategy, PassportModule],
 })

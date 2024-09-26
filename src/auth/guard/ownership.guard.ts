@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { AuthRepository } from './auth.repository';
+import { AuthRepository } from '../auth.repository';
 import * as jwt from 'jsonwebtoken'; // Import jsonwebtoken library
 
 interface JwtPayload {

@@ -4,6 +4,9 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { TransformInterceptor } from './transform.interceptor';
 import { Logger } from '@nestjs/common';
+import * as session from 'express-session';
+import * as passport from 'passport';
+import * as process from 'node:process'; // Correct import statement
 
 async function bootstrap() {
   const logger = new Logger('bootstrap');
@@ -12,6 +15,26 @@ async function bootstrap() {
 
   logger.log('Application created, setting up configurations...');
   app.enableCors();
+
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: false,
+      cookie: { secure: false }, // Set to true if using HTTPS
+    }),
+  );
+
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  passport.serializeUser((user, done) => {
+    done(null, user);
+  });
+
+  passport.deserializeUser((user, done) => {
+    done(null, user);
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Task Management')
