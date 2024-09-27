@@ -47,8 +47,8 @@ export class AuthController {
     const params = new URLSearchParams({
       token: user.accessToken,
       email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      fullName: `${user.firstName} ${user.lastName}`,
+      provider: 'google',
       picture: user.picture,
     });
     const deepLinkUrl = `quickmem://oauth/google/callback?${params.toString()}`;
@@ -83,8 +83,8 @@ export class AuthController {
     const params = new URLSearchParams({
       token: user.accessToken,
       email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      fullName: `${user.firstName} ${user.lastName}`,
+      provider: 'facebook',
       picture: user.picture,
     });
     const deepLinkUrl = `quickmem://oauth/facebook/callback?${params.toString()}`;

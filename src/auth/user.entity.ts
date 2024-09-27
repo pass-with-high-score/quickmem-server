@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { UserRoleEnum } from './user-role.enum';
 import { StudySetEntity } from '../study-set/study-set.entity';
+import { AuthProviderEnum } from './auth-provider.enum';
 
 @Entity('users')
 export class UserEntity {
@@ -49,8 +50,12 @@ export class UserEntity {
   @Column({ default: false, nullable: true })
   isVerified?: boolean;
 
-  @Column({ nullable: true })
-  provider: string;
+  @Column({
+    enum: AuthProviderEnum,
+    enumName: 'auth_provider_enum',
+    default: AuthProviderEnum.EMAIL,
+  })
+  provider: AuthProviderEnum;
 
   @Column({ nullable: true })
   refreshToken: string;

@@ -16,7 +16,6 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
         'displayName',
         'photos',
         'email',
-        'birthday',
       ],
       scope: ['email'],
     });

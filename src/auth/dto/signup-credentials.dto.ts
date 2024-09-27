@@ -3,12 +3,14 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsStrongPassword,
   MaxLength,
   MinLength,
 } from 'class-validator';
 import { UserRoleEnum } from '../user-role.enum';
+import { AuthProviderEnum } from '../auth-provider.enum';
 
 export class SignupCredentialsDto {
   @IsEmail({}, { message: 'Invalid email' })
@@ -22,7 +24,7 @@ export class SignupCredentialsDto {
   @MaxLength(32, { message: 'Username must be at most 32 characters long' })
   username: string;
 
-  @IsNotEmpty({ message: 'Password is required' })
+  @IsOptional()
   @IsStrongPassword(
     {
       minLength: 8,
@@ -46,4 +48,8 @@ export class SignupCredentialsDto {
   @IsEnum(UserRoleEnum)
   @IsNotEmpty({ message: 'Role is required' })
   role: UserRoleEnum;
+
+  @IsEnum(AuthProviderEnum)
+  @IsNotEmpty({ message: 'Provider is required' })
+  provider: AuthProviderEnum;
 }

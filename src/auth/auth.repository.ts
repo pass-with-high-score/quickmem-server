@@ -46,8 +46,16 @@ export class AuthRepository extends Repository<UserEntity> {
   async createUser(
     authCredentialsDto: SignupCredentialsDto,
   ): Promise<SignupResponseDto> {
-    const { email, username, password, fullName, avatarUrl, role, birthday } =
-      authCredentialsDto;
+    const {
+      email,
+      username,
+      password,
+      fullName,
+      avatarUrl,
+      role,
+      birthday,
+      provider,
+    } = authCredentialsDto;
 
     const userExists = await this.findOne({
       where: [{ email }, { username }],
@@ -67,9 +75,13 @@ export class AuthRepository extends Repository<UserEntity> {
       }
     }
 
-    // hash the password
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
+    let hashedPassword = null;
+
+    // hash the password if it is not null
+    if (password) {
+      const salt = await bcrypt.genSalt();
+      hashedPassword = await bcrypt.hash(password, salt);
+    }
 
     const otp = crypto.randomInt(100000, 999999).toString(); // Generate a 6-digit OTP
 
@@ -82,6 +94,7 @@ export class AuthRepository extends Repository<UserEntity> {
       role,
       birthday,
       otp, // Store OTP
+      provider,
       isVerified: false,
       otpExpires: new Date(Date.now() + 10 * 60 * 1000), // OTP expires in 10 minutes
     });
@@ -111,7 +124,7 @@ export class AuthRepository extends Repository<UserEntity> {
   async validateEmailPassword(
     authCredentialsDto: LoginCredentialsDto,
   ): Promise<AuthResponseInterface> {
-    const { email, password } = authCredentialsDto;
+    const { email, password, provider } = authCredentialsDto;
     try {
       const user = await this.findOne({ where: { email } });
       console.log(user);
@@ -151,6 +164,7 @@ export class AuthRepository extends Repository<UserEntity> {
           avatarUrl: avatar,
           role: user.role,
           accessToken: access_token,
+          provider,
           refreshToken: refresh_token,
           birthday: user.birthday,
         };
@@ -280,6 +294,7 @@ export class AuthRepository extends Repository<UserEntity> {
       fullName: user.fullName,
       avatarUrl: avatar,
       role: user.role,
+      provider: user.provider,
       accessToken: accessToken,
       refreshToken: refreshToken,
       birthday: user.birthday,

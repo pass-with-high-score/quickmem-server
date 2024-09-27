@@ -1,4 +1,5 @@
 import { UserRoleEnum } from '../user-role.enum';
+import { AuthProviderEnum } from '../auth-provider.enum';
 
 export class AuthResponseInterface {
   id: string;
@@ -8,6 +9,7 @@ export class AuthResponseInterface {
   avatarUrl: string;
   birthday: Date;
   role: UserRoleEnum;
+  provider: AuthProviderEnum;
   accessToken: string;
   refreshToken: string;
 }
