@@ -75,11 +75,20 @@ export class AuthController {
 
   @Get('facebook/callback')
   @UseGuards(FacebookAuthGuard)
-  facebookAuthRedirect(@Req() request: Request) {
-    return {
-      message: 'User information from Facebook',
-      user: request.user,
-    };
+  facebookAuthRedirect(@Req() request: Request, @Res() response: Response) {
+    console.log('User information from Facebook', request.user);
+    const user = request.user as any;
+
+    // Serialize user information into query string
+    const params = new URLSearchParams({
+      token: user.accessToken,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      picture: user.picture,
+    });
+    const deepLinkUrl = `quickmem://oauth/facebook/callback?${params.toString()}`;
+    return response.redirect(deepLinkUrl);
   }
 
   @SkipThrottle()
