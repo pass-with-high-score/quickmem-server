@@ -46,6 +46,7 @@ export class AuthService {
     authCredentialsDto: LoginCredentialsDto,
   ): Promise<AuthResponseInterface> {
     const { email, idToken, provider } = authCredentialsDto;
+    console.log('provider', provider);
 
     if (provider === 'google') {
       if (!idToken) {
@@ -55,22 +56,12 @@ export class AuthService {
       }
 
       try {
-        const ticket = await this.googleClient.verifyIdToken({
-          idToken,
-          audience: this.configService.get('GOOGLE_CLIENT_ID'),
-        });
-        const payload = ticket.getPayload();
-
-        if (!payload) {
+        const user = await axios.get(
+          'https://www.googleapis.com/oauth2/v3/userinfo?access_token=' +
+            idToken,
+        );
+        if (user.data.email !== email) {
           throw new UnauthorizedException('Invalid Google ID token');
-        }
-
-        if (payload.email !== email) {
-          throw new UnauthorizedException('Email does not match token');
-        }
-
-        if (payload.exp && payload.exp * 1000 < Date.now()) {
-          throw new UnauthorizedException('Google token has expired');
         }
       } catch (error) {
         console.error('Error verifying Google ID token:', error);
