@@ -14,4 +14,5 @@ export const configValidationSchema = Joi.object({
   REDIS_HOST: Joi.string().default('localhost').required(),
   REDIS_PORT: Joi.number().default(6379).required(),
   REDIS_PASSWORD: Joi.string().required(),
+  GOOGLE_CLIENT_ID: Joi.string().required(),
 });

@@ -10,13 +10,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       clientID: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
       callbackURL: 'https://api.nqmgaming.nl/auth/facebook/callback',
-      profileFields: [
-        'id',
-        'name',
-        'displayName',
-        'photos',
-        'email',
-      ],
+      profileFields: ['id', 'name', 'displayName', 'photos', 'email'],
       scope: ['email'],
     });
   }

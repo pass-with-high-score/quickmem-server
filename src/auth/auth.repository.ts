@@ -76,11 +76,14 @@ export class AuthRepository extends Repository<UserEntity> {
     }
 
     let hashedPassword = null;
+    let isVerified = false;
 
     // hash the password if it is not null
-    if (password) {
+    if (provider === 'email') {
       const salt = await bcrypt.genSalt();
       hashedPassword = await bcrypt.hash(password, salt);
+    } else {
+      isVerified = true;
     }
 
     const otp = crypto.randomInt(100000, 999999).toString(); // Generate a 6-digit OTP
@@ -95,7 +98,7 @@ export class AuthRepository extends Repository<UserEntity> {
       birthday,
       otp, // Store OTP
       provider,
-      isVerified: false,
+      isVerified,
       otpExpires: new Date(Date.now() + 10 * 60 * 1000), // OTP expires in 10 minutes
     });
 
@@ -109,7 +112,7 @@ export class AuthRepository extends Repository<UserEntity> {
       });
       const response = new SignupResponseDto();
       response.message = 'User created successfully. Check your email for OTP';
-      response.isVerified = false;
+      response.isVerified = isVerified;
       response.success = true;
       return response;
     } catch (error) {
@@ -136,10 +139,19 @@ export class AuthRepository extends Repository<UserEntity> {
             message: 'User is not verified',
           });
         }
-        if (!(await bcrypt.compare(password, user.password))) {
+        if (
+          provider === 'email' &&
+          (await bcrypt.compare(password, user.password))
+        ) {
           throw new UnauthorizedException({
             statusCode: HttpStatus.UNAUTHORIZED,
             message: 'Password is incorrect',
+          });
+        }
+        if (provider !== user.provider) {
+          throw new UnauthorizedException({
+            statusCode: HttpStatus.UNAUTHORIZED,
+            message: 'Invalid login provider',
           });
         }
         const payload: { email: string; userId: string } = {
