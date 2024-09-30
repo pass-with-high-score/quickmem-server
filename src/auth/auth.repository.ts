@@ -124,7 +124,7 @@ export class AuthRepository extends Repository<UserEntity> {
     }
   }
 
-  async validateEmailPassword(
+  async validateUser(
     authCredentialsDto: LoginCredentialsDto,
   ): Promise<AuthResponseInterface> {
     const { email, password, provider } = authCredentialsDto;
@@ -177,6 +177,7 @@ export class AuthRepository extends Repository<UserEntity> {
           role: user.role,
           accessToken: access_token,
           provider,
+          isVerified: user.isVerified,
           refreshToken: refresh_token,
           birthday: user.birthday,
         };
@@ -307,6 +308,7 @@ export class AuthRepository extends Repository<UserEntity> {
       avatarUrl: avatar,
       role: user.role,
       provider: user.provider,
+      isVerified: user.isVerified,
       accessToken: accessToken,
       refreshToken: refreshToken,
       birthday: user.birthday,

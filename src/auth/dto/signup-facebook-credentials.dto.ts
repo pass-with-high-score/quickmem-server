@@ -1,37 +1,11 @@
-import {
-  IsDateString,
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsStrongPassword,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsDateString, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { UserRoleEnum } from '../user-role.enum';
 import { AuthProviderEnum } from '../auth-provider.enum';
 
 export class SignupFacebookCredentialsDto {
-  @IsEmail({}, { message: 'Invalid email' })
-  @IsNotEmpty({ message: 'Email is required' })
-  @IsString({ message: 'Email must be a string' })
-  email: string;
-
-  @IsNotEmpty({ message: 'Username is required' })
-  @IsString({ message: 'Username must be a string' })
-  @MinLength(4, { message: 'Username must be at least 4 characters long' })
-  @MaxLength(32, { message: 'Username must be at most 32 characters long' })
-  username: string;
-
-  @IsOptional()
-  @IsStrongPassword(
-    {
-      minLength: 8,
-    },
-    { message: 'Password is too weak' },
-  )
-  password: string;
+  @IsNotEmpty()
+  @IsString()
+  facebookId: string;
 
   @IsNotEmpty({ message: 'Name is required' })
   @IsString({ message: 'Name must be a string' })
@@ -52,4 +26,8 @@ export class SignupFacebookCredentialsDto {
   @IsEnum(AuthProviderEnum)
   @IsNotEmpty({ message: 'Provider is required' })
   provider: AuthProviderEnum;
+
+  @IsNotEmpty({ message: 'AccessToken is required' })
+  @IsString({ message: 'AccessToken must be a string' })
+  accessToken: string;
 }

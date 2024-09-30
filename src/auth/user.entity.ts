@@ -58,6 +58,12 @@ export class UserEntity {
   provider: AuthProviderEnum;
 
   @Column({ nullable: true })
+  googleId: string;
+
+  @Column({ nullable: true })
+  facebookId: string;
+
+  @Column({ nullable: true })
   refreshToken: string;
 
   @Column({ nullable: true })

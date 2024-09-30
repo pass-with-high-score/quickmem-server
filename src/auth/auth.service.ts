@@ -42,7 +42,7 @@ export class AuthService {
     return await this.usersRepository.updateFullname(updateFullnameDto);
   }
 
-  async logInWithEmail(
+  async login(
     authCredentialsDto: LoginCredentialsDto,
   ): Promise<AuthResponseInterface> {
     const { email, idToken, provider } = authCredentialsDto;
@@ -89,7 +89,7 @@ export class AuthService {
     }
 
     // Proceed with the existing login logic
-    return await this.usersRepository.validateEmailPassword(authCredentialsDto);
+    return await this.usersRepository.validateUser(authCredentialsDto);
   }
 
   async refreshToken(refreshToken: string): Promise<{ accessToken: string }> {

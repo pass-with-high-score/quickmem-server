@@ -47,7 +47,7 @@ export class AuthController {
     const params = new URLSearchParams({
       token: user.accessToken,
       email: user.email,
-      fullName: `${user.firstName} ${user.lastName}`,
+      fullname: user.fullname,
       provider: 'google',
       picture: user.picture,
     });
@@ -83,7 +83,7 @@ export class AuthController {
     const params = new URLSearchParams({
       token: user.accessToken,
       email: user.email,
-      fullName: `${user.firstName} ${user.lastName}`,
+      fullname: user.fullname,
       provider: 'facebook',
       picture: user.picture,
     });
@@ -115,7 +115,7 @@ export class AuthController {
   async logIn(
     @Body() authCredentialsDto: LoginCredentialsDto,
   ): Promise<AuthResponseInterface> {
-    return this.authService.logInWithEmail(authCredentialsDto);
+    return this.authService.login(authCredentialsDto);
   }
 
   @SkipThrottle()

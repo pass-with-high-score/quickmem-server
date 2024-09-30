@@ -10,6 +10,7 @@ export class AuthResponseInterface {
   birthday: Date;
   role: UserRoleEnum;
   provider: AuthProviderEnum;
+  isVerified: boolean;
   accessToken: string;
   refreshToken: string;
 }
