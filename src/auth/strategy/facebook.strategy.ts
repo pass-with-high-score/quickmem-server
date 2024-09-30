@@ -25,7 +25,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     console.log('Facebook profile', profile);
     const user = {
       email: emails && emails.length > 0 ? emails[0].value : null,
-      fullname: displayName,
+      fullName: displayName,
       picture: photos && photos.length > 0 ? photos[0].value : null,
       accessToken,
     };

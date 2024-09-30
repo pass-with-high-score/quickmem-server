@@ -47,7 +47,7 @@ export class AuthController {
     const params = new URLSearchParams({
       token: user.accessToken,
       email: user.email,
-      fullname: user.fullname,
+      fullName: user.fullName,
       provider: 'google',
       picture: user.picture,
     });
@@ -83,7 +83,7 @@ export class AuthController {
     const params = new URLSearchParams({
       token: user.accessToken,
       email: user.email,
-      fullname: user.fullname,
+      fullName: user.fullName,
       provider: 'facebook',
       picture: user.picture,
     });
