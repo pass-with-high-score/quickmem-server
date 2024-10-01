@@ -147,12 +147,6 @@ export class AuthRepository extends Repository<UserEntity> {
       console.log(user);
 
       if (user) {
-        if (!user.isVerified) {
-          throw new UnauthorizedException({
-            statusCode: HttpStatus.UNAUTHORIZED,
-            message: 'User is not verified',
-          });
-        }
         if (
           provider === 'email' &&
           (await bcrypt.compare(password, user.password))
