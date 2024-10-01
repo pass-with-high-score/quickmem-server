@@ -1,7 +1,15 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column, CreateDateColumn,
+  Entity, JoinTable, ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn, UpdateDateColumn,
+} from 'typeorm';
 import { UserEntity } from '../auth/user.entity';
 import { SubjectEntity } from './subject.entity';
 import { ColorEntity } from './color.entity';
+import { FlashcardEntity } from '../flashcard/flashcard.entity';
+import { TagEntity } from '../flashcard/tag.entity';
 
 @Entity('study_sets')
 export class StudySetEntity {
@@ -20,15 +28,22 @@ export class StudySetEntity {
   @ManyToOne(() => ColorEntity, (color) => color.studySets)
   color: ColorEntity;
 
+  @OneToMany(() => FlashcardEntity, (flashcard) => flashcard.studySet)
+  flashcards: FlashcardEntity[];
+
   @Column()
   isPublic: boolean;
 
   @ManyToOne(() => UserEntity, (user) => user.studySets)
   owner: UserEntity;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @ManyToMany(() => TagEntity)
+  @JoinTable()
+  tags: TagEntity[];
+
+  @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn()
   updatedAt: Date;
 }
