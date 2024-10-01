@@ -15,6 +15,8 @@ import { BullModule } from '@nestjs/bull';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
+import { UploadModule } from './cloudinary/upload.module';
+
 dotenv.config();
 
 @Module({
@@ -85,6 +87,7 @@ dotenv.config();
     StudySetModule,
     FolderModule,
     ClassModule,
+    UploadModule,
   ],
   providers: [
     {
