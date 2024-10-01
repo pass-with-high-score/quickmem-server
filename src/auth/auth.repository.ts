@@ -57,12 +57,12 @@ export class AuthRepository extends Repository<UserEntity> {
       provider,
     } = authCredentialsDto;
 
-    const userExists = await this.findOne({
-      where: [{ email }, { username }],
+    const emailExists = await this.findOne({
+      where: [{ email }],
     });
 
-    if (userExists) {
-      if (userExists.isVerified === false) {
+    if (emailExists) {
+      if (emailExists.isVerified === false) {
         throw new ConflictException({
           statusCode: HttpStatus.PRECONDITION_FAILED,
           message: 'User already exists but not verified',
@@ -73,6 +73,20 @@ export class AuthRepository extends Repository<UserEntity> {
           message: 'User already exists',
         });
       }
+    }
+
+    let currentUsername = username;
+
+    let userExits = await this.findOne({
+      where: [{ username }],
+    });
+
+    // if exists, add a random number to the username
+    while (userExits) {
+      currentUsername = username + Math.floor(Math.random() * 1000);
+      userExits = await this.findOne({
+        where: [{ username: currentUsername }],
+      });
     }
 
     let hashedPassword = null;
@@ -90,7 +104,7 @@ export class AuthRepository extends Repository<UserEntity> {
 
     const user = this.create({
       email,
-      username,
+      username: currentUsername,
       password: hashedPassword,
       fullName: fullName,
       avatarUrl: avatarUrl,
