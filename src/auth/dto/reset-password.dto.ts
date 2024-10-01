@@ -1,9 +1,5 @@
 import { Column } from 'typeorm';
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsStrongPassword,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, IsStrongPassword } from 'class-validator';
 
 export class ResetPasswordDto {
   @IsEmail()

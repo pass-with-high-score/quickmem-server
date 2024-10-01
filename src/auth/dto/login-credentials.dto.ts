@@ -2,7 +2,8 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
-  IsOptional, IsString,
+  IsOptional,
+  IsString,
   IsStrongPassword,
 } from 'class-validator';
 import { AuthProviderEnum } from '../auth-provider.enum';
