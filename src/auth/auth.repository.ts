@@ -146,10 +146,11 @@ export class AuthRepository extends Repository<UserEntity> {
       const user = await this.findOne({ where: { email } });
       console.log(user);
 
+      console.log(await bcrypt.compare(password, user.password));
       if (user) {
         if (
           provider === 'email' &&
-          (await bcrypt.compare(password, user.password))
+          !(await bcrypt.compare(password, user.password))
         ) {
           throw new UnauthorizedException({
             statusCode: HttpStatus.UNAUTHORIZED,
@@ -160,6 +161,7 @@ export class AuthRepository extends Repository<UserEntity> {
           throw new UnauthorizedException({
             statusCode: HttpStatus.UNAUTHORIZED,
             message: 'Invalid login provider',
+            provider: user.provider,
           });
         }
         const payload: { email: string; userId: string } = {
