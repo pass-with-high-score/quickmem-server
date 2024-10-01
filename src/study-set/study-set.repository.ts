@@ -4,12 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { StudySetEntity } from './study-set.entity';
+import { StudySetEntity } from './entities/study-set.entity';
 import { UserEntity } from '../auth/user.entity';
 import { CreateStudySetDto } from './dto/create-study-set.dto';
 import { CreateStudySetResponseInterface } from './dto/create-study-set-response.interface';
-import { SubjectEntity } from './subject.entity';
-import { ColorEntity } from './color.entity';
+import { SubjectEntity } from './entities/subject.entity';
+import { ColorEntity } from './entities/color.entity';
 import { GetAllStudySetResponseInterface } from './dto/get-all-study-set-response.interface';
 import { GetStudySetsByOwnerIdDto } from './dto/get-study-sets-by-ownerId.dto';
 import { GetStudySetByIdDto } from './dto/get-study-set-by-id.dto';

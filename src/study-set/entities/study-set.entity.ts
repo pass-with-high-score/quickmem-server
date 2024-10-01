@@ -1,15 +1,19 @@
 import {
-  Column, CreateDateColumn,
-  Entity, JoinTable, ManyToMany,
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn, UpdateDateColumn,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from '../auth/user.entity';
+import { UserEntity } from '../../auth/user.entity';
 import { SubjectEntity } from './subject.entity';
 import { ColorEntity } from './color.entity';
-import { FlashcardEntity } from '../flashcard/flashcard.entity';
-import { TagEntity } from '../flashcard/tag.entity';
+import { FlashcardEntity } from '../../flashcard/entities/flashcard.entity';
+import { TagEntity } from '../../flashcard/entities/tag.entity';
 
 @Entity('study_sets')
 export class StudySetEntity {

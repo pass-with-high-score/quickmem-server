@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserRoleEnum } from './user-role.enum';
-import { StudySetEntity } from '../study-set/study-set.entity';
+import { StudySetEntity } from '../study-set/entities/study-set.entity';
 import { AuthProviderEnum } from './auth-provider.enum';
 
 @Entity('users')
