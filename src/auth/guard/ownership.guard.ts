@@ -31,6 +31,7 @@ export class OwnershipGuard implements CanActivate {
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload; // Verify and decode the token
     } catch (err) {
+      console.log('err', err);
       throw new ForbiddenException('Invalid token');
     }
 
