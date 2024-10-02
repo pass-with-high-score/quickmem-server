@@ -1,8 +1,9 @@
 export class FlashcardResponseInterface {
   id: string;
   question: string;
+  questionImageURL?: string[];
   answer: string;
-  imageURL?: string[];
+  answerImageURL?: string[];
   hint?: string;
   explanation?: string;
   rating?: string;

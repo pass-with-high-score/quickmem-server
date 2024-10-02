@@ -19,11 +19,14 @@ export class FlashcardEntity {
   @Column()
   question: string;
 
+  @Column({ type: 'simple-array', nullable: true })
+  questionImageURL: string[];
+
   @Column()
   answer: string;
 
   @Column({ type: 'simple-array', nullable: true })
-  imageURL: string[];
+  answerImageURL: string[];
 
   @Column({ nullable: true })
   hint: string;

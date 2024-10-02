@@ -16,6 +16,11 @@ export class CreateFlashcardDto {
   @IsString()
   question: string;
 
+  @IsOptional()
+  @IsString({ each: true })
+  @IsUrl({}, { each: true })
+  questionImageURL: string[];
+
   @IsNotEmpty()
   @IsString()
   answer: string;
@@ -23,7 +28,7 @@ export class CreateFlashcardDto {
   @IsOptional()
   @IsString({ each: true })
   @IsUrl({}, { each: true })
-  imageURL: string[];
+  answerImageURL: string[];
 
   @IsOptional()
   @IsString()

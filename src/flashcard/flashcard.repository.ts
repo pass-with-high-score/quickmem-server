@@ -40,8 +40,9 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     const response: FlashcardResponseInterface = {
       id: flashcard.id,
       question: flashcard.question,
+      questionImageURL: flashcard.questionImageURL,
       answer: flashcard.answer,
-      imageURL: flashcard.imageURL,
+      answerImageURL: flashcard.answerImageURL,
       hint: flashcard.hint,
       explanation: flashcard.explanation,
       rating: flashcard.rating,
@@ -74,8 +75,9 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     return flashcards.map((flashcard) => ({
       id: flashcard.id,
       question: flashcard.question,
+      questionImageURL: flashcard.questionImageURL,
       answer: flashcard.answer,
-      imageURL: flashcard.imageURL,
+      answerImageURL: flashcard.answerImageURL,
       hint: flashcard.hint,
       explanation: flashcard.explanation,
       rating: flashcard.rating,
@@ -94,8 +96,9 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
   ): Promise<FlashcardResponseInterface> {
     const {
       question,
+      questionImageURL,
       answer,
-      imageURL,
+      answerImageURL,
       hint,
       explanation,
       options,
@@ -119,8 +122,9 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     // 2. Tạo FlashcardEntity mới
     const flashcard = new FlashcardEntity();
     flashcard.question = question;
+    flashcard.questionImageURL = questionImageURL;
     flashcard.answer = answer;
-    flashcard.imageURL = imageURL;
+    flashcard.answerImageURL = answerImageURL;
     flashcard.hint = hint;
     flashcard.explanation = explanation;
     flashcard.studySet = studySet;
@@ -144,8 +148,9 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     const response: FlashcardResponseInterface = {
       id: savedFlashcard.id,
       question: savedFlashcard.question,
-      answer: savedFlashcard.answer,
-      imageURL: savedFlashcard.imageURL,
+      questionImageURL: flashcard.questionImageURL,
+      answer: flashcard.answer,
+      answerImageURL: flashcard.answerImageURL,
       hint: savedFlashcard.hint,
       explanation: savedFlashcard.explanation,
       rating: savedFlashcard.rating,
