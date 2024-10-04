@@ -3,11 +3,9 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { OptionEntity } from './option.entity';
 import { Rating } from './rating.enum';
 import { StudySetEntity } from '../../study-set/entities/study-set.entity';
 
@@ -38,11 +36,6 @@ export class FlashcardEntity {
     onDelete: 'CASCADE',
   })
   studySet: StudySetEntity;
-
-  @OneToMany(() => OptionEntity, (option) => option.flashcard, {
-    cascade: true,
-  })
-  options: OptionEntity[];
 
   @Column({
     type: 'enum',

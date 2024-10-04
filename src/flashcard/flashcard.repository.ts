@@ -8,7 +8,6 @@ import {
 import { CreateFlashcardDto } from './dto/create-flashcard.dto';
 import { FlashcardResponseInterface } from './interface/flashcard-response.interface';
 import { StudySetEntity } from '../study-set/entities/study-set.entity';
-import { OptionEntity } from './entities/option.entity';
 import { Rating } from './entities/rating.enum';
 import { GetFlashcardByIdDto } from './dto/get-flashcard-by-id.dto';
 import { GetFlashcardsByStudySetIdDto } from './dto/get-flashcards-by-study-set-id.dto';
@@ -29,7 +28,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       .getRepository(FlashcardEntity)
       .findOne({
         where: { id },
-        relations: ['options'],
       });
 
     if (!flashcard) {
@@ -46,11 +44,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       hint: flashcard.hint,
       explanation: flashcard.explanation,
       rating: flashcard.rating,
-      options: flashcard.options?.map((option) => ({
-        answerText: option.answerText,
-        isCorrect: option.isCorrect,
-        imageURL: option.imageURL,
-      })),
       createdAt: flashcard.createdAt,
       updatedAt: flashcard.updatedAt,
     };
@@ -68,7 +61,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       .getRepository(FlashcardEntity)
       .find({
         where: { studySet: { id: id } },
-        relations: ['options'],
       });
 
     // 2. Trả về mảng FlashcardResponseInterface
@@ -81,11 +73,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       hint: flashcard.hint,
       explanation: flashcard.explanation,
       rating: flashcard.rating,
-      options: flashcard.options?.map((option) => ({
-        answerText: option.answerText,
-        isCorrect: option.isCorrect,
-        imageURL: option.imageURL,
-      })),
       createdAt: flashcard.createdAt,
       updatedAt: flashcard.updatedAt,
     }));
@@ -101,7 +88,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       answerImageURL,
       hint,
       explanation,
-      options,
       studySetId,
       rating,
     } = createFlashcardDto;
@@ -115,9 +101,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       throw new NotFoundException(`Study set with ID ${studySetId} not found`);
     }
 
-    if (options.length > 6) {
-      throw new BadRequestException('Number of options must not exceed 6');
-    }
 
     // 2. Tạo FlashcardEntity mới
     const flashcard = new FlashcardEntity();
@@ -129,17 +112,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     flashcard.explanation = explanation;
     flashcard.studySet = studySet;
     flashcard.rating = rating || Rating.UNRATED;
-
-    // 3. Tạo OptionEntity (nếu có)
-    if (options && options.length > 0) {
-      flashcard.options = options.map((optionDto) => {
-        const option = new OptionEntity();
-        option.answerText = optionDto.answerText;
-        option.isCorrect = optionDto.isCorrect;
-        option.imageURL = optionDto.imageURL;
-        return option;
-      });
-    }
 
     // 4. Lưu flashcard và các options vào cơ sở dữ liệu
     const savedFlashcard = await this.save(flashcard);
@@ -154,11 +126,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       hint: savedFlashcard.hint,
       explanation: savedFlashcard.explanation,
       rating: savedFlashcard.rating,
-      options: savedFlashcard.options?.map((option) => ({
-        answerText: option.answerText,
-        isCorrect: option.isCorrect,
-        imageURL: option.imageURL,
-      })),
       createdAt: savedFlashcard.createdAt,
       updatedAt: savedFlashcard.updatedAt,
     };

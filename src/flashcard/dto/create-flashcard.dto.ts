@@ -5,10 +5,7 @@ import {
   IsString,
   IsUrl,
   IsUUID,
-  ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-import { OptionDto } from './option.dto';
 import { Rating } from '../entities/rating.enum';
 
 export class CreateFlashcardDto {
@@ -37,11 +34,6 @@ export class CreateFlashcardDto {
   @IsOptional()
   @IsString()
   explanation: string;
-
-  @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => OptionDto)
-  options: OptionDto[];
 
   @IsNotEmpty()
   @IsUUID()
