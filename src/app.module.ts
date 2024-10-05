@@ -22,6 +22,7 @@ import { NotificationController } from './notification/notification.controller';
 import { NotificationModule } from './notification/notification.module';
 import { SubscriptionController } from './subscription/subscription.controller';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { MessagingModule } from './firebase/messaging.module';
 
 dotenv.config();
 
@@ -98,6 +99,7 @@ dotenv.config();
     StreakModule,
     NotificationModule,
     SubscriptionModule,
+    MessagingModule,
   ],
   providers: [
     {
