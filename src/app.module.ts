@@ -20,7 +20,6 @@ import { ReportModule } from './report/report.module';
 import { StreakModule } from './streak/streak.module';
 import { NotificationController } from './notification/notification.controller';
 import { NotificationModule } from './notification/notification.module';
-import { SubsciptionService } from './subsciption/subsciption.service';
 import { SubscriptionController } from './subscription/subscription.controller';
 import { SubscriptionModule } from './subscription/subscription.module';
 
@@ -105,7 +104,6 @@ dotenv.config();
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-    SubsciptionService,
   ],
   controllers: [AppController, NotificationController, SubscriptionController],
   exports: [],
