@@ -9,11 +9,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from '../../auth/user.entity';
+import { UserEntity } from '../../auth/entities/user.entity';
 import { SubjectEntity } from './subject.entity';
 import { ColorEntity } from './color.entity';
 import { FlashcardEntity } from '../../flashcard/entities/flashcard.entity';
-import { TagEntity } from '../../flashcard/entities/tag.entity';
+import { ClassEntity } from '../../class/entities/class.entity';
 
 @Entity('study_sets')
 export class StudySetEntity {
@@ -35,15 +35,19 @@ export class StudySetEntity {
   @OneToMany(() => FlashcardEntity, (flashcard) => flashcard.studySet)
   flashcards: FlashcardEntity[];
 
-  @Column()
+  @Column({ type: 'boolean', default: false })
   isPublic: boolean;
 
   @ManyToOne(() => UserEntity, (user) => user.studySets)
   owner: UserEntity;
 
-  @ManyToMany(() => TagEntity)
-  @JoinTable()
-  tags: TagEntity[];
+  @ManyToMany(() => ClassEntity, (classEntity) => classEntity.studySets)
+  @JoinTable({
+    name: 'class_study_sets',
+    joinColumn: { name: 'study_set_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'class_id', referencedColumnName: 'id' },
+  })
+  classes: ClassEntity[];
 
   @CreateDateColumn()
   createdAt: Date;

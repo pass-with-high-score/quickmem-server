@@ -1,11 +1,11 @@
 export class FlashcardResponseInterface {
   id: string;
-  question: string;
-  questionImageURL?: string[];
-  answer: string;
-  answerImageURL?: string[];
+  term: string;
+  definition: string;
+  definitionImageURL?: string;
   hint?: string;
   explanation?: string;
+  isStarred: boolean;
   rating?: string;
   createdAt: Date;
   updatedAt: Date;

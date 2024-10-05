@@ -2,13 +2,20 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserRoleEnum } from './user-role.enum';
-import { StudySetEntity } from '../study-set/entities/study-set.entity';
-import { AuthProviderEnum } from './auth-provider.enum';
+import { UserRoleEnum } from '../enums/user-role.enum';
+import { StudySetEntity } from '../../study-set/entities/study-set.entity';
+import { AuthProviderEnum } from '../enums/auth-provider.enum';
+import { FolderEntity } from '../../folder/entities/folder.entity';
+import { ClassEntity } from '../../class/entities/class.entity';
+import { ReportEntity } from '../../report/entities/report.entity';
+import { StreakEntity } from '../../streak/entities/streak.entity';
+import { NotificationEntity } from '../../notification/entities/notification.entity';
+import { SubscriptionEntity } from '../../subscription/entities/subscription.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -74,6 +81,27 @@ export class UserEntity {
 
   @OneToMany(() => StudySetEntity, (studySet) => studySet.owner)
   studySets: StudySetEntity[];
+
+  @OneToMany(() => FolderEntity, (folder) => folder.owner)
+  folders: FolderEntity[];
+
+  @OneToMany(() => ClassEntity, (classEntity) => classEntity.owner)
+  ownerClasses: ClassEntity[];
+
+  @OneToMany(() => StreakEntity, (streak) => streak.user)
+  streaks: StreakEntity[];
+
+  @OneToMany(() => NotificationEntity, (notification) => notification.user)
+  notifications: NotificationEntity[];
+
+  @OneToMany(() => SubscriptionEntity, (subscription) => subscription.user)
+  subscriptions: SubscriptionEntity[];
+
+  @OneToMany(() => ReportEntity, (report) => report.reporter)
+  reports: ReportEntity[];
+
+  @ManyToMany(() => ClassEntity, (classEntity) => classEntity.members)
+  classes: ClassEntity[];
 
   @CreateDateColumn()
   createdAt: Date;

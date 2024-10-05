@@ -1,5 +1,5 @@
-import { UserRoleEnum } from '../user-role.enum';
-import { AuthProviderEnum } from '../auth-provider.enum';
+import { UserRoleEnum } from '../enums/user-role.enum';
+import { AuthProviderEnum } from '../enums/auth-provider.enum';
 
 export class AuthResponseInterface {
   id: string;

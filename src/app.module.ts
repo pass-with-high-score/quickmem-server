@@ -16,6 +16,13 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { UploadModule } from './cloudinary/upload.module';
+import { ReportModule } from './report/report.module';
+import { StreakModule } from './streak/streak.module';
+import { NotificationController } from './notification/notification.controller';
+import { NotificationModule } from './notification/notification.module';
+import { SubsciptionService } from './subsciption/subsciption.service';
+import { SubscriptionController } from './subscription/subscription.controller';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 dotenv.config();
 
@@ -88,14 +95,19 @@ dotenv.config();
     FolderModule,
     ClassModule,
     UploadModule,
+    ReportModule,
+    StreakModule,
+    NotificationModule,
+    SubscriptionModule,
   ],
   providers: [
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    SubsciptionService,
   ],
-  controllers: [AppController],
+  controllers: [AppController, NotificationController, SubscriptionController],
   exports: [],
 })
 export class AppModule {}

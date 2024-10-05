@@ -1,31 +1,24 @@
 import {
-  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
   IsUUID,
 } from 'class-validator';
-import { Rating } from '../entities/rating.enum';
 
 export class CreateFlashcardDto {
   @IsNotEmpty()
   @IsString()
-  question: string;
-
-  @IsOptional()
-  @IsString({ each: true })
-  @IsUrl({}, { each: true })
-  questionImageURL: string[];
+  term: string;
 
   @IsNotEmpty()
   @IsString()
-  answer: string;
+  definition: string;
 
   @IsOptional()
-  @IsString({ each: true })
-  @IsUrl({}, { each: true })
-  answerImageURL: string[];
+  @IsUrl()
+  @IsString()
+  definitionImageUrl: string;
 
   @IsOptional()
   @IsString()
@@ -38,8 +31,4 @@ export class CreateFlashcardDto {
   @IsNotEmpty()
   @IsUUID()
   studySetId: string;
-
-  @IsOptional()
-  @IsEnum(Rating)
-  rating: Rating;
 }

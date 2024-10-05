@@ -1,14 +1,9 @@
 import { DataSource, Repository } from 'typeorm';
 import { FlashcardEntity } from './entities/flashcard.entity';
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFlashcardDto } from './dto/create-flashcard.dto';
 import { FlashcardResponseInterface } from './interface/flashcard-response.interface';
 import { StudySetEntity } from '../study-set/entities/study-set.entity';
-import { Rating } from './entities/rating.enum';
 import { GetFlashcardByIdDto } from './dto/get-flashcard-by-id.dto';
 import { GetFlashcardsByStudySetIdDto } from './dto/get-flashcards-by-study-set-id.dto';
 
@@ -35,20 +30,18 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     }
 
     // 2. Trả về FlashcardResponseInterface
-    const response: FlashcardResponseInterface = {
+    return {
       id: flashcard.id,
-      question: flashcard.question,
-      questionImageURL: flashcard.questionImageURL,
-      answer: flashcard.answer,
-      answerImageURL: flashcard.answerImageURL,
+      term: flashcard.term,
+      definition: flashcard.definition,
+      definitionImageURL: flashcard.definitionImageURL,
+      isStarred: flashcard.isStarred,
       hint: flashcard.hint,
       explanation: flashcard.explanation,
       rating: flashcard.rating,
       createdAt: flashcard.createdAt,
       updatedAt: flashcard.updatedAt,
     };
-
-    return response;
   }
 
   async getFlashcardByStudySetId(
@@ -66,10 +59,10 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     // 2. Trả về mảng FlashcardResponseInterface
     return flashcards.map((flashcard) => ({
       id: flashcard.id,
-      question: flashcard.question,
-      questionImageURL: flashcard.questionImageURL,
-      answer: flashcard.answer,
-      answerImageURL: flashcard.answerImageURL,
+      term: flashcard.term,
+      definition: flashcard.definition,
+      definitionImageURL: flashcard.definitionImageURL,
+      isStarred: flashcard.isStarred,
       hint: flashcard.hint,
       explanation: flashcard.explanation,
       rating: flashcard.rating,
@@ -82,14 +75,12 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     createFlashcardDto: CreateFlashcardDto,
   ): Promise<FlashcardResponseInterface> {
     const {
-      question,
-      questionImageURL,
-      answer,
-      answerImageURL,
+      term,
+      definition,
+      definitionImageUrl,
       hint,
       explanation,
       studySetId,
-      rating,
     } = createFlashcardDto;
 
     // 1. Tìm study set dựa trên studySetId
@@ -101,35 +92,30 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       throw new NotFoundException(`Study set with ID ${studySetId} not found`);
     }
 
-
     // 2. Tạo FlashcardEntity mới
     const flashcard = new FlashcardEntity();
-    flashcard.question = question;
-    flashcard.questionImageURL = questionImageURL;
-    flashcard.answer = answer;
-    flashcard.answerImageURL = answerImageURL;
+    flashcard.term = term;
+    flashcard.definition = definition;
+    flashcard.definitionImageURL = definitionImageUrl;
     flashcard.hint = hint;
     flashcard.explanation = explanation;
     flashcard.studySet = studySet;
-    flashcard.rating = rating || Rating.UNRATED;
 
     // 4. Lưu flashcard và các options vào cơ sở dữ liệu
     const savedFlashcard = await this.save(flashcard);
 
     // 5. Trả về FlashcardResponseInterface
-    const response: FlashcardResponseInterface = {
+    return {
       id: savedFlashcard.id,
-      question: savedFlashcard.question,
-      questionImageURL: flashcard.questionImageURL,
-      answer: flashcard.answer,
-      answerImageURL: flashcard.answerImageURL,
+      term: savedFlashcard.term,
+      definition: savedFlashcard.definition,
+      definitionImageURL: savedFlashcard.definitionImageURL,
+      isStarred: savedFlashcard.isStarred,
       hint: savedFlashcard.hint,
       explanation: savedFlashcard.explanation,
       rating: savedFlashcard.rating,
       createdAt: savedFlashcard.createdAt,
       updatedAt: savedFlashcard.updatedAt,
     };
-
-    return response;
   }
 }

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { StudySetEntity } from './entities/study-set.entity';
-import { UserEntity } from '../auth/user.entity';
+import { UserEntity } from '../auth/entities/user.entity';
 import { CreateStudySetDto } from './dto/create-study-set.dto';
 import { CreateStudySetResponseInterface } from './dto/create-study-set-response.interface';
 import { SubjectEntity } from './entities/subject.entity';

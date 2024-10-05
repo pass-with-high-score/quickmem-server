@@ -6,7 +6,7 @@ import {
   IsString,
   IsStrongPassword,
 } from 'class-validator';
-import { AuthProviderEnum } from '../auth-provider.enum';
+import { AuthProviderEnum } from '../enums/auth-provider.enum';
 
 export class LoginCredentialsDto {
   @IsNotEmpty({ message: 'Email is required' })

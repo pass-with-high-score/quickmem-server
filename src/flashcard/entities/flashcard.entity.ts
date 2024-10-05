@@ -1,12 +1,12 @@
 import {
   Column,
   CreateDateColumn,
-  Entity,
+  Entity, ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Rating } from './rating.enum';
+import { FlashcardStatusEnum } from './flashcard-status.enum';
 import { StudySetEntity } from '../../study-set/entities/study-set.entity';
 
 @Entity('flashcards')
@@ -15,16 +15,16 @@ export class FlashcardEntity {
   id: string;
 
   @Column()
-  question: string;
-
-  @Column({ type: 'simple-array', nullable: true })
-  questionImageURL: string[];
+  term: string;
 
   @Column()
-  answer: string;
+  definition: string;
 
-  @Column({ type: 'simple-array', nullable: true })
-  answerImageURL: string[];
+  @Column({ nullable: true })
+  definitionImageURL: string;
+
+  @Column({ type: 'boolean', default: false })
+  isStarred: boolean;
 
   @Column({ nullable: true })
   hint: string;
@@ -39,10 +39,10 @@ export class FlashcardEntity {
 
   @Column({
     type: 'enum',
-    enum: Rating,
-    default: Rating.UNRATED,
+    enum: FlashcardStatusEnum,
+    default: FlashcardStatusEnum.NOT_STUDIED,
   })
-  rating: Rating;
+  rating: FlashcardStatusEnum;
 
   @CreateDateColumn()
   createdAt: Date;

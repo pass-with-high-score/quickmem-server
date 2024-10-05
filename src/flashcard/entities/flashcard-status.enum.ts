@@ -1,0 +1,5 @@
+export enum FlashcardStatusEnum {
+  NOT_STUDIED = 'NOT_STUDIED',
+  STILL_LEARNING = 'STILL_LEARNING',
+  MASTERED = 'MASTERED',
+}
