@@ -16,6 +16,7 @@ import { ReportEntity } from '../../report/entities/report.entity';
 import { StreakEntity } from '../../streak/entities/streak.entity';
 import { NotificationEntity } from '../../notification/entities/notification.entity';
 import { SubscriptionEntity } from '../../subscription/entities/subscription.entity';
+import { DeviceEntity } from '../../firebase/entities/device.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -99,6 +100,9 @@ export class UserEntity {
 
   @OneToMany(() => ReportEntity, (report) => report.reporter)
   reports: ReportEntity[];
+
+  @OneToMany(() => DeviceEntity, (device) => device.user)
+  devices: DeviceEntity[];
 
   @ManyToMany(() => ClassEntity, (classEntity) => classEntity.members)
   classes: ClassEntity[];

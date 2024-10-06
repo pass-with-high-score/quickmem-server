@@ -7,12 +7,17 @@ import {
   IMessaginToTokensParams,
   IMessaginToTopicParams,
 } from './imessaging.interface';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DeviceEntity } from './entities/device.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class MessagingService implements IMessaging {
   constructor(
     @Inject(MessagingProvider)
     private readonly messaging: admin.messaging.Messaging,
+    @InjectRepository(DeviceEntity)
+    private readonly deviceRepository: Repository<DeviceEntity>,
   ) {}
 
   private android: admin.messaging.AndroidConfig = {
@@ -33,12 +38,18 @@ export class MessagingService implements IMessaging {
   async sendMessageToTokens(
     params: IMessaginToTokensParams,
   ): Promise<string[]> {
-    const { title, body, payload, tokens } = params;
+    const { title, body, payload, userId, tokens } = params;
     console.log('Running sendMessageToTokens');
+
+    const devices = await this.deviceRepository.find({
+      where: { user: { id: userId } },
+    });
+    const deviceTokens = devices.map((device) => device.deviceToken);
+    console.log(deviceTokens);
 
     try {
       const response = await this.messaging.sendEachForMulticast({
-        tokens: tokens,
+        tokens: tokens || deviceTokens,
         data: payload,
         notification: {
           title: title,

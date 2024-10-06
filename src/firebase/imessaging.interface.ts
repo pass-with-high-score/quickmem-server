@@ -3,6 +3,7 @@ export interface IMessaginToTokensParams {
   body: string;
   payload: { [key: string]: string };
   tokens: string[];
+  userId?: string;
 }
 
 export interface IMessaginToTopicParams {
