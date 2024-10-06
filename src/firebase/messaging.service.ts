@@ -34,8 +34,10 @@ export class MessagingService implements IMessaging {
     params: IMessaginToTokensParams,
   ): Promise<string[]> {
     const { title, body, payload, tokens } = params;
-    return await this.messaging
-      .sendEachForMulticast({
+    console.log('Running sendMessageToTokens');
+
+    try {
+      const response = await this.messaging.sendEachForMulticast({
         tokens: tokens,
         data: payload,
         notification: {
@@ -44,26 +46,29 @@ export class MessagingService implements IMessaging {
         },
         android: this.android,
         apns: this.apns,
-      })
-      .then((response) => {
-        if (response.failureCount > 0) {
-          const failedTokens: string[] = [];
-          response.responses.forEach((resp, idx) => {
-            if (!resp.success) {
-              failedTokens.push(tokens[idx]);
-            }
-          });
-          return failedTokens;
-        } else {
-          return [];
-        }
-      })
-      .catch((err) => {
-        throw new HttpException(
-          `Error sending message: ${err.message}`,
-          HttpStatus.NO_CONTENT,
-        );
       });
+
+      if (response.failureCount > 0) {
+        const failedTokens: string[] = [];
+        console.log(response);
+        response.responses.forEach((resp, idx) => {
+          console.log(resp);
+          if (!resp.success) {
+            failedTokens.push(tokens[idx]);
+          }
+        });
+        console.log(failedTokens);
+        return failedTokens;
+      } else {
+        return [];
+      }
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        `Error sending message: ${err.message}`,
+        HttpStatus.NO_CONTENT,
+      );
+    }
   }
 
   async sendMessageToTopic(params: IMessaginToTopicParams): Promise<string> {
@@ -80,6 +85,7 @@ export class MessagingService implements IMessaging {
         apns: this.apns,
       })
       .catch((err) => {
+        console.log(err);
         throw new HttpException(
           `Error sending message: ${err.message}`,
           HttpStatus.NO_CONTENT,
@@ -103,6 +109,7 @@ export class MessagingService implements IMessaging {
         apns: this.apns,
       })
       .catch((err) => {
+        console.log(err);
         throw new HttpException(
           `Error sending message: ${err.message}`,
           HttpStatus.NO_CONTENT,

@@ -59,9 +59,9 @@ dotenv.config();
       useFactory: async (configService: ConfigService) => {
         const isProduction = configService.get('STAGE') === 'prod';
         return {
-          ssl: isProduction,
+          ssl: isProduction ? { rejectUnauthorized: false } : undefined,
           extra: {
-            ssl: isProduction ? { rejectUnauthorized: false } : null,
+            ssl: isProduction ? { rejectUnauthorized: false } : undefined,
           },
           type: 'postgres',
           host: configService.get('DB_HOST'),
