@@ -93,7 +93,7 @@ export class AuthRepository extends Repository<UserEntity> {
     let isVerified = false;
 
     // hash the password if it is not null
-    if (provider === 'email') {
+    if (provider === 'EMAIL') {
       const salt = await bcrypt.genSalt();
       hashedPassword = await bcrypt.hash(password, salt);
     } else {
@@ -149,7 +149,7 @@ export class AuthRepository extends Repository<UserEntity> {
       console.log(await bcrypt.compare(password, user.password));
       if (user) {
         if (
-          provider === 'email' &&
+          provider === 'EMAIL' &&
           !(await bcrypt.compare(password, user.password))
         ) {
           throw new UnauthorizedException({

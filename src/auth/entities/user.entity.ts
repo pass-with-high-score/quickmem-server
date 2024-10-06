@@ -46,6 +46,7 @@ export class UserEntity {
   avatarUrl: string;
 
   @Column({
+    type: 'enum',
     enum: UserRoleEnum,
     enumName: 'user_role_enum',
     default: UserRoleEnum.STUDENT,
@@ -59,6 +60,7 @@ export class UserEntity {
   isVerified?: boolean;
 
   @Column({
+    type: 'enum',
     enum: AuthProviderEnum,
     enumName: 'auth_provider_enum',
     default: AuthProviderEnum.EMAIL,

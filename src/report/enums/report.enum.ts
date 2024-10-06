@@ -1,6 +1,6 @@
 export enum ReportEnum {
-  FLASHCARD = 'Flashcard',
-  FOLDER = 'Folder',
-  CLASS = 'Class',
-  USER = 'User',
+  FLASHCARD = 'FLASHCARD',
+  FOLDER = 'FOLDER',
+  CLASS = 'CLASS',
+  USER = 'USER',
 }

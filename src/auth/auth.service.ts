@@ -48,7 +48,7 @@ export class AuthService {
     const { email, idToken, provider } = authCredentialsDto;
     console.log('provider', provider);
 
-    if (provider === 'google') {
+    if (provider === 'GOOGLE') {
       if (!idToken) {
         throw new UnauthorizedException(
           'ID Token is required for Google login',
@@ -67,7 +67,7 @@ export class AuthService {
         console.error('Error verifying Google ID token:', error);
         throw new UnauthorizedException('Invalid Google ID token');
       }
-    } else if (provider === 'facebook') {
+    } else if (provider === 'FACEBOOK') {
       if (!idToken) {
         throw new UnauthorizedException(
           'Access Token is required for Facebook login',
