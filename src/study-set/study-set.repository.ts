@@ -18,8 +18,8 @@ import { UpdateStudySetByIdParamDto } from './dto/update-study-set-by-id-param.d
 import { DeleteStudySetByIdParamDto } from './dto/delete-study-set-by-id-param.dto';
 import { DeleteStudySetResponseInterface } from './dto/delete-study-set-response.interface';
 import { DuplicateStudySetDto } from './dto/duplicate-study-set.dto';
-import { FlashcardResponseInterface } from '../flashcard/interface/flashcard-response.interface';
 import { SearchStudySetParamsDto } from './dto/search-study-set-params.dto';
+import { FlashcardEntity } from 'src/flashcard/entities/flashcard.entity';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -296,21 +296,22 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
     try {
       const savedStudySet = await this.save(newStudySet);
-      const flashcards: FlashcardResponseInterface[] =
-        savedStudySet.flashcards.map((flashcard) => ({
-          id: flashcard.id,
-          term: flashcard.term,
-          definition: flashcard.definition,
-          definitionImageURL: flashcard.definitionImageURL,
-          isStarred: flashcard.isStarred,
-          hint: flashcard.hint,
-          explanation: flashcard.explanation,
-          rating: flashcard.rating,
-          createdAt: flashcard.createdAt,
-          updatedAt: flashcard.updatedAt,
-        }));
+      // Duplicate flashcards
+      const flashcards = studySet.flashcards.map((flashcard) => {
+        const newFlashcard = new FlashcardEntity();
+        newFlashcard.term = flashcard.term;
+        newFlashcard.definition = flashcard.definition;
+        newFlashcard.definitionImageURL = flashcard.definitionImageURL;
+        newFlashcard.isStarred = flashcard.isStarred;
+        newFlashcard.hint = flashcard.hint;
+        newFlashcard.explanation = flashcard.explanation;
+        newFlashcard.rating = flashcard.rating;
+        newFlashcard.studySet = savedStudySet;
+        return newFlashcard;
+      });
 
-      // use map
+      await this.dataSource.getRepository(FlashcardEntity).save(flashcards);
+
       return this.mapStudySetToResponse(savedStudySet);
     } catch (error) {
       console.log('Error duplicating study set', error);
