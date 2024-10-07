@@ -14,6 +14,7 @@ import { SubjectEntity } from './subject.entity';
 import { ColorEntity } from './color.entity';
 import { FlashcardEntity } from '../../flashcard/entities/flashcard.entity';
 import { ClassEntity } from '../../class/entities/class.entity';
+import { FolderEntity } from '../../folder/entities/folder.entity';
 
 @Entity('study_sets')
 export class StudySetEntity {
@@ -48,6 +49,14 @@ export class StudySetEntity {
     inverseJoinColumn: { name: 'class_id', referencedColumnName: 'id' },
   })
   classes: ClassEntity[];
+
+  @ManyToMany(() => FolderEntity, (folder) => folder.studySets)
+  @JoinTable({
+    name: 'folder_study_sets',
+    joinColumn: { name: 'study_set_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'folder_id', referencedColumnName: 'id' },
+  })
+  folders: FolderEntity[];
 
   @CreateDateColumn()
   createdAt: Date;

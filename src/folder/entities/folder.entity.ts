@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from '../../auth/entities/user.entity';
 import { ClassEntity } from '../../class/entities/class.entity';
+import { StudySetEntity } from '../../study-set/entities/study-set.entity';
 
 @Entity('folders')
 export class FolderEntity {
@@ -35,6 +36,9 @@ export class FolderEntity {
     inverseJoinColumn: { name: 'class_id', referencedColumnName: 'id' },
   })
   classes: ClassEntity[];
+
+  @ManyToMany(() => StudySetEntity, (studySet) => studySet.folders)
+  studySets: StudySetEntity[];
 
   @CreateDateColumn()
   createdAt: Date;

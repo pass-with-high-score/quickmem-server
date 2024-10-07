@@ -91,6 +91,9 @@ export class UserEntity {
   @OneToMany(() => ClassEntity, (classEntity) => classEntity.owner)
   ownerClasses: ClassEntity[];
 
+  @Column({ type: 'int', default: 0 })
+  coins: number;
+
   @OneToMany(() => StreakEntity, (streak) => streak.user)
   streaks: StreakEntity[];
 
