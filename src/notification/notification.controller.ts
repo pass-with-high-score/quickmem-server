@@ -1,10 +1,14 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { MessagingService } from '../firebase/messaging.service';
 import { IMessaginToTokensParams } from '../firebase/imessaging.interface';
+import { NotificationService } from './notification.service';
 
 @Controller('notifications')
 export class NotificationController {
-  constructor(private readonly messagingService: MessagingService) {}
+  constructor(
+    private readonly messagingService: MessagingService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   @Post('send')
   async sendNotification(@Body() params: IMessaginToTokensParams) {

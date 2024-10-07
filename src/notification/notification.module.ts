@@ -3,9 +3,13 @@ import { NotificationService } from './notification.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationEntity } from './entities/notification.entity';
 import { DeviceEntity } from '../firebase/entities/device.entity';
+import { NotificationRepository } from './notification.repository';
+import { NotificationController } from './notification.controller';
+import { MessagingModule } from '../firebase/messaging.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([NotificationEntity])],
-  providers: [NotificationService],
+  imports: [TypeOrmModule.forFeature([NotificationEntity]), MessagingModule],
+  controllers: [NotificationController],
+  providers: [NotificationService, NotificationRepository],
 })
 export class NotificationModule {}

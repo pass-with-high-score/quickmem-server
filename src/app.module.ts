@@ -18,9 +18,7 @@ import { AppController } from './app.controller';
 import { UploadModule } from './cloudinary/upload.module';
 import { ReportModule } from './report/report.module';
 import { StreakModule } from './streak/streak.module';
-import { NotificationController } from './notification/notification.controller';
 import { NotificationModule } from './notification/notification.module';
-import { SubscriptionController } from './subscription/subscription.controller';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { MessagingModule } from './firebase/messaging.module';
 
@@ -107,7 +105,7 @@ dotenv.config();
       useClass: ThrottlerGuard,
     },
   ],
-  controllers: [AppController, NotificationController, SubscriptionController],
+  controllers: [AppController],
   exports: [],
 })
 export class AppModule {}
