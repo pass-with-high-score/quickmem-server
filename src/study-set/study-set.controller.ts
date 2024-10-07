@@ -24,7 +24,6 @@ import { UpdateStudySetByIdBodyDto } from './dto/update-study-set-by-id-body.dto
 import { DeleteStudySetByIdParamDto } from './dto/delete-study-set-by-id-param.dto';
 import { DeleteStudySetResponseInterface } from './dto/delete-study-set-response.interface';
 import { DuplicateStudySetDto } from './dto/duplicate-study-set.dto';
-import { DuplicateStudySetResponseInterface } from './dto/duplicate-study-set-response.interface';
 import { SearchStudySetParamsDto } from './dto/search-study-set-params.dto';
 
 @SkipThrottle()
@@ -103,7 +102,7 @@ export class StudySetController {
   @HttpCode(HttpStatus.CREATED)
   async duplicateStudySet(
     @Body() duplicateStudySet: DuplicateStudySetDto,
-  ): Promise<DuplicateStudySetResponseInterface> {
+  ): Promise<GetAllStudySetResponseInterface> {
     return await this.studySetService.duplicateStudySet(duplicateStudySet);
   }
 }

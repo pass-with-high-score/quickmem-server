@@ -1,3 +1,5 @@
+import { FlashcardResponseInterface } from '../../flashcard/interface/flashcard-response.interface';
+
 export interface GetAllStudySetResponseInterface {
   id: string;
   title: string;
@@ -7,6 +9,7 @@ export interface GetAllStudySetResponseInterface {
   updatedAt: Date;
   ownerId: string;
   flashCardCount: number;
+  flashcards: FlashcardResponseInterface[];
   subject?: {
     id: number;
     name: string;

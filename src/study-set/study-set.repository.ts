@@ -18,7 +18,6 @@ import { UpdateStudySetByIdParamDto } from './dto/update-study-set-by-id-param.d
 import { DeleteStudySetByIdParamDto } from './dto/delete-study-set-by-id-param.dto';
 import { DeleteStudySetResponseInterface } from './dto/delete-study-set-response.interface';
 import { DuplicateStudySetDto } from './dto/duplicate-study-set.dto';
-import { DuplicateStudySetResponseInterface } from './dto/duplicate-study-set-response.interface';
 import { FlashcardResponseInterface } from '../flashcard/interface/flashcard-response.interface';
 import { SearchStudySetParamsDto } from './dto/search-study-set-params.dto';
 
@@ -256,7 +255,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
   // duplicate study set by id
   async duplicateStudySet(
     duplicateStudySet: DuplicateStudySetDto,
-  ): Promise<DuplicateStudySetResponseInterface> {
+  ): Promise<GetAllStudySetResponseInterface> {
     const { studySetId, newOwnerId } = duplicateStudySet;
     const studySet = await this.findOne({
       where: { id: studySetId },
@@ -311,18 +310,8 @@ export class StudySetRepository extends Repository<StudySetEntity> {
           updatedAt: flashcard.updatedAt,
         }));
 
-      return {
-        id: savedStudySet.id,
-        title: savedStudySet.title,
-        description: savedStudySet.description,
-        ownerId: savedStudySet.owner.id,
-        subjectId: savedStudySet.subject?.id,
-        colorId: savedStudySet.color?.id,
-        isPublic: savedStudySet.isPublic,
-        createdAt: savedStudySet.createdAt,
-        updatedAt: savedStudySet.updatedAt,
-        flashcards: flashcards,
-      };
+      // use map
+      return this.mapStudySetToResponse(savedStudySet);
     } catch (error) {
       console.log('Error duplicating study set', error);
       throw new InternalServerErrorException('Error duplicating study set');
@@ -395,7 +384,6 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       createdAt: studySet.createdAt,
       updatedAt: studySet.updatedAt,
       ownerId: studySet.owner ? studySet.owner.id : undefined,
-      flashCardCount: studySet.flashcards ? studySet.flashcards.length : 0,
       subject: studySet.subject
         ? {
             id: studySet.subject.id,
@@ -414,6 +402,8 @@ export class StudySetRepository extends Repository<StudySetEntity> {
             hexValue: studySet.color.hexValue,
           }
         : undefined,
+      flashCardCount: studySet.flashcards ? studySet.flashcards.length : 0,
+      flashcards: studySet.flashcards,
     };
   }
 }
