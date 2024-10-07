@@ -18,7 +18,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
   ): Promise<FlashcardResponseInterface> {
     const { id } = getFlashcardByIdDto;
 
-    // 1. Tìm flashcard dựa trên id
     const flashcard = await this.dataSource
       .getRepository(FlashcardEntity)
       .findOne({
@@ -29,7 +28,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       throw new NotFoundException(`Flashcard with ID ${id} not found`);
     }
 
-    // 2. Trả về FlashcardResponseInterface
     return {
       id: flashcard.id,
       term: flashcard.term,
@@ -49,14 +47,11 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
   ): Promise<FlashcardResponseInterface[]> {
     const { id } = getFlashcardsByStudySetIdDto;
 
-    // 1. Tìm flashcards dựa trên studySetId
     const flashcards = await this.dataSource
       .getRepository(FlashcardEntity)
       .find({
         where: { studySet: { id: id } },
       });
-
-    // 2. Trả về mảng FlashcardResponseInterface
     return flashcards.map((flashcard) => ({
       id: flashcard.id,
       term: flashcard.term,
@@ -83,7 +78,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       studySetId,
     } = createFlashcardDto;
 
-    // 1. Tìm study set dựa trên studySetId
     const studySet = await this.dataSource
       .getRepository(StudySetEntity)
       .findOne({ where: { id: studySetId } });
@@ -92,7 +86,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       throw new NotFoundException(`Study set with ID ${studySetId} not found`);
     }
 
-    // 2. Tạo FlashcardEntity mới
     const flashcard = new FlashcardEntity();
     flashcard.term = term;
     flashcard.definition = definition;
@@ -101,10 +94,8 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     flashcard.explanation = explanation;
     flashcard.studySet = studySet;
 
-    // 4. Lưu flashcard và các options vào cơ sở dữ liệu
     const savedFlashcard = await this.save(flashcard);
 
-    // 5. Trả về FlashcardResponseInterface
     return {
       id: savedFlashcard.id,
       term: savedFlashcard.term,

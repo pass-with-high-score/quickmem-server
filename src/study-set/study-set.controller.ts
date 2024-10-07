@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -22,6 +23,9 @@ import { UpdateStudySetByIdParamDto } from './dto/update-study-set-by-id-param.d
 import { UpdateStudySetByIdBodyDto } from './dto/update-study-set-by-id-body.dto';
 import { DeleteStudySetByIdParamDto } from './dto/delete-study-set-by-id-param.dto';
 import { DeleteStudySetResponseInterface } from './dto/delete-study-set-response.interface';
+import { DuplicateStudySetDto } from './dto/duplicate-study-set.dto';
+import { DuplicateStudySetResponseInterface } from './dto/duplicate-study-set-response.interface';
+import { SearchStudySetParamsDto } from './dto/search-study-set-params.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -36,6 +40,17 @@ export class StudySetController {
   ): Promise<CreateStudySetResponseInterface> {
     console.log('createStudySetDto', createStudySetDto);
     return await this.studySetService.createStudySet(createStudySetDto);
+  }
+
+  @Get('/search')
+  @HttpCode(HttpStatus.OK)
+  async searchStudySetByTitle(
+    @Query() searchStudySeParamsDto: SearchStudySetParamsDto,
+  ): Promise<GetAllStudySetResponseInterface[]> {
+    console.log('searchStudySeParamsDto', searchStudySeParamsDto);
+    return await this.studySetService.searchStudySetByTitle(
+      searchStudySeParamsDto,
+    );
   }
 
   @Get()
@@ -82,5 +97,13 @@ export class StudySetController {
     return await this.studySetService.deleteStudySetById(
       deleteStudySetByIdParamDto,
     );
+  }
+
+  @Post('/duplicate')
+  @HttpCode(HttpStatus.CREATED)
+  async duplicateStudySet(
+    @Body() duplicateStudySet: DuplicateStudySetDto,
+  ): Promise<DuplicateStudySetResponseInterface> {
+    return await this.studySetService.duplicateStudySet(duplicateStudySet);
   }
 }

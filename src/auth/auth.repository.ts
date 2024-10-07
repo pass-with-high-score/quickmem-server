@@ -30,6 +30,7 @@ import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto'
 import { ResendVerificationEmailResponseDto } from './dto/resend-verification-email-response.dto';
 import { UpdateFullnameResponseInterfaceDto } from './dto/update-fullname-response.interface.dto';
 import { UpdateFullnameDto } from './dto/update-fullname.dto';
+import { SubscriptionTypeEnum } from '../subscription/enums/subscription.enum';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -173,6 +174,12 @@ export class AuthRepository extends Repository<UserEntity> {
           expiresIn: '7d',
         });
         const avatar = `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.png`;
+        const isPremium = await this.isUserPremium(user.id);
+        await this.sendEmailQueue.add('send-login-email', {
+          fullName: user.fullName,
+          email: user.email,
+          from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+        });
         await this.sendEmailQueue.add('send-login-email', {
           fullName: user.fullName,
           email: user.email,
@@ -186,7 +193,9 @@ export class AuthRepository extends Repository<UserEntity> {
           avatarUrl: avatar,
           role: user.role,
           accessToken: access_token,
+          isPremium,
           provider,
+          coin: user.coins,
           isVerified: user.isVerified,
           refreshToken: refresh_token,
           birthday: user.birthday,
@@ -317,8 +326,10 @@ export class AuthRepository extends Repository<UserEntity> {
       fullName: user.fullName,
       avatarUrl: avatar,
       role: user.role,
+      coin: user.coins,
       provider: user.provider,
       isVerified: user.isVerified,
+      isPremium: false,
       accessToken: accessToken,
       refreshToken: refreshToken,
       birthday: user.birthday,
@@ -508,5 +519,27 @@ export class AuthRepository extends Repository<UserEntity> {
       response.success = true;
       return response;
     }
+  }
+
+  async isUserPremium(userId: string): Promise<boolean> {
+    const user = await this.findOne({
+      where: { id: userId },
+      relations: ['subscriptions'],
+    });
+
+    if (!user) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    return user.subscriptions.some(
+      (subscription) =>
+        subscription.isActive &&
+        (subscription.subscriptionType === SubscriptionTypeEnum.FREE_TRIAL ||
+          subscription.subscriptionType === SubscriptionTypeEnum.YEARLY ||
+          subscription.subscriptionType === SubscriptionTypeEnum.MONTHLY),
+    );
   }
 }

@@ -17,6 +17,10 @@ import { UpdateStudySetByIdBodyDto } from './dto/update-study-set-by-id-body.dto
 import { UpdateStudySetByIdParamDto } from './dto/update-study-set-by-id-param.dto';
 import { DeleteStudySetByIdParamDto } from './dto/delete-study-set-by-id-param.dto';
 import { DeleteStudySetResponseInterface } from './dto/delete-study-set-response.interface';
+import { DuplicateStudySetDto } from './dto/duplicate-study-set.dto';
+import { DuplicateStudySetResponseInterface } from './dto/duplicate-study-set-response.interface';
+import { FlashcardResponseInterface } from '../flashcard/interface/flashcard-response.interface';
+import { SearchStudySetParamsDto } from './dto/search-study-set-params.dto';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -92,7 +96,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       const studySets = await this.dataSource
         .getRepository(StudySetEntity)
         .find({
-          relations: ['owner', 'subject', 'color'], // Load related entities
+          relations: ['owner', 'subject', 'color', 'flashcards'], // Load related entities
         });
 
       return studySets.map(this.mapStudySetToResponse);
@@ -112,7 +116,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         .getRepository(StudySetEntity)
         .find({
           where: { owner: { id: ownerId } }, // Filter by ownerId
-          relations: ['owner', 'subject', 'color'], // Load relations (subject and color)
+          relations: ['owner', 'subject', 'color', 'flashcards'], // Load relations (subject and color)
         });
       console.log('studySets', studySets);
 
@@ -133,7 +137,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         .getRepository(StudySetEntity)
         .findOne({
           where: { id }, // Filter by study set ID
-          relations: ['owner', 'subject', 'color'], // Load related entities
+          relations: ['owner', 'subject', 'color', 'flashcards'], // Load related entities
         });
 
       if (!studySet) {
@@ -150,6 +154,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     }
   }
 
+  // update study set by id
   async updateStudySetById(
     updateStudySetByIdParamDto: UpdateStudySetByIdParamDto,
     updateStudySetByIdBodyDto: UpdateStudySetByIdBodyDto,
@@ -171,7 +176,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         .getRepository(StudySetEntity)
         .findOne({
           where: { id },
-          relations: ['owner', 'subject', 'color'],
+          relations: ['owner', 'subject', 'color', 'flashcards'],
         });
 
       if (!studySet) {
@@ -216,6 +221,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     }
   }
 
+  // delete study set by id
   async deleteStudySetById(
     deleteStudySetByIdParamDto: DeleteStudySetByIdParamDto,
   ): Promise<DeleteStudySetResponseInterface> {
@@ -247,6 +253,137 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     }
   }
 
+  // duplicate study set by id
+  async duplicateStudySet(
+    duplicateStudySet: DuplicateStudySetDto,
+  ): Promise<DuplicateStudySetResponseInterface> {
+    const { studySetId, newOwnerId } = duplicateStudySet;
+    const studySet = await this.findOne({
+      where: { id: studySetId },
+      relations: ['flashcards', 'subject', 'color'],
+    });
+    if (!studySet) {
+      throw new NotFoundException('Study set not found');
+    }
+
+    const newOwner = await this.dataSource.getRepository(UserEntity).findOne({
+      where: { id: newOwnerId },
+    });
+    if (!newOwner) {
+      throw new NotFoundException('New owner not found');
+    }
+
+    if (!newOwner.isVerified) {
+      throw new NotFoundException('New owner is not verified');
+    }
+
+    const newStudySet = this.create({
+      title: studySet.title,
+      description: studySet.description,
+      isPublic: studySet.isPublic,
+      owner: newOwner,
+      subject: studySet.subject,
+      color: studySet.color,
+      flashcards: studySet.flashcards.map((flashcard) => ({
+        term: flashcard.term,
+        definition: flashcard.definition,
+        definitionImageURL: flashcard.definitionImageURL,
+        isStarred: flashcard.isStarred,
+        hint: flashcard.hint,
+        explanation: flashcard.explanation,
+        rating: flashcard.rating,
+      })),
+    });
+
+    try {
+      const savedStudySet = await this.save(newStudySet);
+      const flashcards: FlashcardResponseInterface[] =
+        savedStudySet.flashcards.map((flashcard) => ({
+          id: flashcard.id,
+          term: flashcard.term,
+          definition: flashcard.definition,
+          definitionImageURL: flashcard.definitionImageURL,
+          isStarred: flashcard.isStarred,
+          hint: flashcard.hint,
+          explanation: flashcard.explanation,
+          rating: flashcard.rating,
+          createdAt: flashcard.createdAt,
+          updatedAt: flashcard.updatedAt,
+        }));
+
+      return {
+        id: savedStudySet.id,
+        title: savedStudySet.title,
+        description: savedStudySet.description,
+        ownerId: savedStudySet.owner.id,
+        subjectId: savedStudySet.subject?.id,
+        colorId: savedStudySet.color?.id,
+        isPublic: savedStudySet.isPublic,
+        createdAt: savedStudySet.createdAt,
+        updatedAt: savedStudySet.updatedAt,
+        flashcards: flashcards,
+      };
+    } catch (error) {
+      console.log('Error duplicating study set', error);
+      throw new InternalServerErrorException('Error duplicating study set');
+    }
+  }
+
+  // search study set by title
+  async searchStudySetByTitle(
+    searchStudySeParamsDto: SearchStudySetParamsDto,
+  ): Promise<GetAllStudySetResponseInterface[]> {
+    const { title, creatorType, size, page } = searchStudySeParamsDto;
+    if (page < 1) {
+      throw new NotFoundException('Invalid page number');
+    }
+
+    try {
+      const queryBuilder = this.dataSource
+        .getRepository(StudySetEntity)
+        .createQueryBuilder('studySet')
+        .leftJoinAndSelect('studySet.owner', 'owner')
+        .leftJoinAndSelect('studySet.flashcards', 'flashcards')
+        .where('studySet.title LIKE :title', { title: `%${title}%` });
+
+      if (size) {
+        switch (size) {
+          case 'lessThan20':
+            queryBuilder.andWhere('flashcards.length < 20');
+            break;
+          case 'between20And49':
+            queryBuilder.andWhere('flashcards.length BETWEEN 20 AND 49');
+            break;
+          case 'moreThan50':
+            queryBuilder.andWhere('flashcards.length > 50');
+            break;
+        }
+      }
+
+      if (creatorType) {
+        switch (creatorType) {
+          case 'teacher':
+            queryBuilder.andWhere('owner.role = :role', { role: 'TEACHER' });
+            break;
+          case 'student':
+            queryBuilder.andWhere('owner.role = :role', { role: 'USER' });
+            break;
+          case 'premium':
+            queryBuilder.andWhere('owner.isPremium = true');
+            break;
+        }
+      }
+      const studySets = await queryBuilder
+        .skip((page - 1) * 40)
+        .take(40)
+        .getMany();
+      return studySets.map(this.mapStudySetToResponse);
+    } catch (error) {
+      console.log('Error searching study set', error);
+      throw new InternalServerErrorException('Error searching study set');
+    }
+  }
+
   private mapStudySetToResponse(
     studySet: StudySetEntity,
   ): GetAllStudySetResponseInterface {
@@ -258,12 +395,18 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       createdAt: studySet.createdAt,
       updatedAt: studySet.updatedAt,
       ownerId: studySet.owner ? studySet.owner.id : undefined,
+      flashCardCount: studySet.flashcards ? studySet.flashcards.length : 0,
       subject: studySet.subject
         ? {
             id: studySet.subject.id,
             name: studySet.subject.name,
           }
         : undefined,
+      user: {
+        id: studySet.owner ? studySet.owner.id : undefined,
+        username: studySet.owner ? studySet.owner.username : undefined,
+        avatarUrl: studySet.owner ? studySet.owner.avatarUrl : undefined,
+      },
       color: studySet.color
         ? {
             id: studySet.color.id,

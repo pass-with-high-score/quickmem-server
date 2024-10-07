@@ -9,6 +9,9 @@ import { UpdateStudySetByIdParamDto } from './dto/update-study-set-by-id-param.d
 import { UpdateStudySetByIdBodyDto } from './dto/update-study-set-by-id-body.dto';
 import { DeleteStudySetByIdParamDto } from './dto/delete-study-set-by-id-param.dto';
 import { DeleteStudySetResponseInterface } from './dto/delete-study-set-response.interface';
+import { DuplicateStudySetDto } from './dto/duplicate-study-set.dto';
+import { DuplicateStudySetResponseInterface } from './dto/duplicate-study-set-response.interface';
+import { SearchStudySetParamsDto } from './dto/search-study-set-params.dto';
 
 @Injectable()
 export class StudySetService {
@@ -53,6 +56,20 @@ export class StudySetService {
   ): Promise<DeleteStudySetResponseInterface> {
     return await this.studySetRepository.deleteStudySetById(
       deleteStudySetByIdParamDto,
+    );
+  }
+
+  async duplicateStudySet(
+    duplicateStudySet: DuplicateStudySetDto,
+  ): Promise<DuplicateStudySetResponseInterface> {
+    return await this.studySetRepository.duplicateStudySet(duplicateStudySet);
+  }
+
+  async searchStudySetByTitle(
+    searchStudySeParamsDto: SearchStudySetParamsDto,
+  ): Promise<GetAllStudySetResponseInterface[]> {
+    return await this.studySetRepository.searchStudySetByTitle(
+      searchStudySeParamsDto,
     );
   }
 }
