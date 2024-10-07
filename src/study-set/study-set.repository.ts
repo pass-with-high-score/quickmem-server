@@ -98,7 +98,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
           relations: ['owner', 'subject', 'color', 'flashcards'], // Load related entities
         });
 
-      return studySets.map(this.mapStudySetToResponse);
+      return studySets.map((studySet) => this.mapStudySetToResponse(studySet));
     } catch (error) {
       console.log('Error getting study sets', error);
       throw new InternalServerErrorException('Error getting study sets');
@@ -119,7 +119,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         });
       console.log('studySets', studySets);
 
-      return studySets.map(this.mapStudySetToResponse);
+      return studySets.map((studySet) => this.mapStudySetToResponse(studySet));
     } catch (error) {
       console.log('Error getting study sets', error);
       throw new InternalServerErrorException('Error getting study sets');
@@ -312,7 +312,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
       await this.dataSource.getRepository(FlashcardEntity).save(flashcards);
 
-      return this.mapStudySetToResponse(savedStudySet);
+      return this.mapStudySetToResponse(savedStudySet, true);
     } catch (error) {
       console.log('Error duplicating study set', error);
       throw new InternalServerErrorException('Error duplicating study set');
@@ -367,7 +367,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         .skip((page - 1) * 40)
         .take(40)
         .getMany();
-      return studySets.map(this.mapStudySetToResponse);
+      return studySets.map((studySet) => this.mapStudySetToResponse(studySet));
     } catch (error) {
       console.log('Error searching study set', error);
       throw new InternalServerErrorException('Error searching study set');
@@ -376,6 +376,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
   private mapStudySetToResponse(
     studySet: StudySetEntity,
+    getFlashcards: boolean = false,
   ): GetAllStudySetResponseInterface {
     return {
       id: studySet.id,
@@ -395,6 +396,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         id: studySet.owner ? studySet.owner.id : undefined,
         username: studySet.owner ? studySet.owner.username : undefined,
         avatarUrl: studySet.owner ? studySet.owner.avatarUrl : undefined,
+        role: studySet.owner ? studySet.owner.role : undefined,
       },
       color: studySet.color
         ? {
@@ -404,7 +406,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
           }
         : undefined,
       flashCardCount: studySet.flashcards ? studySet.flashcards.length : 0,
-      flashcards: studySet.flashcards,
+      flashcards: getFlashcards ? studySet.flashcards : [],
     };
   }
 }
