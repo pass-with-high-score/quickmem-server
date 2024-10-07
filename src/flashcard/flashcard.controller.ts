@@ -1,11 +1,14 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { FlashcardService } from './flashcard.service';
@@ -15,6 +18,11 @@ import { CreateFlashcardDto } from './dto/create-flashcard.dto';
 import { FlashcardResponseInterface } from './interface/flashcard-response.interface';
 import { GetFlashcardByIdDto } from './dto/get-flashcard-by-id.dto';
 import { GetFlashcardsByStudySetIdDto } from './dto/get-flashcards-by-study-set-id.dto';
+import { DeleteFlashcardParamDto } from './dto/delete-flashcard-param.dto';
+import { UpdateFlashcardParamDto } from './dto/update-flashcard-param.dto';
+import { UpdateFlashcardDto } from './dto/update-flashcard.dto';
+import { FlashcardEntity } from './entities/flashcard.entity';
+import { UpdateFlashcardRatingDto } from './dto/update-flashcard-rating.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -45,5 +53,34 @@ export class FlashcardController {
   ): Promise<FlashcardResponseInterface> {
     console.log('createFlashcardDto', createFlashcardDto);
     return await this.flashcardService.createFlashcard(createFlashcardDto);
+  }
+
+  @Delete('/:id')
+  async deleteFlashcardById(
+    @Param() deleteFlashcardParamDto: DeleteFlashcardParamDto,
+  ): Promise<void> {
+    return this.flashcardService.deleteFlashcardById(deleteFlashcardParamDto);
+  }
+
+  @Put('/:id')
+  async updateFlashcardById(
+    @Param() updateFlashcardParamDto: UpdateFlashcardParamDto,
+    @Body() updateFlashcardDto: UpdateFlashcardDto,
+  ): Promise<FlashcardEntity> {
+    return this.flashcardService.updateFlashcardById(
+      updateFlashcardParamDto,
+      updateFlashcardDto,
+    );
+  }
+
+  @Patch('/:id/rating')
+  async updateFlashcardRating(
+    @Param() updateFlashcardParamDto: UpdateFlashcardParamDto,
+    @Body() updateFlashcardRatingDto: UpdateFlashcardRatingDto,
+  ): Promise<FlashcardEntity> {
+    return this.flashcardService.updateFlashcardRating(
+      updateFlashcardParamDto,
+      updateFlashcardRatingDto,
+    );
   }
 }
