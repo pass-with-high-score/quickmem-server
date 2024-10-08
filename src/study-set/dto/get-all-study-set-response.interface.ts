@@ -5,8 +5,6 @@ export interface GetAllStudySetResponseInterface {
   title: string;
   description: string;
   isPublic: boolean;
-  createdAt: Date;
-  updatedAt: Date;
   ownerId: string;
   flashCardCount: number;
   flashcards: FlashcardResponseInterface[];
@@ -25,4 +23,6 @@ export interface GetAllStudySetResponseInterface {
     name: string;
     hexValue: string;
   };
+  createdAt: Date;
+  updatedAt: Date;
 }
