@@ -21,8 +21,10 @@ export interface GetClassResponseInterface {
       username: string;
       avatarUrl: string;
     };
+    createdAt: Date;
+    updatedAt: Date;
   }[];
-  folder: {
+  folders: {
     id: string;
     title: string;
     description?: string;
@@ -37,7 +39,7 @@ export interface GetClassResponseInterface {
     };
     createdAt: Date;
     updatedAt: Date;
-  };
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }

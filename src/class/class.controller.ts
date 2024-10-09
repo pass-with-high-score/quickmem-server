@@ -1,9 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { ClassService } from './class.service';
@@ -11,6 +15,11 @@ import { CreateClassDto } from './dto/create-class.dto';
 import { CreateClassResponseInterface } from './interfaces/create-class-response.interface';
 import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
+import { GetClassByIdParamDto } from './dto/get-class-by-id-param.dto';
+import { GetClassResponseInterface } from './interfaces/get-class-response.interface';
+import { UpdateClassByIdParamDto } from './dto/update-class-by-id-param.dto';
+import { UpdateClassByIdDto } from './dto/update-class-by-id.dto';
+import { DeleteClassByIdParamDto } from './dto/delete-class-by-id-param.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -18,11 +27,39 @@ import { AuthGuard } from '@nestjs/passport';
 export class ClassController {
   constructor(private readonly classService: ClassService) {}
 
+  @Get('/:id')
+  @HttpCode(HttpStatus.OK)
+  async getClassById(
+    @Param() getClassByIdParamDto: GetClassByIdParamDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classService.getClassById(getClassByIdParamDto);
+  }
+
+  @Put('/:id')
+  @HttpCode(HttpStatus.OK)
+  async updateClass(
+    @Param() updateClassByIdParamDto: UpdateClassByIdParamDto,
+    @Body() updateClassByIdDto: UpdateClassByIdDto,
+  ): Promise<CreateClassResponseInterface> {
+    return this.classService.updateClass(
+      updateClassByIdParamDto,
+      updateClassByIdDto,
+    );
+  }
+
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createClass(
     @Body() createClassDto: CreateClassDto,
   ): Promise<CreateClassResponseInterface> {
     return this.classService.createClass(createClassDto);
+  }
+
+  @Delete('/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteClassById(
+    deleteClassByIdParamDto: DeleteClassByIdParamDto,
+  ): Promise<void> {
+    return this.classService.deleteClassById(deleteClassByIdParamDto);
   }
 }
