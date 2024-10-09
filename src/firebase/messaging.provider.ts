@@ -9,9 +9,6 @@ export const messagingProvider: Provider = {
   provide: MessagingProvider,
   useFactory: async () => {
     try {
-      console.log(
-        path.resolve(__dirname, '../../src/firebase/firebase-adminsdk.json'),
-      );
       const jsonString = fs.readFileSync(
         path.resolve(__dirname, '../../src/firebase/firebase-adminsdk.json'),
         'utf-8',
