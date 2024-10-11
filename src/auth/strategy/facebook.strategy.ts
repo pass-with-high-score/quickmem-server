@@ -9,7 +9,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     super({
       clientID: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-      callbackURL: 'https://api.nqmgaming.nl/auth/facebook/callback',
+      callbackURL: 'https://api.quickmem.app/auth/facebook/callback',
       profileFields: ['id', 'name', 'displayName', 'photos', 'email'],
       scope: ['email'],
     });
