@@ -20,6 +20,7 @@ import { GetClassResponseInterface } from './interfaces/get-class-response.inter
 import { UpdateClassByIdParamDto } from './dto/update-class-by-id-param.dto';
 import { UpdateClassByIdDto } from './dto/update-class-by-id.dto';
 import { DeleteClassByIdParamDto } from './dto/delete-class-by-id-param.dto';
+import { GetClassesByUserIdDto } from './dto/get-classes-by-user-id.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -35,12 +36,21 @@ export class ClassController {
     return this.classService.getClassById(getClassByIdParamDto);
   }
 
+  @Get('/user/:userId')
+  @HttpCode(HttpStatus.OK)
+  async getClassesByUserId(
+    @Param() getClassesByUserIdDto: GetClassesByUserIdDto,
+  ): Promise<GetClassResponseInterface[]> {
+    return this.classService.getClassesByUserId(getClassesByUserIdDto);
+  }
+
   @Put('/:id')
   @HttpCode(HttpStatus.OK)
   async updateClass(
     @Param() updateClassByIdParamDto: UpdateClassByIdParamDto,
     @Body() updateClassByIdDto: UpdateClassByIdDto,
   ): Promise<CreateClassResponseInterface> {
+    console.log('updateClassByIdParamDto', updateClassByIdParamDto);
     return this.classService.updateClass(
       updateClassByIdParamDto,
       updateClassByIdDto,
@@ -58,7 +68,7 @@ export class ClassController {
   @Delete('/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteClassById(
-    deleteClassByIdParamDto: DeleteClassByIdParamDto,
+    @Param() deleteClassByIdParamDto: DeleteClassByIdParamDto,
   ): Promise<void> {
     return this.classService.deleteClassById(deleteClassByIdParamDto);
   }

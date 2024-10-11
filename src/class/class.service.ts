@@ -7,6 +7,7 @@ import { GetClassResponseInterface } from './interfaces/get-class-response.inter
 import { UpdateClassByIdParamDto } from './dto/update-class-by-id-param.dto';
 import { UpdateClassByIdDto } from './dto/update-class-by-id.dto';
 import { DeleteClassByIdParamDto } from './dto/delete-class-by-id-param.dto';
+import { GetClassesByUserIdDto } from './dto/get-classes-by-user-id.dto';
 
 @Injectable()
 export class ClassService {
@@ -22,6 +23,12 @@ export class ClassService {
     getClassByIdParamDto: GetClassByIdParamDto,
   ): Promise<GetClassResponseInterface> {
     return this.classRepository.getClassById(getClassByIdParamDto);
+  }
+
+  async getClassesByUserId(
+    getClassesByUserIdDto: GetClassesByUserIdDto,
+  ): Promise<GetClassResponseInterface[]> {
+    return this.classRepository.getClassesByUserId(getClassesByUserIdDto);
   }
 
   async updateClass(

@@ -7,6 +7,9 @@ export interface GetClassResponseInterface {
     username: string;
     avatarUrl: string;
   };
+  memberCount: number;
+  studySetCount: number;
+  folderCount: number;
   members: {
     id: string;
     username: string;

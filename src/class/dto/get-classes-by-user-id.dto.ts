@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsUUID } from 'class-validator';
 
-export class GetClassesByOwnerIdDto {
+export class GetClassesByUserIdDto {
   @IsNotEmpty()
   @IsUUID()
-  ownerId: string;
+  userId: string;
 }
