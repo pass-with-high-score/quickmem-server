@@ -1,15 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, ILike, Like, Repository } from 'typeorm';
 import { ClassEntity } from './entities/class.entity';
-import { CreateClassDto } from './dto/create-class.dto';
+import { CreateClassDto } from './dto/bodies/create-class.dto';
 import { CreateClassResponseInterface } from './interfaces/create-class-response.interface';
 import { UserEntity } from '../auth/entities/user.entity';
-import { GetClassByIdParamDto } from './dto/get-class-by-id-param.dto';
+import { GetClassByIdParamDto } from './dto/params/get-class-by-id-param.dto';
 import { GetClassResponseInterface } from './interfaces/get-class-response.interface';
-import { UpdateClassByIdDto } from './dto/update-class-by-id.dto';
-import { UpdateClassByIdParamDto } from './dto/update-class-by-id-param.dto';
-import { DeleteClassByIdParamDto } from './dto/delete-class-by-id-param.dto';
-import { GetClassesByUserIdDto } from './dto/get-classes-by-user-id.dto';
+import { UpdateClassByIdDto } from './dto/bodies/update-class-by-id.dto';
+import { UpdateClassByIdParamDto } from './dto/params/update-class-by-id-param.dto';
+import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.dto';
+import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
+import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -18,6 +19,28 @@ export class ClassRepository extends Repository<ClassEntity> {
   }
 
   // Search class by title
+  async searchClassByTitle(
+    searchClassByTitleDto: SearchClassByTitleDto,
+  ): Promise<GetClassResponseInterface[]> {
+    const { title, size = 40, page = 0 } = searchClassByTitleDto;
+
+    const [classes, total] = await this.findAndCount({
+      where: { title: ILike(`%${title}%`) },
+      relations: ['owner', 'members', 'folders', 'studySets'],
+      take: size,
+      skip: page * size,
+    });
+
+    if (!classes.length) {
+      throw new NotFoundException('No classes found with the given title');
+    }
+
+    return Promise.all(
+      classes.map((classEntity) =>
+        this.mapClassEntityToResponse(classEntity, false, false, false),
+      ),
+    );
+  }
 
   // Get class by id
   async getClassById(

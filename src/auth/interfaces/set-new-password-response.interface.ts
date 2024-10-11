@@ -1,4 +1,4 @@
-export class SetNewPasswordResponseDto {
+export interface SetNewPasswordResponseInterface {
   email: string;
   isSet: boolean;
   message: string;

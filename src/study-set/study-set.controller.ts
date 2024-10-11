@@ -14,17 +14,17 @@ import {
 import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { StudySetService } from './study-set.service';
-import { CreateStudySetDto } from './dto/create-study-set.dto';
-import { CreateStudySetResponseInterface } from './dto/create-study-set-response.interface';
-import { GetAllStudySetResponseInterface } from './dto/get-all-study-set-response.interface';
-import { GetStudySetsByOwnerIdDto } from './dto/get-study-sets-by-ownerId.dto';
-import { GetStudySetByIdDto } from './dto/get-study-set-by-id.dto';
-import { UpdateStudySetByIdParamDto } from './dto/update-study-set-by-id-param.dto';
-import { UpdateStudySetByIdBodyDto } from './dto/update-study-set-by-id-body.dto';
-import { DeleteStudySetByIdParamDto } from './dto/delete-study-set-by-id-param.dto';
-import { DeleteStudySetResponseInterface } from './dto/delete-study-set-response.interface';
-import { DuplicateStudySetDto } from './dto/duplicate-study-set.dto';
-import { SearchStudySetParamsDto } from './dto/search-study-set-params.dto';
+import { CreateStudySetDto } from './dto/bodies/create-study-set.dto';
+import { CreateStudySetResponseInterface } from './interfaces/create-study-set-response.interface';
+import { GetAllStudySetResponseInterface } from './interfaces/get-all-study-set-response.interface';
+import { GetStudySetsByOwnerIdDto } from './dto/params/get-study-sets-by-ownerId.dto';
+import { GetStudySetByIdDto } from './dto/params/get-study-set-by-id.dto';
+import { UpdateStudySetByIdParamDto } from './dto/params/update-study-set-by-id-param.dto';
+import { UpdateStudySetByIdBodyDto } from './dto/bodies/update-study-set-by-id-body.dto';
+import { DeleteStudySetByIdParamDto } from './dto/params/delete-study-set-by-id-param.dto';
+import { DeleteStudySetResponseInterface } from './interfaces/delete-study-set-response.interface';
+import { DuplicateStudySetDto } from './dto/bodies/duplicate-study-set.dto';
+import { SearchStudySetParamsDto } from './dto/queries/search-study-set-params.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))

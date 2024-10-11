@@ -12,19 +12,19 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FolderService } from './folder.service';
-import { CreateFolderDto } from './dto/create-folder.dto';
+import { CreateFolderDto } from './dto/bodies/create-folder.dto';
 import { FolderResponseInterface } from './interfaces/folder-response.interface';
 import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
-import { GetFoldersByOwnerIdDto } from './dto/get-folders-by-owner-id.dto';
+import { GetFoldersByOwnerIdDto } from './dto/params/get-folders-by-owner-id.dto';
 import { GetFolderResponseInterface } from './interfaces/get-folder-response.interface';
-import { GetFoldersByIdDto } from './dto/get-folders-by-id.dto';
-import { AddStudySetsToFolderDto } from './dto/add-study-sets-to-folder.dto';
-import { UpdateFolderByIdDto } from './dto/update-folder-by-id.dto';
-import { UpdateFolderDto } from './dto/update-folder.dto';
-import { RemoveStudySetsFromFolderDto } from './dto/remove-study-sets-from-folder.dto';
-import { DeleteFolderByIdDto } from './dto/delete-folder-by-id.dto';
-import { SearchFolderByTitleDto } from './dto/search-folder-by-title';
+import { GetFoldersByIdDto } from './dto/params/get-folders-by-id.dto';
+import { AddStudySetsToFolderDto } from './dto/bodies/add-study-sets-to-folder.dto';
+import { UpdateFolderByIdDto } from './dto/params/update-folder-by-id.dto';
+import { UpdateFolderDto } from './dto/bodies/update-folder.dto';
+import { RemoveStudySetsFromFolderDto } from './dto/bodies/remove-study-sets-from-folder.dto';
+import { DeleteFolderByIdDto } from './dto/params/delete-folder-by-id.dto';
+import { SearchFolderByTitleDto } from './dto/queries/search-folder-by-title';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))

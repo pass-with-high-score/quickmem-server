@@ -1,12 +1,12 @@
 import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
 import { MailerService } from '@nestjs-modules/mailer';
-import { MailOtpInterface } from './dto/mail-otp.interface';
-import { MailLoginInterface } from './dto/mail-login.interface';
-import { MailSignupInterface } from './dto/mail-signup.interface';
-import { MailResetPasswordInterface } from './dto/mail-reset-password.interface';
-import { MailResetPasswordSuccessInterface } from './dto/mail-reset-password-success.interface';
-import { MailUpdatePasswordSuccessInterface } from './dto/mail-update-password-successs.interface';
+import { MailOtpInterface } from './interfaces/mail-otp.interface';
+import { MailLoginInterface } from './interfaces/mail-login.interface';
+import { MailSignupInterface } from './interfaces/mail-signup.interface';
+import { MailResetPasswordInterface } from './interfaces/mail-reset-password.interface';
+import { MailResetPasswordSuccessInterface } from './interfaces/mail-reset-password-success.interface';
+import { MailUpdatePasswordSuccessInterface } from './interfaces/mail-update-password-successs.interface';
 
 @Processor('send-email')
 export class EmailConsumer {

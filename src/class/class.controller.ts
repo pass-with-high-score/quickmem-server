@@ -8,25 +8,35 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ClassService } from './class.service';
-import { CreateClassDto } from './dto/create-class.dto';
+import { CreateClassDto } from './dto/bodies/create-class.dto';
 import { CreateClassResponseInterface } from './interfaces/create-class-response.interface';
 import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
-import { GetClassByIdParamDto } from './dto/get-class-by-id-param.dto';
+import { GetClassByIdParamDto } from './dto/params/get-class-by-id-param.dto';
 import { GetClassResponseInterface } from './interfaces/get-class-response.interface';
-import { UpdateClassByIdParamDto } from './dto/update-class-by-id-param.dto';
-import { UpdateClassByIdDto } from './dto/update-class-by-id.dto';
-import { DeleteClassByIdParamDto } from './dto/delete-class-by-id-param.dto';
-import { GetClassesByUserIdDto } from './dto/get-classes-by-user-id.dto';
+import { UpdateClassByIdParamDto } from './dto/params/update-class-by-id-param.dto';
+import { UpdateClassByIdDto } from './dto/bodies/update-class-by-id.dto';
+import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.dto';
+import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
+import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
 @Controller('class')
 export class ClassController {
   constructor(private readonly classService: ClassService) {}
+
+  @Get('/search')
+  @HttpCode(HttpStatus.OK)
+  async searchClassByTitle(
+    @Query() searchClassByTitleDto: SearchClassByTitleDto,
+  ): Promise<GetClassResponseInterface[]> {
+    return this.classService.searchClassByTitle(searchClassByTitleDto);
+  }
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)

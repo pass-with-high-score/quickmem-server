@@ -10,26 +10,26 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { SignupCredentialsDto } from './dto/signup-credentials.dto';
+import { SignupCredentialsDto } from './dto/bodies/signup-credentials.dto';
 import { JwtService } from '@nestjs/jwt';
-import { AuthResponseInterface } from './dto/auth-response.interface';
-import { LoginCredentialsDto } from './dto/login-credentials.dto';
+import { AuthResponseInterface } from './interfaces/auth-response.interface';
+import { LoginCredentialsDto } from './dto/bodies/login-credentials.dto';
 import { ConfigService } from '@nestjs/config';
-import { SignupResponseDto } from './dto/signup-response.dto';
-import { VerifyOtpDto } from './dto/verify-otp.dto';
-import { SendResetPasswordDto } from './dto/send-reset-password.dto';
-import { SendResetPasswordResponseDto } from './dto/send-reset-password-response.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
-import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
+import { SignupResponseInterface } from './interfaces/signup-response.interface';
+import { VerifyOtpDto } from './dto/bodies/verify-otp.dto';
+import { SendResetPasswordDto } from './dto/bodies/send-reset-password.dto';
+import { SendResetPasswordResponseInterface } from './interfaces/send-reset-password-response.interface';
+import { ResetPasswordDto } from './dto/bodies/reset-password.dto';
+import { ResetPasswordResponseInterface } from './interfaces/reset-password-response.interface';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { MailerService } from '@nestjs-modules/mailer';
-import { SetNewPasswordDto } from './dto/set-new-password.dto';
-import { SetNewPasswordResponseDto } from './dto/set-new-password-response.dto';
-import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
-import { ResendVerificationEmailResponseDto } from './dto/resend-verification-email-response.dto';
-import { UpdateFullnameResponseInterfaceDto } from './dto/update-fullname-response.interface.dto';
-import { UpdateFullnameDto } from './dto/update-fullname.dto';
+import { SetNewPasswordDto } from './dto/bodies/set-new-password.dto';
+import { SetNewPasswordResponseInterface } from './interfaces/set-new-password-response.interface';
+import { ResendVerificationEmailDto } from './dto/bodies/resend-verification-email.dto';
+import { ResendVerificationEmailResponseInterface } from './interfaces/resend-verification-email-response.interface';
+import { UpdateFullnameResponseInterfaceDto } from './interfaces/update-fullname-response.interface.dto';
+import { UpdateFullnameDto } from './dto/bodies/update-fullname.dto';
 import { SubscriptionTypeEnum } from '../subscription/enums/subscription.enum';
 
 @Injectable()
@@ -46,7 +46,7 @@ export class AuthRepository extends Repository<UserEntity> {
 
   async createUser(
     authCredentialsDto: SignupCredentialsDto,
-  ): Promise<SignupResponseDto> {
+  ): Promise<SignupResponseInterface> {
     const {
       email,
       username,
@@ -125,11 +125,11 @@ export class AuthRepository extends Repository<UserEntity> {
         otp: otp,
         fullName: fullName,
       });
-      const response = new SignupResponseDto();
-      response.message = 'User created successfully. Check your email for OTP';
-      response.isVerified = isVerified;
-      response.success = true;
-      return response;
+      return {
+        message: 'User created successfully. Check your email for OTP',
+        isVerified,
+        success: true,
+      };
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException({
@@ -338,7 +338,7 @@ export class AuthRepository extends Repository<UserEntity> {
 
   async sendResetPasswordEmail(
     sendResetPasswordDto: SendResetPasswordDto,
-  ): Promise<SendResetPasswordResponseDto> {
+  ): Promise<SendResetPasswordResponseInterface> {
     const { email } = sendResetPasswordDto;
     const user = await this.findOne({ where: { email } });
 
@@ -366,16 +366,17 @@ export class AuthRepository extends Repository<UserEntity> {
       otp: otp,
     });
 
-    const response = new SendResetPasswordResponseDto();
-    response.message = 'OTP sent to your email';
-    response.isSent = true;
-    response.resetPasswordToken = token;
-    return response;
+    return {
+      message: 'OTP sent to your email',
+      isSent: true,
+      resetPasswordToken: token,
+      email: user.email,
+    };
   }
 
   async resetPassword(
     resetPasswordDto: ResetPasswordDto,
-  ): Promise<ResetPasswordResponseDto> {
+  ): Promise<ResetPasswordResponseInterface> {
     const { email, newPassword, resetPasswordToken, otp } = resetPasswordDto;
     const user = await this.findOne({
       where: { resetPasswordToken: resetPasswordToken, otp, email },
@@ -408,11 +409,11 @@ export class AuthRepository extends Repository<UserEntity> {
         from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
       });
 
-      const response = new ResetPasswordResponseDto();
-      response.isReset = true;
-      response.message = 'Password reset successful';
-      response.email = user.email;
-      return response;
+      return {
+        isReset: true,
+        message: 'Password reset successful',
+        email: user.email,
+      };
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException({
@@ -424,7 +425,7 @@ export class AuthRepository extends Repository<UserEntity> {
 
   async setNewPassword(
     setNewPasswordDto: SetNewPasswordDto,
-  ): Promise<SetNewPasswordResponseDto> {
+  ): Promise<SetNewPasswordResponseInterface> {
     const { email, oldPassword, newPassword } = setNewPasswordDto;
     const user = await this.findOne({ where: { email } });
 
@@ -463,16 +464,16 @@ export class AuthRepository extends Repository<UserEntity> {
       from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
     });
 
-    const response = new SetNewPasswordResponseDto();
-    response.isSet = true;
-    response.message = 'Password set successfully';
-    response.email = user.email;
-    return response;
+    return {
+      isSet: true,
+      message: 'Password set successfully',
+      email: user.email,
+    };
   }
 
   async resendVerificationEmail(
     resendVerificationEmailDto: ResendVerificationEmailDto,
-  ): Promise<ResendVerificationEmailResponseDto> {
+  ): Promise<ResendVerificationEmailResponseInterface> {
     const { email } = resendVerificationEmailDto;
     const user = await this.findOne({ where: { email } });
 
@@ -497,11 +498,11 @@ export class AuthRepository extends Repository<UserEntity> {
         otp: user.otp,
         fullName: user.fullName,
       });
-      const response = new ResendVerificationEmailResponseDto();
-      response.message = 'Resend OTP successful';
-      response.isVerified = false;
-      response.success = true;
-      return response;
+      return {
+        message: 'Resend OTP successful',
+        isVerified: false,
+        success: true,
+      };
     } else {
       const otp = crypto.randomInt(100000, 999999).toString(); // Generate a 6-digit OTP
       user.otp = otp;
@@ -513,11 +514,11 @@ export class AuthRepository extends Repository<UserEntity> {
         otp: otp,
         fullName: user.fullName,
       });
-      const response = new ResendVerificationEmailResponseDto();
-      response.message = 'Resend OTP successful';
-      response.isVerified = false;
-      response.success = true;
-      return response;
+      return {
+        message: 'Resend OTP successful',
+        isVerified: false,
+        success: true,
+      };
     }
   }
 

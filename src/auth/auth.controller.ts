@@ -12,22 +12,22 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignupCredentialsDto } from './dto/signup-credentials.dto';
-import { AuthResponseInterface } from './dto/auth-response.interface';
-import { LoginCredentialsDto } from './dto/login-credentials.dto';
-import { SignupResponseDto } from './dto/signup-response.dto';
-import { VerifyOtpDto } from './dto/verify-otp.dto';
-import { SendResetPasswordDto } from './dto/send-reset-password.dto';
-import { SendResetPasswordResponseDto } from './dto/send-reset-password-response.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
-import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
+import { SignupCredentialsDto } from './dto/bodies/signup-credentials.dto';
+import { AuthResponseInterface } from './interfaces/auth-response.interface';
+import { LoginCredentialsDto } from './dto/bodies/login-credentials.dto';
+import { SignupResponseInterface } from './interfaces/signup-response.interface';
+import { VerifyOtpDto } from './dto/bodies/verify-otp.dto';
+import { SendResetPasswordDto } from './dto/bodies/send-reset-password.dto';
+import { SendResetPasswordResponseInterface } from './interfaces/send-reset-password-response.interface';
+import { ResetPasswordDto } from './dto/bodies/reset-password.dto';
+import { ResetPasswordResponseInterface } from './interfaces/reset-password-response.interface';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
-import { SetNewPasswordResponseDto } from './dto/set-new-password-response.dto';
-import { SetNewPasswordDto } from './dto/set-new-password.dto';
-import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
-import { ResendVerificationEmailResponseDto } from './dto/resend-verification-email-response.dto';
-import { UpdateFullnameDto } from './dto/update-fullname.dto';
-import { UpdateFullnameResponseInterfaceDto } from './dto/update-fullname-response.interface.dto';
+import { SetNewPasswordResponseInterface } from './interfaces/set-new-password-response.interface';
+import { SetNewPasswordDto } from './dto/bodies/set-new-password.dto';
+import { ResendVerificationEmailDto } from './dto/bodies/resend-verification-email.dto';
+import { ResendVerificationEmailResponseInterface } from './interfaces/resend-verification-email-response.interface';
+import { UpdateFullnameDto } from './dto/bodies/update-fullname.dto';
+import { UpdateFullnameResponseInterfaceDto } from './interfaces/update-fullname-response.interface.dto';
 import { OwnershipGuard } from './guard/ownership.guard';
 import { GoogleAuthGuard } from './guard/google-auth.guard';
 import { Request, Response } from 'express';
@@ -96,7 +96,7 @@ export class AuthController {
   @Post('/signup')
   async signUp(
     @Body() authCredentialsDto: SignupCredentialsDto,
-  ): Promise<SignupResponseDto> {
+  ): Promise<SignupResponseInterface> {
     return this.authService.signUp(authCredentialsDto);
   }
 
@@ -138,7 +138,7 @@ export class AuthController {
   @Post('/send-reset-password')
   async sendResetPassword(
     @Body() sendResetPasswordDto: SendResetPasswordDto,
-  ): Promise<SendResetPasswordResponseDto> {
+  ): Promise<SendResetPasswordResponseInterface> {
     return this.authService.sendResetPassword(sendResetPasswordDto);
   }
 
@@ -147,7 +147,7 @@ export class AuthController {
   @Post('/reset-password')
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
-  ): Promise<ResetPasswordResponseDto> {
+  ): Promise<ResetPasswordResponseInterface> {
     return this.authService.resetPassword(resetPasswordDto);
   }
 
@@ -157,7 +157,7 @@ export class AuthController {
   @Patch('/user/password')
   async setNewPassword(
     @Body() setNewPasswordDto: SetNewPasswordDto,
-  ): Promise<SetNewPasswordResponseDto> {
+  ): Promise<SetNewPasswordResponseInterface> {
     return this.authService.setNewPassword(setNewPasswordDto);
   }
 
@@ -166,7 +166,7 @@ export class AuthController {
   @Post('/resend-verification-email')
   async resendVerificationEmail(
     @Body() resendVerificationEmailDto: ResendVerificationEmailDto,
-  ): Promise<ResendVerificationEmailResponseDto> {
+  ): Promise<ResendVerificationEmailResponseInterface> {
     return this.authService.resendVerificationEmail(resendVerificationEmailDto);
   }
 }

@@ -1,20 +1,20 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthRepository } from './auth.repository';
-import { SignupCredentialsDto } from './dto/signup-credentials.dto';
-import { AuthResponseInterface } from './dto/auth-response.interface';
-import { LoginCredentialsDto } from './dto/login-credentials.dto';
-import { SignupResponseDto } from './dto/signup-response.dto';
-import { VerifyOtpDto } from './dto/verify-otp.dto';
-import { SendResetPasswordDto } from './dto/send-reset-password.dto';
-import { SendResetPasswordResponseDto } from './dto/send-reset-password-response.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
-import { ResetPasswordResponseDto } from './dto/reset-password-response.dto';
-import { SetNewPasswordResponseDto } from './dto/set-new-password-response.dto';
-import { SetNewPasswordDto } from './dto/set-new-password.dto';
-import { ResendVerificationEmailDto } from './dto/resend-verification-email.dto';
-import { ResendVerificationEmailResponseDto } from './dto/resend-verification-email-response.dto';
-import { UpdateFullnameDto } from './dto/update-fullname.dto';
-import { UpdateFullnameResponseInterfaceDto } from './dto/update-fullname-response.interface.dto';
+import { SignupCredentialsDto } from './dto/bodies/signup-credentials.dto';
+import { AuthResponseInterface } from './interfaces/auth-response.interface';
+import { LoginCredentialsDto } from './dto/bodies/login-credentials.dto';
+import { SignupResponseInterface } from './interfaces/signup-response.interface';
+import { VerifyOtpDto } from './dto/bodies/verify-otp.dto';
+import { SendResetPasswordDto } from './dto/bodies/send-reset-password.dto';
+import { SendResetPasswordResponseInterface } from './interfaces/send-reset-password-response.interface';
+import { ResetPasswordDto } from './dto/bodies/reset-password.dto';
+import { ResetPasswordResponseInterface } from './interfaces/reset-password-response.interface';
+import { SetNewPasswordResponseInterface } from './interfaces/set-new-password-response.interface';
+import { SetNewPasswordDto } from './dto/bodies/set-new-password.dto';
+import { ResendVerificationEmailDto } from './dto/bodies/resend-verification-email.dto';
+import { ResendVerificationEmailResponseInterface } from './interfaces/resend-verification-email-response.interface';
+import { UpdateFullnameDto } from './dto/bodies/update-fullname.dto';
+import { UpdateFullnameResponseInterfaceDto } from './interfaces/update-fullname-response.interface.dto';
 import axios from 'axios';
 import { OAuth2Client } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
@@ -32,7 +32,7 @@ export class AuthService {
 
   async signUp(
     authCredentialsDto: SignupCredentialsDto,
-  ): Promise<SignupResponseDto> {
+  ): Promise<SignupResponseInterface> {
     return await this.usersRepository.createUser(authCredentialsDto);
   }
 
@@ -104,25 +104,25 @@ export class AuthService {
 
   async sendResetPassword(
     sendResetPasswordDto: SendResetPasswordDto,
-  ): Promise<SendResetPasswordResponseDto> {
+  ): Promise<SendResetPasswordResponseInterface> {
     return this.usersRepository.sendResetPasswordEmail(sendResetPasswordDto);
   }
 
   async resetPassword(
     resetPasswordDto: ResetPasswordDto,
-  ): Promise<ResetPasswordResponseDto> {
+  ): Promise<ResetPasswordResponseInterface> {
     return this.usersRepository.resetPassword(resetPasswordDto);
   }
 
   async setNewPassword(
     setNewPasswordDto: SetNewPasswordDto,
-  ): Promise<SetNewPasswordResponseDto> {
+  ): Promise<SetNewPasswordResponseInterface> {
     return this.usersRepository.setNewPassword(setNewPasswordDto);
   }
 
   async resendVerificationEmail(
     resendVerificationEmailDto: ResendVerificationEmailDto,
-  ): Promise<ResendVerificationEmailResponseDto> {
+  ): Promise<ResendVerificationEmailResponseInterface> {
     return this.usersRepository.resendVerificationEmail(
       resendVerificationEmailDto,
     );

@@ -5,15 +5,15 @@ import {
   NotFoundException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { CreateFlashcardDto } from './dto/create-flashcard.dto';
+import { CreateFlashcardDto } from './dto/bodies/create-flashcard.dto';
 import { FlashcardResponseInterface } from './interface/flashcard-response.interface';
 import { StudySetEntity } from '../study-set/entities/study-set.entity';
-import { GetFlashcardByIdDto } from './dto/get-flashcard-by-id.dto';
-import { GetFlashcardsByStudySetIdDto } from './dto/get-flashcards-by-study-set-id.dto';
-import { UpdateFlashcardDto } from './dto/update-flashcard.dto';
-import { DeleteFlashcardParamDto } from './dto/delete-flashcard-param.dto';
-import { UpdateFlashcardParamDto } from './dto/update-flashcard-param.dto';
-import { UpdateFlashcardRatingDto } from './dto/update-flashcard-rating.dto';
+import { GetFlashcardByIdDto } from './dto/params/get-flashcard-by-id.dto';
+import { GetFlashcardsByStudySetIdDto } from './dto/params/get-flashcards-by-study-set-id.dto';
+import { UpdateFlashcardDto } from './dto/bodies/update-flashcard.dto';
+import { DeleteFlashcardParamDto } from './dto/params/delete-flashcard-param.dto';
+import { UpdateFlashcardParamDto } from './dto/params/update-flashcard-param.dto';
+import { UpdateFlashcardRatingDto } from './dto/bodies/update-flashcard-rating.dto';
 
 @Injectable()
 export class FlashcardRepository extends Repository<FlashcardEntity> {
