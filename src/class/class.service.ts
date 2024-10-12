@@ -11,6 +11,7 @@ import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
 import { AddMemberToClassDto } from './dto/bodies/add-member-to-class.dto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
+import { ExitClassDto } from './dto/bodies/exit-class.dto';
 
 @Injectable()
 export class ClassService {
@@ -60,5 +61,9 @@ export class ClassService {
     joinClassByTokenDto: JoinClassByTokenDto,
   ): Promise<GetClassResponseInterface> {
     return this.classRepository.joinClassByJoinToken(joinClassByTokenDto);
+  }
+
+  async exitClass(exitClassDto: ExitClassDto): Promise<void> {
+    return this.classRepository.exitClass(exitClassDto);
   }
 }

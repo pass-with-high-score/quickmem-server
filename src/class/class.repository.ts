@@ -20,6 +20,8 @@ import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
 import { AddMemberToClassDto } from './dto/bodies/add-member-to-class.dto';
 import { randomBytes } from 'crypto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
+import { ExitClassDto } from './dto/bodies/exit-class.dto';
+import { logger } from '../winston-logger.service';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -149,7 +151,7 @@ export class ClassRepository extends Repository<ClassEntity> {
         updatedAt: classEntity.updatedAt,
       };
     } catch (error) {
-      console.log('Error creating class:', error);
+      logger.error('Error creating class:', error);
       throw new InternalServerErrorException('Error creating class');
     }
   }
@@ -201,7 +203,7 @@ export class ClassRepository extends Repository<ClassEntity> {
         updatedAt: classEntity.updatedAt,
       };
     } catch (error) {
-      console.log('Error updating class:', error);
+      logger.error('Error updating class:', error);
       throw new InternalServerErrorException('Error updating class');
     }
   }
@@ -224,7 +226,7 @@ export class ClassRepository extends Repository<ClassEntity> {
     try {
       await this.remove(classEntity);
     } catch (error) {
-      console.log('Error deleting class:', error);
+      logger.error('Error deleting class:', error);
       throw new InternalServerErrorException('Error deleting class');
     }
   }
@@ -274,13 +276,39 @@ export class ClassRepository extends Repository<ClassEntity> {
       await this.save(classEntity);
       return this.mapClassEntityToResponse(classEntity);
     } catch (error) {
-      console.log('Error joining class:', error);
+      logger.error('Error joining class:', error);
       throw new InternalServerErrorException('Error joining class');
     }
   }
 
   // Exit class (if user is member of class)
+  async exitClass(exitClassDto: ExitClassDto): Promise<void> {
+    const { userId, classId } = exitClassDto;
+    const classEntity = await this.findOne({
+      where: { id: classId },
+      relations: ['members'],
+    });
 
+    if (!classEntity) {
+      throw new NotFoundException('Class not found');
+    }
+
+    const userIndex = classEntity.members.findIndex(
+      (member) => member.id === userId,
+    );
+    if (userIndex === -1) {
+      throw new NotFoundException('User not a member of the class');
+    }
+
+    classEntity.members.splice(userIndex, 1);
+
+    try {
+      await this.save(classEntity);
+    } catch (error) {
+      logger.error('Error exiting class:', error);
+      throw new InternalServerErrorException('Error exiting class');
+    }
+  }
 
   async mapClassEntityToResponse(
     classEntity: ClassEntity,

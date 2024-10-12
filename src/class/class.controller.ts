@@ -24,6 +24,7 @@ import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.d
 import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
+import { ExitClassDto } from './dto/bodies/exit-class.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -82,6 +83,12 @@ export class ClassController {
     @Body() joinClassByTokenDto: JoinClassByTokenDto,
   ): Promise<GetClassResponseInterface> {
     return this.classService.joinClassByJoinToken(joinClassByTokenDto);
+  }
+
+  @Post('/exit-class')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async exitClass(@Body() exitClassDto: ExitClassDto): Promise<void> {
+    return this.classService.exitClass(exitClassDto);
   }
 
   @Delete('/:id')
