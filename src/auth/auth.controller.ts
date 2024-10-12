@@ -9,7 +9,8 @@ import {
   Req,
   Res,
   Session,
-  UseGuards, UseInterceptors,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupCredentialsDto } from './dto/bodies/signup-credentials.dto';
@@ -33,6 +34,7 @@ import { GoogleAuthGuard } from './guard/google-auth.guard';
 import { Request, Response } from 'express';
 import { FacebookAuthGuard } from './guard/facebook-auth.guard';
 import { LoggingInterceptor } from '../logging.interceptor';
+import { AuthProviderEnum } from './enums/auth-provider.enum';
 
 @Controller('auth')
 @UseInterceptors(LoggingInterceptor)
@@ -50,7 +52,7 @@ export class AuthController {
       token: user.accessToken,
       email: user.email,
       fullName: user.fullName,
-      provider: 'google',
+      provider: AuthProviderEnum.GOOGLE,
       picture: user.picture,
     });
     const deepLinkUrl = `quickmem://oauth/google/callback?${params.toString()}`;
@@ -86,7 +88,7 @@ export class AuthController {
       token: user.accessToken,
       email: user.email,
       fullName: user.fullName,
-      provider: 'facebook',
+      provider: AuthProviderEnum.FACEBOOK,
       picture: user.picture,
     });
     const deepLinkUrl = `quickmem://oauth/facebook/callback?${params.toString()}`;

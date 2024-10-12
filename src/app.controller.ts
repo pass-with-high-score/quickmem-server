@@ -26,7 +26,8 @@ export class AppController {
   ): Promise<void> {
     // create deep link
     logger.info(`Joining class by token: ${joinClassByTokenDto.token}`);
-    const deepLinkUrl = `quickmem://join/class/${joinClassByTokenDto.token}`;
+    const deepLinkUrl = `quickmem://join/class?code=${joinClassByTokenDto.token}`;
+    logger.info(`Deep link URL: ${deepLinkUrl}`);
 
     // Return HTML invitation page
     const htmlContent = `
