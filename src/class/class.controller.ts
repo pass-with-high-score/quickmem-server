@@ -25,6 +25,7 @@ import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
+import { AddFoldersToClassDto } from './dto/bodies/add-folders-to-class.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -77,7 +78,7 @@ export class ClassController {
     return this.classService.createClass(createClassDto);
   }
 
-  @Post('/join-class-by-token')
+  @Post('/join')
   @HttpCode(HttpStatus.OK)
   async joinClassByJoinToken(
     @Body() joinClassByTokenDto: JoinClassByTokenDto,
@@ -85,10 +86,18 @@ export class ClassController {
     return this.classService.joinClassByJoinToken(joinClassByTokenDto);
   }
 
-  @Post('/exit-class')
+  @Post('/exit')
   @HttpCode(HttpStatus.NO_CONTENT)
   async exitClass(@Body() exitClassDto: ExitClassDto): Promise<void> {
     return this.classService.exitClass(exitClassDto);
+  }
+
+  @Post('/folders')
+  @HttpCode(HttpStatus.CREATED)
+  async addFoldersToClass(
+    @Body() addFoldersToClassDto: AddFoldersToClassDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classService.addFoldersToClass(addFoldersToClassDto);
   }
 
   @Delete('/:id')

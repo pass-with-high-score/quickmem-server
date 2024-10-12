@@ -12,6 +12,7 @@ import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
 import { AddMemberToClassDto } from './dto/bodies/add-member-to-class.dto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
+import { AddFoldersToClassDto } from './dto/bodies/add-folders-to-class.dto';
 
 @Injectable()
 export class ClassService {
@@ -65,5 +66,11 @@ export class ClassService {
 
   async exitClass(exitClassDto: ExitClassDto): Promise<void> {
     return this.classRepository.exitClass(exitClassDto);
+  }
+
+  async addFoldersToClass(
+    addFoldersToClassDto: AddFoldersToClassDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classRepository.addFoldersToClass(addFoldersToClassDto);
   }
 }

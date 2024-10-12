@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { DataSource, ILike, Repository } from 'typeorm';
+import { DataSource, ILike, In, Repository } from 'typeorm';
 import { ClassEntity } from './entities/class.entity';
 import { CreateClassDto } from './dto/bodies/create-class.dto';
 import { CreateClassResponseInterface } from './interfaces/create-class-response.interface';
@@ -17,11 +17,13 @@ import { UpdateClassByIdParamDto } from './dto/params/update-class-by-id-param.d
 import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.dto';
 import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
-import { AddMemberToClassDto } from './dto/bodies/add-member-to-class.dto';
 import { randomBytes } from 'crypto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
 import { logger } from '../winston-logger.service';
+import { AddFoldersToClassDto } from './dto/bodies/add-folders-to-class.dto';
+import { RemoveFolderFromClassDto } from './dto/bodies/remove-folder-from-class.dto';
+import { FolderEntity } from '../folder/entities/folder.entity';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -307,6 +309,73 @@ export class ClassRepository extends Repository<ClassEntity> {
     } catch (error) {
       logger.error('Error exiting class:', error);
       throw new InternalServerErrorException('Error exiting class');
+    }
+  }
+
+  // add folders to class
+  async addFoldersToClass(
+    addFoldersToClassDto: AddFoldersToClassDto,
+  ): Promise<GetClassResponseInterface> {
+    const { classId, userId, folderIds } = addFoldersToClassDto;
+
+    // Find class
+    const classEntity = await this.findOne({
+      where: { id: classId },
+      relations: ['folders', 'owner', 'members', 'studySets'],
+    });
+
+    if (!classEntity) {
+      throw new NotFoundException('Class not found');
+    }
+
+    // Check if class allows set management
+    if (classEntity.owner.id !== userId) {
+      if (!classEntity.allowSetManagement) {
+        throw new UnauthorizedException('Class does not allow set management');
+      }
+    }
+
+    // Find folders with their owners
+    const folders = await this.dataSource.getRepository(FolderEntity).find({
+      where: { id: In(folderIds) },
+      relations: ['owner'],
+    });
+
+    if (folders.length !== folderIds.length) {
+      throw new NotFoundException('One or more folders not found');
+    }
+
+    // Check if all folders belong to the user
+    for (const folder of folders) {
+      if (folder.owner.id !== userId) {
+        throw new UnauthorizedException(
+          'One or more folders do not belong to the user',
+        );
+      }
+    }
+
+    // Check if any folder is already added to the class
+    for (const folder of folders) {
+      if (
+        classEntity.folders.some(
+          (existingFolder) => existingFolder.id === folder.id,
+        )
+      ) {
+        throw new ConflictException(
+          `Folder with id ${folder.id} is already added to the class`,
+        );
+      }
+    }
+
+    // Add folders to class
+    classEntity.folders = [...classEntity.folders, ...folders];
+
+    try {
+      await this.save(classEntity);
+      return this.mapClassEntityToResponse(classEntity);
+    } catch (error) {
+      logger.error('Error adding folders to class:', error);
+      throw new InternalServerErrorException('Error adding folders to class');
     }
   }
 
