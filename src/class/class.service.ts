@@ -56,12 +56,6 @@ export class ClassService {
     return this.classRepository.searchClassByTitle(searchClassByTitleDto);
   }
 
-  async addMemberToClass(
-    addMemberToClassDto: AddMemberToClassDto,
-  ): Promise<GetClassResponseInterface> {
-    return this.classRepository.addMemberToClass(addMemberToClassDto);
-  }
-
   async joinClassByJoinToken(
     joinClassByTokenDto: JoinClassByTokenDto,
   ): Promise<GetClassResponseInterface> {

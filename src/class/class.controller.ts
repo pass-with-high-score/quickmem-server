@@ -26,6 +26,7 @@ import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
 import { AddMemberToClassDto } from './dto/bodies/add-member-to-class.dto';
 import { LoggingInterceptor } from '../logging.interceptor';
+import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -79,12 +80,12 @@ export class ClassController {
     return this.classService.createClass(createClassDto);
   }
 
-  @Post('/add-member')
+  @Post('/join-class-by-token')
   @HttpCode(HttpStatus.OK)
-  async addMemberToClass(
-    @Body() addMemberToClassDto: AddMemberToClassDto,
+  async joinClassByJoinToken(
+    @Body() joinClassByTokenDto: JoinClassByTokenDto,
   ): Promise<GetClassResponseInterface> {
-    return this.classService.addMemberToClass(addMemberToClassDto);
+    return this.classService.joinClassByJoinToken(joinClassByTokenDto);
   }
 
   @Delete('/:id')

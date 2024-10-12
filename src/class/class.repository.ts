@@ -283,7 +283,7 @@ export class ClassRepository extends Repository<ClassEntity> {
     // Find class
     const classEntity = await this.findOne({
       where: { id: classId },
-      relations: ['owner', 'members'],
+      relations: ['owner', 'members', 'studySets', 'folders'],
     });
 
     if (!classEntity) {
@@ -295,11 +295,6 @@ export class ClassRepository extends Repository<ClassEntity> {
       throw new UnauthorizedException('Invalid join token');
     }
 
-    // Check if user already in class
-    if (classEntity.members.some((member) => member.id === userId)) {
-      throw new ConflictException('User already in class');
-    }
-
     // Find user
     const user = await this.dataSource.getRepository(UserEntity).findOneBy({
       id: userId,
@@ -307,6 +302,14 @@ export class ClassRepository extends Repository<ClassEntity> {
 
     if (!user) {
       throw new NotFoundException('User not found');
+    }
+
+    if (!user.isVerified) {
+      throw new UnauthorizedException('User not verified');
+    }
+    // Check if user already in class
+    if (classEntity.members.some((member) => member.id === userId)) {
+      throw new ConflictException('User already in class');
     }
 
     // Add user to class
