@@ -25,9 +25,7 @@ import { DeleteStudySetByIdParamDto } from './dto/params/delete-study-set-by-id-
 import { DeleteStudySetResponseInterface } from './interfaces/delete-study-set-response.interface';
 import { DuplicateStudySetDto } from './dto/bodies/duplicate-study-set.dto';
 import { SearchStudySetParamsDto } from './dto/queries/search-study-set-params.dto';
-import { LoggingInterceptor } from '../logging.interceptor';
 
-@UseInterceptors(LoggingInterceptor)
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
 @Controller('study-set')

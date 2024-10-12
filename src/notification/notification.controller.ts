@@ -2,9 +2,7 @@ import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
 import { MessagingService } from '../firebase/messaging.service';
 import { IMessaginToTokensParams } from '../firebase/imessaging.interface';
 import { NotificationService } from './notification.service';
-import { LoggingInterceptor } from '../logging.interceptor';
 
-@UseInterceptors(LoggingInterceptor)
 @Controller('notifications')
 export class NotificationController {
   constructor(

@@ -229,51 +229,6 @@ export class ClassRepository extends Repository<ClassEntity> {
     }
   }
 
-  // Add member to class (if user is owner or allowSetAndMemberManagement is true)
-  async addMemberToClass(
-    addMemberToClassDto: AddMemberToClassDto,
-  ): Promise<GetClassResponseInterface> {
-    const { classId, memberIds, userId } = addMemberToClassDto;
-
-    // Find class
-    const classEntity = await this.findOne({
-      where: { id: classId },
-      relations: ['owner', 'members'],
-    });
-
-    if (!classEntity) {
-      throw new NotFoundException('Class not found');
-    }
-
-    // Check if user is owner or allowSetAndMemberManagement is true and if a user not owner, user must be in memberIds
-    if (
-      classEntity.owner.id !== userId &&
-      !classEntity.allowMemberManagement &&
-      !memberIds.includes(userId)
-    ) {
-      throw new UnauthorizedException('User not authorized to add members');
-    }
-
-    // Find members
-    const members = await this.dataSource.getRepository(UserEntity).find({
-      where: memberIds.map((id) => ({ id })),
-    });
-    if (members.length !== memberIds.length) {
-      throw new NotFoundException('One or more members not found');
-    }
-
-    // Add members to class
-    classEntity.members = [...classEntity.members, ...members];
-
-    try {
-      await this.save(classEntity);
-      return this.mapClassEntityToResponse(classEntity);
-    } catch (error) {
-      console.log('Error adding members to class:', error);
-      throw new InternalServerErrorException('Error adding members to class');
-    }
-  }
-
   // Join class by join token
   async joinClassByJoinToken(
     joinClassByTokenDto: JoinClassByTokenDto,
@@ -324,15 +279,8 @@ export class ClassRepository extends Repository<ClassEntity> {
     }
   }
 
-  // Remove member from class (if user is owner)
+  // Exit class (if user is member of class)
 
-  // Add folder to class (if user is owner or allowSetAndMemberManagement is true)
-
-  // Remove folder from class (if user is owner)
-
-  // Add study set to class (if user is owner or allowSetAndMemberManagement is true)
-
-  // Remove study set from class (if user is owner)
 
   async mapClassEntityToResponse(
     classEntity: ClassEntity,

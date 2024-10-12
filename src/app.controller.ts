@@ -6,14 +6,11 @@ import {
   HttpStatus,
   Param,
   Res,
-  UseInterceptors,
 } from '@nestjs/common';
-import { LoggingInterceptor } from './logging.interceptor';
 import { JoinClassByTokenParamDto } from './class/dto/params/join-class-by-token-param.dto';
 import { Response } from 'express';
 import { logger } from './winston-logger.service';
 
-@UseInterceptors(LoggingInterceptor)
 @Controller()
 export class AppController {
   constructor() {}

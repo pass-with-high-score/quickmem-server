@@ -33,11 +33,9 @@ import { OwnershipGuard } from './guard/ownership.guard';
 import { GoogleAuthGuard } from './guard/google-auth.guard';
 import { Request, Response } from 'express';
 import { FacebookAuthGuard } from './guard/facebook-auth.guard';
-import { LoggingInterceptor } from '../logging.interceptor';
 import { AuthProviderEnum } from './enums/auth-provider.enum';
 
 @Controller('auth')
-@UseInterceptors(LoggingInterceptor)
 export class AuthController {
   constructor(private authService: AuthService) {}
 

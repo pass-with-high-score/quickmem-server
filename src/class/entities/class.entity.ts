@@ -33,13 +33,19 @@ export class ClassEntity {
   @ManyToOne(() => UserEntity, (user) => user.ownerClasses)
   owner: UserEntity;
 
-  @ManyToMany(() => FolderEntity, (folder) => folder.classes)
+  @ManyToMany(() => FolderEntity, (folder) => folder.classes, {
+    onDelete: 'CASCADE',
+  })
   folders: FolderEntity[];
 
-  @ManyToMany(() => StudySetEntity, (studySet) => studySet.classes)
+  @ManyToMany(() => StudySetEntity, (studySet) => studySet.classes, {
+    onDelete: 'CASCADE',
+  })
   studySets: StudySetEntity[];
 
-  @ManyToMany(() => UserEntity, (user) => user.classes)
+  @ManyToMany(() => UserEntity, (user) => user.classes, {
+    cascade: true,
+  })
   @JoinTable({
     name: 'class_members',
     joinColumn: { name: 'class_id', referencedColumnName: 'id' },

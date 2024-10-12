@@ -1,8 +1,10 @@
-import { Controller, UseInterceptors } from '@nestjs/common';
+import { Controller, UseGuards, UseInterceptors } from '@nestjs/common';
 import { StreakService } from './streak.service';
-import { LoggingInterceptor } from '../logging.interceptor';
+import { SkipThrottle } from '@nestjs/throttler';
+import { AuthGuard } from '@nestjs/passport';
 
-@UseInterceptors(LoggingInterceptor)
+@SkipThrottle()
+@UseGuards(AuthGuard('jwt'))
 @Controller('streak')
 export class StreakController {
   constructor(
