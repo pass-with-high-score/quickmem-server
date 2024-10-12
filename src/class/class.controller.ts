@@ -26,6 +26,7 @@ import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
 import { AddFoldersToClassDto } from './dto/bodies/add-folders-to-class.dto';
+import { RemoveFolderFromClassDto } from './dto/bodies/remove-folder-from-class.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -98,6 +99,14 @@ export class ClassController {
     @Body() addFoldersToClassDto: AddFoldersToClassDto,
   ): Promise<GetClassResponseInterface> {
     return this.classService.addFoldersToClass(addFoldersToClassDto);
+  }
+
+  @Delete('/folders')
+  @HttpCode(HttpStatus.OK)
+  async removeFoldersFromClass(
+    @Body() removeFoldersFromClassDto: RemoveFolderFromClassDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classService.removeFoldersFromClass(removeFoldersFromClassDto);
   }
 
   @Delete('/:id')

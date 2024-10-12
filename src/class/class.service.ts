@@ -13,6 +13,7 @@ import { AddMemberToClassDto } from './dto/bodies/add-member-to-class.dto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
 import { AddFoldersToClassDto } from './dto/bodies/add-folders-to-class.dto';
+import { RemoveFolderFromClassDto } from './dto/bodies/remove-folder-from-class.dto';
 
 @Injectable()
 export class ClassService {
@@ -72,5 +73,13 @@ export class ClassService {
     addFoldersToClassDto: AddFoldersToClassDto,
   ): Promise<GetClassResponseInterface> {
     return this.classRepository.addFoldersToClass(addFoldersToClassDto);
+  }
+
+  async removeFoldersFromClass(
+    removeFoldersFromClassDto: RemoveFolderFromClassDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classRepository.removeFoldersFromClass(
+      removeFoldersFromClassDto,
+    );
   }
 }

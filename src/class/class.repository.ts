@@ -321,7 +321,16 @@ export class ClassRepository extends Repository<ClassEntity> {
     // Find class
     const classEntity = await this.findOne({
       where: { id: classId },
-      relations: ['folders', 'owner', 'members', 'studySets'],
+      relations: [
+        'owner',
+        'members',
+        'folders',
+        'studySets',
+        'folders.studySets',
+        'folders.owner',
+        'studySets.owner',
+        'studySets.flashcards',
+      ],
     });
 
     if (!classEntity) {
@@ -372,10 +381,68 @@ export class ClassRepository extends Repository<ClassEntity> {
 
     try {
       await this.save(classEntity);
+      console.log('classEntity', classEntity);
       return this.mapClassEntityToResponse(classEntity);
     } catch (error) {
       logger.error('Error adding folders to class:', error);
       throw new InternalServerErrorException('Error adding folders to class');
+    }
+  }
+
+  async removeFoldersFromClass(
+    removeFoldersFromClassDto: RemoveFolderFromClassDto,
+  ): Promise<GetClassResponseInterface> {
+    const { classId, userId, folderIds } = removeFoldersFromClassDto;
+
+    // Find class
+    const classEntity = await this.findOne({
+      where: { id: classId },
+      relations: ['folders', 'owner', 'members', 'studySets'],
+    });
+
+    if (!classEntity) {
+      throw new NotFoundException('Class not found');
+    }
+
+    // Check if class allows set management or if the user is the owner
+    if (classEntity.owner.id !== userId && !classEntity.allowSetManagement) {
+      throw new UnauthorizedException('Class does not allow set management');
+    }
+
+    // Find folders with their owners
+    const folders = await this.dataSource.getRepository(FolderEntity).find({
+      where: { id: In(folderIds) },
+      relations: ['owner'],
+    });
+
+    if (folders.length !== folderIds.length) {
+      throw new NotFoundException('One or more folders not found');
+    }
+
+    // Check if all folders belong to the user
+    if (classEntity.owner.id !== userId) {
+      for (const folder of folders) {
+        if (folder.owner.id !== userId) {
+          throw new UnauthorizedException(
+            'One or more folders do not belong to the user',
+          );
+        }
+      }
+    }
+
+    // Remove folders from class
+    classEntity.folders = classEntity.folders.filter(
+      (existingFolder) => !folderIds.includes(existingFolder.id),
+    );
+
+    try {
+      await this.save(classEntity);
+      return this.mapClassEntityToResponse(classEntity);
+    } catch (error) {
+      logger.error('Error removing folders from class:', error);
+      throw new InternalServerErrorException(
+        'Error removing folders from class',
+      );
     }
   }
 
@@ -412,7 +479,9 @@ export class ClassRepository extends Repository<ClassEntity> {
             id: studySet.id,
             title: studySet.title,
             description: studySet.description,
-            flashcardCount: studySet.flashcards.length,
+            flashcardCount: studySet.flashcards
+              ? studySet.flashcards.length
+              : 0,
             owner: {
               id: studySet.owner.id,
               username: studySet.owner.username,
@@ -428,7 +497,7 @@ export class ClassRepository extends Repository<ClassEntity> {
             title: folder.title,
             description: folder.description,
             isPublic: folder.isPublic,
-            studySetCount: folder.studySets.length,
+            studySetCount: folder.studySets ? folder.studySets.length : 0,
             ownerId: folder.owner.id,
             user: {
               id: folder.owner.id,
