@@ -22,8 +22,11 @@ import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
 import { logger } from '../winston-logger.service';
 import { AddFoldersToClassDto } from './dto/bodies/add-folders-to-class.dto';
-import { RemoveFolderFromClassDto } from './dto/bodies/remove-folder-from-class.dto';
+import { RemoveFoldersFromClassDto } from './dto/bodies/remove-folders-from-class.dto';
 import { FolderEntity } from '../folder/entities/folder.entity';
+import { AddStudySetsToClassDto } from './dto/bodies/add-study-sets-to-class.dto';
+import { StudySetEntity } from '../study-set/entities/study-set.entity';
+import { RemoveStudySetsFromClassDto } from './dto/bodies/remove-study-sets-from-class.dto';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -233,21 +236,83 @@ export class ClassRepository extends Repository<ClassEntity> {
     }
   }
 
-  // Join class by join token
-  async joinClassByJoinToken(
-    joinClassByTokenDto: JoinClassByTokenDto,
-  ): Promise<GetClassResponseInterface> {
-    const { joinToken, userId, classId } = joinClassByTokenDto;
-
-    // Find class
+  private async findClassAndValidatePermissions(
+    classId: string,
+    userId: string,
+    relations: string[],
+    checkOwnership: boolean = false,
+    allowSetManagement: boolean = false,
+  ): Promise<ClassEntity> {
+    // Find class with specified relations
     const classEntity = await this.findOne({
       where: { id: classId },
-      relations: ['owner', 'members', 'studySets', 'folders'],
+      relations,
     });
 
     if (!classEntity) {
       throw new NotFoundException('Class not found');
     }
+
+    // Check ownership if necessary
+    if (checkOwnership && classEntity.owner.id !== userId) {
+      throw new UnauthorizedException('User is not the owner of the class');
+    }
+
+    // Check if class allows set management or if the user is the owner
+    if (
+      !checkOwnership &&
+      allowSetManagement &&
+      !classEntity.allowSetManagement
+    ) {
+      throw new UnauthorizedException('Class does not allow set management');
+    }
+
+    return classEntity;
+  }
+
+  private async validateOwnershipOrManagement(
+    items: (FolderEntity | StudySetEntity)[],
+    userId: string,
+    entityName: string,
+  ) {
+    // Check if all items belong to the user
+    for (const item of items) {
+      if (item.owner.id !== userId) {
+        throw new UnauthorizedException(
+          `One or more ${entityName}s do not belong to the user`,
+        );
+      }
+    }
+  }
+
+  private async findItemsByIds<T>(
+    repository: Repository<T>,
+    ids: string[],
+    relations: string[],
+    entityName: string,
+  ): Promise<T[]> {
+    const items = await repository.find({
+      where: { id: In(ids) as any } as any,
+      relations,
+    });
+
+    if (items.length !== ids.length) {
+      throw new NotFoundException(`One or more ${entityName}s not found`);
+    }
+
+    return items;
+  }
+
+  async joinClassByJoinToken(
+    joinClassByTokenDto: JoinClassByTokenDto,
+  ): Promise<GetClassResponseInterface> {
+    const { joinToken, userId, classId } = joinClassByTokenDto;
+
+    const classEntity = await this.findClassAndValidatePermissions(
+      classId,
+      userId,
+      ['owner', 'members', 'studySets', 'folders'],
+    );
 
     // Check if join token is correct
     if (classEntity.joinToken !== joinToken) {
@@ -266,6 +331,7 @@ export class ClassRepository extends Repository<ClassEntity> {
     if (!user.isVerified) {
       throw new UnauthorizedException('User not verified');
     }
+
     // Check if user already in class
     if (classEntity.members.some((member) => member.id === userId)) {
       throw new ConflictException('User already in class');
@@ -283,17 +349,14 @@ export class ClassRepository extends Repository<ClassEntity> {
     }
   }
 
-  // Exit class (if user is member of class)
   async exitClass(exitClassDto: ExitClassDto): Promise<void> {
     const { userId, classId } = exitClassDto;
-    const classEntity = await this.findOne({
-      where: { id: classId },
-      relations: ['members'],
-    });
 
-    if (!classEntity) {
-      throw new NotFoundException('Class not found');
-    }
+    const classEntity = await this.findClassAndValidatePermissions(
+      classId,
+      userId,
+      ['members'],
+    );
 
     const userIndex = classEntity.members.findIndex(
       (member) => member.id === userId,
@@ -312,56 +375,36 @@ export class ClassRepository extends Repository<ClassEntity> {
     }
   }
 
-  // add folders to class
   async addFoldersToClass(
     addFoldersToClassDto: AddFoldersToClassDto,
   ): Promise<GetClassResponseInterface> {
     const { classId, userId, folderIds } = addFoldersToClassDto;
 
-    // Find class
-    const classEntity = await this.findOne({
-      where: { id: classId },
-      relations: [
+    const classEntity = await this.findClassAndValidatePermissions(
+      classId,
+      userId,
+      [
         'owner',
         'members',
         'folders',
         'studySets',
         'folders.studySets',
         'folders.owner',
-        'studySets.owner',
-        'studySets.flashcards',
       ],
-    });
-
-    if (!classEntity) {
-      throw new NotFoundException('Class not found');
-    }
-
-    // Check if class allows set management
-    if (classEntity.owner.id !== userId) {
-      if (!classEntity.allowSetManagement) {
-        throw new UnauthorizedException('Class does not allow set management');
-      }
-    }
+      false,
+      true,
+    );
 
     // Find folders with their owners
-    const folders = await this.dataSource.getRepository(FolderEntity).find({
-      where: { id: In(folderIds) },
-      relations: ['owner'],
-    });
-
-    if (folders.length !== folderIds.length) {
-      throw new NotFoundException('One or more folders not found');
-    }
+    const folders = await this.findItemsByIds(
+      this.dataSource.getRepository(FolderEntity),
+      folderIds,
+      ['owner'],
+      'folder',
+    );
 
     // Check if all folders belong to the user
-    for (const folder of folders) {
-      if (folder.owner.id !== userId) {
-        throw new UnauthorizedException(
-          'One or more folders do not belong to the user',
-        );
-      }
-    }
+    await this.validateOwnershipOrManagement(folders, userId, 'folder');
 
     // Check if any folder is already added to the class
     for (const folder of folders) {
@@ -381,7 +424,6 @@ export class ClassRepository extends Repository<ClassEntity> {
 
     try {
       await this.save(classEntity);
-      console.log('classEntity', classEntity);
       return this.mapClassEntityToResponse(classEntity);
     } catch (error) {
       logger.error('Error adding folders to class:', error);
@@ -390,45 +432,28 @@ export class ClassRepository extends Repository<ClassEntity> {
   }
 
   async removeFoldersFromClass(
-    removeFoldersFromClassDto: RemoveFolderFromClassDto,
+    removeFoldersFromClassDto: RemoveFoldersFromClassDto,
   ): Promise<GetClassResponseInterface> {
     const { classId, userId, folderIds } = removeFoldersFromClassDto;
 
-    // Find class
-    const classEntity = await this.findOne({
-      where: { id: classId },
-      relations: ['folders', 'owner', 'members', 'studySets'],
-    });
+    const classEntity = await this.findClassAndValidatePermissions(
+      classId,
+      userId,
+      ['folders', 'owner', 'members', 'studySets'],
+      false,
+      true,
+    );
 
-    if (!classEntity) {
-      throw new NotFoundException('Class not found');
-    }
-
-    // Check if class allows set management or if the user is the owner
-    if (classEntity.owner.id !== userId && !classEntity.allowSetManagement) {
-      throw new UnauthorizedException('Class does not allow set management');
-    }
-
-    // Find folders with their owners
-    const folders = await this.dataSource.getRepository(FolderEntity).find({
-      where: { id: In(folderIds) },
-      relations: ['owner'],
-    });
-
-    if (folders.length !== folderIds.length) {
-      throw new NotFoundException('One or more folders not found');
-    }
+    // Find folders
+    const folders = await this.findItemsByIds(
+      this.dataSource.getRepository(FolderEntity),
+      folderIds,
+      ['owner'],
+      'folder',
+    );
 
     // Check if all folders belong to the user
-    if (classEntity.owner.id !== userId) {
-      for (const folder of folders) {
-        if (folder.owner.id !== userId) {
-          throw new UnauthorizedException(
-            'One or more folders do not belong to the user',
-          );
-        }
-      }
-    }
+    await this.validateOwnershipOrManagement(folders, userId, 'folder');
 
     // Remove folders from class
     classEntity.folders = classEntity.folders.filter(
@@ -442,6 +467,111 @@ export class ClassRepository extends Repository<ClassEntity> {
       logger.error('Error removing folders from class:', error);
       throw new InternalServerErrorException(
         'Error removing folders from class',
+      );
+    }
+  }
+
+  async addStudySetsToClass(
+    addStudySetsToClassDto: AddStudySetsToClassDto,
+  ): Promise<GetClassResponseInterface> {
+    const { classId, userId, studySetIds } = addStudySetsToClassDto;
+
+    const classEntity = await this.findClassAndValidatePermissions(
+      classId,
+      userId,
+      [
+        'owner',
+        'members',
+        'folders',
+        'studySets',
+        'folders.studySets',
+        'folders.owner',
+      ],
+      false,
+      true,
+    );
+
+    // Find study sets
+    const studySets = await this.findItemsByIds(
+      this.dataSource.getRepository(StudySetEntity),
+      studySetIds,
+      ['owner'],
+      'study set',
+    );
+
+    // Check if all study sets belong to the user
+    await this.validateOwnershipOrManagement(studySets, userId, 'study set');
+
+    // Check if any study set is already added to the class
+    for (const studySet of studySets) {
+      if (
+        classEntity.studySets.some(
+          (existingStudySet) => existingStudySet.id === studySet.id,
+        )
+      ) {
+        throw new ConflictException(
+          `Study set with id ${studySet.id} is already added to the class`,
+        );
+      }
+    }
+
+    // Add study sets to class
+    classEntity.studySets = [...classEntity.studySets, ...studySets];
+
+    try {
+      await this.save(classEntity);
+      return this.mapClassEntityToResponse(classEntity);
+    } catch (error) {
+      logger.error('Error adding study sets to class:', error);
+      throw new InternalServerErrorException(
+        'Error adding study sets to class',
+      );
+    }
+  }
+
+  async removeStudySetsFromClass(
+    removeStudySetsFromClassDto: RemoveStudySetsFromClassDto,
+  ): Promise<GetClassResponseInterface> {
+    const { classId, userId, studySetIds } = removeStudySetsFromClassDto;
+
+    const classEntity = await this.findClassAndValidatePermissions(
+      classId,
+      userId,
+      [
+        'owner',
+        'members',
+        'folders',
+        'studySets',
+        'folders.studySets',
+        'folders.owner',
+      ],
+      false,
+      true,
+    );
+
+    // Find study sets
+    const studySets = await this.findItemsByIds(
+      this.dataSource.getRepository(StudySetEntity),
+      studySetIds,
+      ['owner'],
+      'study set',
+    );
+
+    // Check if all study sets belong to the user
+    await this.validateOwnershipOrManagement(studySets, userId, 'study set');
+
+    // Remove study sets from class
+    classEntity.studySets = classEntity.studySets.filter(
+      (existingStudySet) => !studySetIds.includes(existingStudySet.id),
+    );
+
+    try {
+      await this.save(classEntity);
+      return this.mapClassEntityToResponse(classEntity);
+    } catch (error) {
+      logger.error('Error removing study sets from class:', error);
+      throw new InternalServerErrorException(
+        'Error removing study sets from class',
       );
     }
   }

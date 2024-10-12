@@ -26,7 +26,9 @@ import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
 import { AddFoldersToClassDto } from './dto/bodies/add-folders-to-class.dto';
-import { RemoveFolderFromClassDto } from './dto/bodies/remove-folder-from-class.dto';
+import { RemoveFoldersFromClassDto } from './dto/bodies/remove-folders-from-class.dto';
+import { AddStudySetsToClassDto } from './dto/bodies/add-study-sets-to-class.dto';
+import { RemoveStudySetsFromClassDto } from './dto/bodies/remove-study-sets-from-class.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -101,12 +103,30 @@ export class ClassController {
     return this.classService.addFoldersToClass(addFoldersToClassDto);
   }
 
+  @Post('/study-sets')
+  @HttpCode(HttpStatus.CREATED)
+  async addStudySetsToClass(
+    @Body() addStudySetsToClassDto: AddStudySetsToClassDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classService.addStudySetsToClass(addStudySetsToClassDto);
+  }
+
   @Delete('/folders')
   @HttpCode(HttpStatus.OK)
   async removeFoldersFromClass(
-    @Body() removeFoldersFromClassDto: RemoveFolderFromClassDto,
+    @Body() removeFoldersFromClassDto: RemoveFoldersFromClassDto,
   ): Promise<GetClassResponseInterface> {
     return this.classService.removeFoldersFromClass(removeFoldersFromClassDto);
+  }
+
+  @Delete('/study-sets')
+  @HttpCode(HttpStatus.OK)
+  async removeStudySetsFromClass(
+    @Body() removeStudySetsFromClassDto: RemoveStudySetsFromClassDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classService.removeStudySetsFromClass(
+      removeStudySetsFromClassDto,
+    );
   }
 
   @Delete('/:id')

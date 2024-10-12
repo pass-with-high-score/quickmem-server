@@ -9,7 +9,7 @@ import {
   Post,
   Put,
   Query,
-  UseGuards, UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { FolderService } from './folder.service';
 import { CreateFolderDto } from './dto/bodies/create-folder.dto';
@@ -68,7 +68,7 @@ export class FolderController {
     );
   }
 
-  @Post('/add-study-sets')
+  @Post('/study-sets')
   @HttpCode(HttpStatus.CREATED)
   async addStudySetsToFolder(
     @Body() addStudySetsToFolderDto: AddStudySetsToFolderDto,
@@ -84,7 +84,7 @@ export class FolderController {
     return this.folderService.createFolder(createFolderDto);
   }
 
-  @Post('/remove-study-sets')
+  @Delete('/study-sets')
   @HttpCode(HttpStatus.OK)
   async removeStudySetsFromFolder(
     @Body() removeStudySetsFromFolderDto: RemoveStudySetsFromFolderDto,

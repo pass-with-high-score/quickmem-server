@@ -1,6 +1,6 @@
 import { ArrayNotEmpty, IsArray, IsNotEmpty, IsUUID } from 'class-validator';
 
-export class RemoveFolderFromClassDto {
+export class AddStudySetsToClassDto {
   @IsUUID()
   @IsNotEmpty()
   classId: string;
@@ -12,5 +12,5 @@ export class RemoveFolderFromClassDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsUUID('4', { each: true })
-  folderIds: string[];
+  studySetIds: string[];
 }

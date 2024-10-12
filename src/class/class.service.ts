@@ -13,7 +13,9 @@ import { AddMemberToClassDto } from './dto/bodies/add-member-to-class.dto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
 import { AddFoldersToClassDto } from './dto/bodies/add-folders-to-class.dto';
-import { RemoveFolderFromClassDto } from './dto/bodies/remove-folder-from-class.dto';
+import { RemoveFoldersFromClassDto } from './dto/bodies/remove-folders-from-class.dto';
+import { AddStudySetsToClassDto } from './dto/bodies/add-study-sets-to-class.dto';
+import { RemoveStudySetsFromClassDto } from './dto/bodies/remove-study-sets-from-class.dto';
 
 @Injectable()
 export class ClassService {
@@ -76,10 +78,24 @@ export class ClassService {
   }
 
   async removeFoldersFromClass(
-    removeFoldersFromClassDto: RemoveFolderFromClassDto,
+    removeFoldersFromClassDto: RemoveFoldersFromClassDto,
   ): Promise<GetClassResponseInterface> {
     return this.classRepository.removeFoldersFromClass(
       removeFoldersFromClassDto,
+    );
+  }
+
+  async addStudySetsToClass(
+    addStudySetsToClassDto: AddStudySetsToClassDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classRepository.addStudySetsToClass(addStudySetsToClassDto);
+  }
+
+  async removeStudySetsFromClass(
+    removeStudySetsFromClassDto: RemoveStudySetsFromClassDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classRepository.removeStudySetsFromClass(
+      removeStudySetsFromClassDto,
     );
   }
 }
