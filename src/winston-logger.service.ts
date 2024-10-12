@@ -16,8 +16,5 @@ export const logger = winston.createLogger({
       return `${timestamp} [${level.toUpperCase()}]: ${message}`;
     }),
   ),
-  transports: [
-    transport,
-    new winston.transports.Console(),
-  ],
+  transports: [transport, new winston.transports.Console()],
 });

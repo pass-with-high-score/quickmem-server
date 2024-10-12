@@ -9,7 +9,8 @@ import {
   Post,
   Put,
   Query,
-  UseGuards, UseInterceptors,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ClassService } from './class.service';
 import { CreateClassDto } from './dto/bodies/create-class.dto';

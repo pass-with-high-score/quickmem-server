@@ -290,6 +290,11 @@ export class ClassRepository extends Repository<ClassEntity> {
       throw new NotFoundException('Class not found');
     }
 
+    // Check if join token is correct
+    if (classEntity.joinToken !== joinToken) {
+      throw new UnauthorizedException('Invalid join token');
+    }
+
     // Check if user already in class
     if (classEntity.members.some((member) => member.id === userId)) {
       throw new ConflictException('User already in class');

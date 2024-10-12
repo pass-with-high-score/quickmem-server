@@ -10,6 +10,7 @@ import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.d
 import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
 import { AddMemberToClassDto } from './dto/bodies/add-member-to-class.dto';
+import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 
 @Injectable()
 export class ClassService {
@@ -59,5 +60,11 @@ export class ClassService {
     addMemberToClassDto: AddMemberToClassDto,
   ): Promise<GetClassResponseInterface> {
     return this.classRepository.addMemberToClass(addMemberToClassDto);
+  }
+
+  async joinClassByJoinToken(
+    joinClassByTokenDto: JoinClassByTokenDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classRepository.joinClassByJoinToken(joinClassByTokenDto);
   }
 }
