@@ -9,7 +9,7 @@ import {
   Post,
   Put,
   Query,
-  UseGuards,
+  UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import { FolderService } from './folder.service';
 import { CreateFolderDto } from './dto/bodies/create-folder.dto';
@@ -25,9 +25,11 @@ import { UpdateFolderDto } from './dto/bodies/update-folder.dto';
 import { RemoveStudySetsFromFolderDto } from './dto/bodies/remove-study-sets-from-folder.dto';
 import { DeleteFolderByIdDto } from './dto/params/delete-folder-by-id.dto';
 import { SearchFolderByTitleDto } from './dto/queries/search-folder-by-title';
+import { LoggingInterceptor } from '../logging.interceptor';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
+@UseInterceptors(LoggingInterceptor)
 @Controller('folder')
 export class FolderController {
   constructor(private readonly folderService: FolderService) {}

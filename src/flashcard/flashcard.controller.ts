@@ -9,7 +9,7 @@ import {
   Patch,
   Post,
   Put,
-  UseGuards,
+  UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import { FlashcardService } from './flashcard.service';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -23,9 +23,11 @@ import { UpdateFlashcardParamDto } from './dto/params/update-flashcard-param.dto
 import { UpdateFlashcardDto } from './dto/bodies/update-flashcard.dto';
 import { FlashcardEntity } from './entities/flashcard.entity';
 import { UpdateFlashcardRatingDto } from './dto/bodies/update-flashcard-rating.dto';
+import { LoggingInterceptor } from '../logging.interceptor';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
+@UseInterceptors(LoggingInterceptor)
 @Controller('flashcard')
 export class FlashcardController {
   constructor(private readonly flashcardService: FlashcardService) {}

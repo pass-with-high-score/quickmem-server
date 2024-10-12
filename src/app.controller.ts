@@ -1,5 +1,7 @@
-import { Controller, Get, Header } from '@nestjs/common';
+import { Controller, Get, Header, UseInterceptors } from '@nestjs/common';
+import { LoggingInterceptor } from './logging.interceptor';
 
+@UseInterceptors(LoggingInterceptor)
 @Controller()
 export class AppController {
   constructor() {}

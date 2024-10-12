@@ -13,8 +13,10 @@ import { CloudinaryProvider } from './cloudinary.provider';
 import { multerConfig } from './multer.config';
 import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
+import { LoggingInterceptor } from '../logging.interceptor';
 
 @Controller('upload')
+@UseInterceptors(LoggingInterceptor)
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
 export class UploadController {

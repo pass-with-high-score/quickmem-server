@@ -5,6 +5,10 @@ export class AddMemberToClassDto {
   @IsNotEmpty()
   classId: string;
 
+  @IsUUID()
+  @IsNotEmpty()
+  userId: string;
+
   @IsArray()
   @ArrayNotEmpty()
   @IsUUID('4', { each: true })

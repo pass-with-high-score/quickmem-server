@@ -9,6 +9,7 @@ import { UpdateClassByIdDto } from './dto/bodies/update-class-by-id.dto';
 import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.dto';
 import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
+import { AddMemberToClassDto } from './dto/bodies/add-member-to-class.dto';
 
 @Injectable()
 export class ClassService {
@@ -52,5 +53,11 @@ export class ClassService {
     searchClassByTitleDto: SearchClassByTitleDto,
   ): Promise<GetClassResponseInterface[]> {
     return this.classRepository.searchClassByTitle(searchClassByTitleDto);
+  }
+
+  async addMemberToClass(
+    addMemberToClassDto: AddMemberToClassDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classRepository.addMemberToClass(addMemberToClassDto);
   }
 }

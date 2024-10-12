@@ -1,5 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { DataSource, ILike, Like, Repository } from 'typeorm';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { DataSource, ILike, Repository } from 'typeorm';
 import { ClassEntity } from './entities/class.entity';
 import { CreateClassDto } from './dto/bodies/create-class.dto';
 import { CreateClassResponseInterface } from './interfaces/create-class-response.interface';
@@ -11,6 +17,9 @@ import { UpdateClassByIdParamDto } from './dto/params/update-class-by-id-param.d
 import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.dto';
 import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
+import { AddMemberToClassDto } from './dto/bodies/add-member-to-class.dto';
+import { randomBytes } from 'crypto';
+import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -122,6 +131,9 @@ export class ClassRepository extends Repository<ClassEntity> {
     classEntity.title = title;
     classEntity.description = description;
     classEntity.owner = owner;
+    classEntity.allowMemberManagement = createClassDto.allowMemberManagement;
+    classEntity.allowSetManagement = createClassDto.allowSetManagement;
+    classEntity.joinToken = randomBytes(7).toString('base64').substring(0, 7);
 
     try {
       await this.save(classEntity);
@@ -130,13 +142,15 @@ export class ClassRepository extends Repository<ClassEntity> {
         title: classEntity.title,
         description: classEntity.description,
         owner: classEntity.owner.id,
-        allowSetAndMemberManagement: classEntity.allowSetAndMemberManagement,
+        allowSetManagement: classEntity.allowSetManagement,
+        allowMemberManagement: classEntity.allowMemberManagement,
+        joinToken: classEntity.joinToken,
         createdAt: classEntity.createdAt,
         updatedAt: classEntity.updatedAt,
       };
     } catch (error) {
       console.log('Error creating class:', error);
-      throw new Error('Error creating class');
+      throw new InternalServerErrorException('Error creating class');
     }
   }
 
@@ -169,8 +183,9 @@ export class ClassRepository extends Repository<ClassEntity> {
     classEntity.title = title;
     classEntity.description = description;
     classEntity.owner = owner;
-    classEntity.allowSetAndMemberManagement =
-      updateClassByIdDto.allowSetAndMemberManagement;
+    classEntity.allowMemberManagement =
+      updateClassByIdDto.allowMemberManagement;
+    classEntity.allowSetManagement = updateClassByIdDto.allowSetManagement;
 
     try {
       await this.save(classEntity);
@@ -179,13 +194,15 @@ export class ClassRepository extends Repository<ClassEntity> {
         title: classEntity.title,
         description: classEntity.description,
         owner: classEntity.owner.id,
-        allowSetAndMemberManagement: classEntity.allowSetAndMemberManagement,
+        allowSetManagement: classEntity.allowSetManagement,
+        allowMemberManagement: classEntity.allowMemberManagement,
+        joinToken: classEntity.joinToken,
         createdAt: classEntity.createdAt,
         updatedAt: classEntity.updatedAt,
       };
     } catch (error) {
       console.log('Error updating class:', error);
-      throw new Error('Error updating class');
+      throw new InternalServerErrorException('Error updating class');
     }
   }
 
@@ -208,11 +225,96 @@ export class ClassRepository extends Repository<ClassEntity> {
       await this.remove(classEntity);
     } catch (error) {
       console.log('Error deleting class:', error);
-      throw new Error('Error deleting class');
+      throw new InternalServerErrorException('Error deleting class');
     }
   }
 
   // Add member to class (if user is owner or allowSetAndMemberManagement is true)
+  async addMemberToClass(
+    addMemberToClassDto: AddMemberToClassDto,
+  ): Promise<GetClassResponseInterface> {
+    const { classId, memberIds, userId } = addMemberToClassDto;
+
+    // Find class
+    const classEntity = await this.findOne({
+      where: { id: classId },
+      relations: ['owner', 'members'],
+    });
+
+    if (!classEntity) {
+      throw new NotFoundException('Class not found');
+    }
+
+    // Check if user is owner or allowSetAndMemberManagement is true and if a user not owner, user must be in memberIds
+    if (
+      classEntity.owner.id !== userId &&
+      !classEntity.allowMemberManagement &&
+      !memberIds.includes(userId)
+    ) {
+      throw new UnauthorizedException('User not authorized to add members');
+    }
+
+    // Find members
+    const members = await this.dataSource.getRepository(UserEntity).find({
+      where: memberIds.map((id) => ({ id })),
+    });
+    if (members.length !== memberIds.length) {
+      throw new NotFoundException('One or more members not found');
+    }
+
+    // Add members to class
+    classEntity.members = [...classEntity.members, ...members];
+
+    try {
+      await this.save(classEntity);
+      return this.mapClassEntityToResponse(classEntity);
+    } catch (error) {
+      console.log('Error adding members to class:', error);
+      throw new InternalServerErrorException('Error adding members to class');
+    }
+  }
+
+  // Join class by join token
+  async joinClassByJoinToken(
+    joinClassByTokenDto: JoinClassByTokenDto,
+  ): Promise<GetClassResponseInterface> {
+    const { joinToken, userId, classId } = joinClassByTokenDto;
+
+    // Find class
+    const classEntity = await this.findOne({
+      where: { id: classId },
+      relations: ['owner', 'members'],
+    });
+
+    if (!classEntity) {
+      throw new NotFoundException('Class not found');
+    }
+
+    // Check if user already in class
+    if (classEntity.members.some((member) => member.id === userId)) {
+      throw new ConflictException('User already in class');
+    }
+
+    // Find user
+    const user = await this.dataSource.getRepository(UserEntity).findOneBy({
+      id: userId,
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Add user to class
+    classEntity.members = [...classEntity.members, user];
+
+    try {
+      await this.save(classEntity);
+      return this.mapClassEntityToResponse(classEntity);
+    } catch (error) {
+      console.log('Error joining class:', error);
+      throw new InternalServerErrorException('Error joining class');
+    }
+  }
 
   // Remove member from class (if user is owner)
 
@@ -231,6 +333,9 @@ export class ClassRepository extends Repository<ClassEntity> {
     showFolders = true,
   ): Promise<GetClassResponseInterface> {
     return {
+      allowMemberManagement: classEntity.allowMemberManagement,
+      allowSetManagement: classEntity.allowSetManagement,
+      joinToken: classEntity.joinToken,
       id: classEntity.id,
       title: classEntity.title,
       description: classEntity.description,

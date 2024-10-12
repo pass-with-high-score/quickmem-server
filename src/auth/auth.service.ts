@@ -18,6 +18,7 @@ import { UpdateFullnameResponseInterfaceDto } from './interfaces/update-fullname
 import axios from 'axios';
 import { OAuth2Client } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
+import { logger } from '../winston-logger.service';
 
 @Injectable()
 export class AuthService {
@@ -46,7 +47,7 @@ export class AuthService {
     authCredentialsDto: LoginCredentialsDto,
   ): Promise<AuthResponseInterface> {
     const { email, idToken, provider } = authCredentialsDto;
-    console.log('provider', provider);
+    logger.info('Login attempt', { email, provider });
 
     if (provider === 'GOOGLE') {
       if (!idToken) {

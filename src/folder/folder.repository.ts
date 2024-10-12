@@ -199,6 +199,14 @@ export class FolderRepository extends Repository<FolderEntity> {
       );
     }
 
+    if (
+      studySets.some((studySet) =>
+        studySet.folders.some((f) => f.id === folder.id),
+      )
+    ) {
+      throw new NotFoundException('One or more study sets already in folder');
+    }
+
     folder.studySets = [
       ...folder.studySets,
       ...studySets.filter(

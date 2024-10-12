@@ -3,7 +3,9 @@ export interface CreateClassResponseInterface {
   title: string;
   description?: string;
   owner: string;
-  allowSetAndMemberManagement: boolean;
+  joinToken: string;
+  allowSetManagement: boolean;
+  allowMemberManagement: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

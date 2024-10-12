@@ -9,7 +9,7 @@ import {
   Post,
   Put,
   Query,
-  UseGuards,
+  UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import { ClassService } from './class.service';
 import { CreateClassDto } from './dto/bodies/create-class.dto';
@@ -23,9 +23,12 @@ import { UpdateClassByIdDto } from './dto/bodies/update-class-by-id.dto';
 import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.dto';
 import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
+import { AddMemberToClassDto } from './dto/bodies/add-member-to-class.dto';
+import { LoggingInterceptor } from '../logging.interceptor';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
+@UseInterceptors(LoggingInterceptor)
 @Controller('class')
 export class ClassController {
   constructor(private readonly classService: ClassService) {}
@@ -73,6 +76,14 @@ export class ClassController {
     @Body() createClassDto: CreateClassDto,
   ): Promise<CreateClassResponseInterface> {
     return this.classService.createClass(createClassDto);
+  }
+
+  @Post('/add-member')
+  @HttpCode(HttpStatus.OK)
+  async addMemberToClass(
+    @Body() addMemberToClassDto: AddMemberToClassDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classService.addMemberToClass(addMemberToClassDto);
   }
 
   @Delete('/:id')

@@ -6,6 +6,7 @@ import {
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from '../../auth/entities/user.entity';
@@ -24,7 +25,10 @@ export class ClassEntity {
   description?: string;
 
   @Column({ type: 'boolean', default: true })
-  allowSetAndMemberManagement: boolean;
+  allowSetManagement: boolean;
+
+  @Column({ type: 'boolean', default: true })
+  allowMemberManagement: boolean;
 
   @ManyToOne(() => UserEntity, (user) => user.ownerClasses)
   owner: UserEntity;
@@ -42,6 +46,9 @@ export class ClassEntity {
     inverseJoinColumn: { name: 'user_id', referencedColumnName: 'id' },
   })
   members: UserEntity[];
+
+  @Column()
+  joinToken: string;
 
   @CreateDateColumn()
   createdAt: Date;

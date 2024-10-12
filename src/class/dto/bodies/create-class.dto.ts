@@ -16,7 +16,10 @@ export class CreateClassDto {
   description?: string;
 
   @IsBoolean()
-  allowSetAndMemberManagement: boolean;
+  allowSetManagement: boolean;
+
+  @IsBoolean()
+  allowMemberManagement: boolean;
 
   @IsNotEmpty()
   @IsUUID()

@@ -6,7 +6,8 @@ import { TransformInterceptor } from './transform.interceptor';
 import { Logger } from '@nestjs/common';
 import * as session from 'express-session';
 import * as passport from 'passport';
-import * as process from 'node:process'; // Correct import statement
+import * as process from 'node:process';
+import { LoggingInterceptor } from './logging.interceptor'; // Correct import statement
 
 async function bootstrap() {
   const logger = new Logger('bootstrap');
@@ -53,6 +54,7 @@ async function bootstrap() {
     }),
   );
   app.useGlobalInterceptors(new TransformInterceptor());
+  app.useGlobalInterceptors(new LoggingInterceptor());
 
   const port = process.env.PORT || 3000;
   logger.log(`About to start listening on port ${port}`);

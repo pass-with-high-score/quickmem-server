@@ -16,7 +16,10 @@ export class UpdateClassByIdDto {
   description?: string;
 
   @IsBoolean()
-  allowSetAndMemberManagement: boolean;
+  allowSetManagement: boolean;
+
+  @IsBoolean()
+  allowMemberManagement: boolean;
 
   @IsNotEmpty()
   @IsUUID()
