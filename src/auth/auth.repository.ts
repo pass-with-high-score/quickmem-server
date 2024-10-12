@@ -31,6 +31,9 @@ import { ResendVerificationEmailResponseInterface } from './interfaces/resend-ve
 import { UpdateFullnameResponseInterfaceDto } from './interfaces/update-fullname-response.interface.dto';
 import { UpdateFullnameDto } from './dto/bodies/update-fullname.dto';
 import { SubscriptionTypeEnum } from '../subscription/enums/subscription.enum';
+import { UpdateCoinDto } from './dto/bodies/update-coin.dto';
+import { UpdateCoinResponseInterface } from './interfaces/update-coin-response.interface';
+import { logger } from '../winston-logger.service';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -42,6 +45,46 @@ export class AuthRepository extends Repository<UserEntity> {
     private configService: ConfigService,
   ) {
     super(UserEntity, dataSource.createEntityManager());
+  }
+
+  async updateCoin(
+    updateCoinDto: UpdateCoinDto,
+  ): Promise<UpdateCoinResponseInterface> {
+    const { userId, coin, action } = updateCoinDto;
+
+    const user = await this.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    if (action === 'add') {
+      user.coins += coin;
+    } else if (action === 'subtract') {
+      if (user.coins < coin) {
+        throw new ConflictException({
+          statusCode: HttpStatus.CONFLICT,
+          message: 'Insufficient coins',
+        });
+      }
+      user.coins -= coin;
+    } else {
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        message: 'Invalid action',
+      });
+    }
+
+    await this.save(user);
+
+    return {
+      message: 'Coins updated successfully',
+      coinAction: action,
+      coins: user.coins,
+    };
   }
 
   async createUser(
@@ -131,7 +174,7 @@ export class AuthRepository extends Repository<UserEntity> {
         success: true,
       };
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Failed to create user',
@@ -145,9 +188,7 @@ export class AuthRepository extends Repository<UserEntity> {
     const { email, password, provider } = authCredentialsDto;
     try {
       const user = await this.findOne({ where: { email } });
-      console.log(user);
-
-      console.log(await bcrypt.compare(password, user.password));
+      logger.info(user);
       if (user) {
         if (
           provider === 'EMAIL' &&
@@ -212,7 +253,7 @@ export class AuthRepository extends Repository<UserEntity> {
       } else if (error instanceof NotFoundException) {
         throw error;
       }
-      console.log(error);
+      logger.error(error);
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Failed to validate user',
@@ -250,7 +291,7 @@ export class AuthRepository extends Repository<UserEntity> {
       response.fullname = fullname;
       return response;
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Failed to update full name',
@@ -280,7 +321,7 @@ export class AuthRepository extends Repository<UserEntity> {
       });
       return { accessToken };
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         message: 'Invalid refresh token',
@@ -356,7 +397,6 @@ export class AuthRepository extends Repository<UserEntity> {
     user.otp = otp; // Store OTP
     user.otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
     await this.save(user);
-    console.log('Reset Password Token:', token + ' OTP:', otp);
 
     // send otp to email
     await this.sendEmailQueue.add('send-reset-password-email', {
@@ -415,7 +455,7 @@ export class AuthRepository extends Repository<UserEntity> {
         email: user.email,
       };
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Failed to reset password',

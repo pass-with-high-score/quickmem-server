@@ -19,6 +19,8 @@ import axios from 'axios';
 import { OAuth2Client } from 'google-auth-library';
 import { ConfigService } from '@nestjs/config';
 import { logger } from '../winston-logger.service';
+import { UpdateCoinDto } from './dto/bodies/update-coin.dto';
+import { UpdateCoinResponseInterface } from './interfaces/update-coin-response.interface';
 
 @Injectable()
 export class AuthService {
@@ -127,5 +129,11 @@ export class AuthService {
     return this.usersRepository.resendVerificationEmail(
       resendVerificationEmailDto,
     );
+  }
+
+  async updateCoin(
+    updateCoinDto: UpdateCoinDto,
+  ): Promise<UpdateCoinResponseInterface> {
+    return this.usersRepository.updateCoin(updateCoinDto);
   }
 }

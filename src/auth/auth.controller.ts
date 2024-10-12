@@ -34,6 +34,8 @@ import { GoogleAuthGuard } from './guard/google-auth.guard';
 import { Request, Response } from 'express';
 import { FacebookAuthGuard } from './guard/facebook-auth.guard';
 import { AuthProviderEnum } from './enums/auth-provider.enum';
+import { UpdateCoinDto } from './dto/bodies/update-coin.dto';
+import { UpdateCoinResponseInterface } from './interfaces/update-coin-response.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -170,5 +172,15 @@ export class AuthController {
     @Body() resendVerificationEmailDto: ResendVerificationEmailDto,
   ): Promise<ResendVerificationEmailResponseInterface> {
     return this.authService.resendVerificationEmail(resendVerificationEmailDto);
+  }
+
+  @UseGuards(OwnershipGuard)
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @Post('/coin')
+  @HttpCode(HttpStatus.OK)
+  async updateCoin(
+    @Body() updateCoinDto: UpdateCoinDto,
+  ): Promise<UpdateCoinResponseInterface> {
+    return this.authService.updateCoin(updateCoinDto);
   }
 }
