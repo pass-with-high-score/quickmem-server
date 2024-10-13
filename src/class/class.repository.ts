@@ -27,6 +27,7 @@ import { FolderEntity } from '../folder/entities/folder.entity';
 import { AddStudySetsToClassDto } from './dto/bodies/add-study-sets-to-class.dto';
 import { StudySetEntity } from '../study-set/entities/study-set.entity';
 import { RemoveStudySetsFromClassDto } from './dto/bodies/remove-study-sets-from-class.dto';
+import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-class.dto';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -295,6 +296,7 @@ export class ClassRepository extends Repository<ClassEntity> {
       where: { id: In(ids) as any } as any,
       relations,
     });
+    logger.info(`ids: ${ids}, items: ${items}`);
 
     if (items.length !== ids.length) {
       throw new NotFoundException(`One or more ${entityName}s not found`);
@@ -572,6 +574,77 @@ export class ClassRepository extends Repository<ClassEntity> {
       logger.error('Error removing study sets from class:', error);
       throw new InternalServerErrorException(
         'Error removing study sets from class',
+      );
+    }
+  }
+
+  async removeMembersFromClass(
+    removeMembersFromClassDto: RemoveMembersFromClassDto,
+  ): Promise<GetClassResponseInterface> {
+    const { classId, userId, memberIds } = removeMembersFromClassDto;
+    logger.info(
+      `classId: ${classId}, userId: ${userId}, memberIds: ${memberIds}`,
+    );
+
+    // Find class
+    const classEntity = await this.findClassAndValidatePermissions(
+      classId,
+      userId,
+      [
+        'owner',
+        'members',
+        'folders',
+        'studySets',
+        'folders.studySets',
+        'folders.owner',
+      ],
+      false,
+      true,
+    );
+
+    if (!classEntity.allowMemberManagement) {
+      throw new UnauthorizedException('Class does not allow member management');
+    }
+
+    // if user is not the owner of the class
+    if (classEntity.owner.id !== userId) {
+      throw new UnauthorizedException('User is not the owner of the class');
+    }
+
+    // Find members
+    logger.info('memberIds: ' + memberIds);
+    const members = await this.findItemsByIds(
+      this.dataSource.getRepository(UserEntity),
+      memberIds,
+      [],
+      'member',
+    );
+
+    // Check if all members are in the class
+    for (const member of members) {
+      if (
+        !classEntity.members.some(
+          (existingMember) => existingMember.id === member.id,
+        )
+      ) {
+        throw new NotFoundException(
+          `Member with id ${member.id} is not in the class`,
+        );
+      }
+    }
+
+    // Remove members from class
+    classEntity.members = classEntity.members.filter(
+      (existingMember) => !memberIds.includes(existingMember.id),
+    );
+
+    try {
+      await this.save(classEntity);
+      return this.mapClassEntityToResponse(classEntity);
+    } catch (error) {
+      logger.error('Error removing members from class:', error);
+      throw new InternalServerErrorException(
+        'Error removing members from class',
       );
     }
   }

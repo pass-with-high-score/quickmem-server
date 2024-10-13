@@ -29,6 +29,7 @@ import { AddFoldersToClassDto } from './dto/bodies/add-folders-to-class.dto';
 import { RemoveFoldersFromClassDto } from './dto/bodies/remove-folders-from-class.dto';
 import { AddStudySetsToClassDto } from './dto/bodies/add-study-sets-to-class.dto';
 import { RemoveStudySetsFromClassDto } from './dto/bodies/remove-study-sets-from-class.dto';
+import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-class.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -127,6 +128,13 @@ export class ClassController {
     return this.classService.removeStudySetsFromClass(
       removeStudySetsFromClassDto,
     );
+  }
+
+  @Delete('/members')
+  async removeMembersFromClass(
+    @Body() removeMembersFromClassDto: RemoveMembersFromClassDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classService.removeMembersFromClass(removeMembersFromClassDto);
   }
 
   @Delete('/:id')
