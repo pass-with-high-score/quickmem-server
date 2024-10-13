@@ -116,7 +116,7 @@ export class StreakRepository extends Repository<StreakEntity> {
     }
 
     const lastStreak = streaks[0];
-    console.log(`Current streak count: ${lastStreak.streakCount}`); // Log current streak count
+    logger.info(`Last streak count: ${lastStreak.streakCount}`); // Log last streak count
 
     // Check if streak is already updated today
     const today = new Date();
@@ -124,7 +124,7 @@ export class StreakRepository extends Repository<StreakEntity> {
       lastStreak.updatedAt.toDateString() === today.toDateString() &&
       lastStreak.streakCount > 0
     ) {
-      console.log('Streak already updated today'); // Log if streak is updated today
+      logger.info(`Streak already updated today`); // Log streak already updated today
       return {
         id: lastStreak.id,
         date,
@@ -136,13 +136,19 @@ export class StreakRepository extends Repository<StreakEntity> {
     lastStreak.streakCount += 1;
     lastStreak.updatedAt = date;
 
-    await this.save(lastStreak);
-    console.log(`New streak count: ${lastStreak.streakCount}`); // Log new streak count
-
-    return {
-      id: lastStreak.id,
-      date,
-      streakCount: lastStreak.streakCount,
-    };
+    try {
+      await this.save(lastStreak);
+      logger.info(`Streak incremented to ${lastStreak.streakCount}`); // Log streak incremented
+      return {
+        id: lastStreak.id,
+        date,
+        streakCount: lastStreak.streakCount,
+      };
+    } catch (e) {
+      logger.error(e);
+      throw new InternalServerErrorException({
+        message: 'Error incrementing streak',
+      });
+    }
   }
 }

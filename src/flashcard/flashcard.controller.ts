@@ -9,7 +9,7 @@ import {
   Patch,
   Post,
   Put,
-  UseGuards, UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { FlashcardService } from './flashcard.service';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -23,6 +23,7 @@ import { UpdateFlashcardParamDto } from './dto/params/update-flashcard-param.dto
 import { UpdateFlashcardDto } from './dto/bodies/update-flashcard.dto';
 import { FlashcardEntity } from './entities/flashcard.entity';
 import { UpdateFlashcardRatingDto } from './dto/bodies/update-flashcard-rating.dto';
+import { logger } from '../winston-logger.service';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -41,6 +42,7 @@ export class FlashcardController {
   async getFlashcardByStudySetId(
     @Param() getFlashcardsByStudySetIdDto: GetFlashcardsByStudySetIdDto,
   ): Promise<FlashcardResponseInterface[]> {
+    logger.info('getFlashcardByStudySetIdDto', getFlashcardsByStudySetIdDto);
     return this.flashcardService.getFlashcardByStudySetId(
       getFlashcardsByStudySetIdDto,
     );

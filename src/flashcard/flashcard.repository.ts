@@ -14,6 +14,7 @@ import { UpdateFlashcardDto } from './dto/bodies/update-flashcard.dto';
 import { DeleteFlashcardParamDto } from './dto/params/delete-flashcard-param.dto';
 import { UpdateFlashcardParamDto } from './dto/params/update-flashcard-param.dto';
 import { UpdateFlashcardRatingDto } from './dto/bodies/update-flashcard-rating.dto';
+import { logger } from '../winston-logger.service';
 
 @Injectable()
 export class FlashcardRepository extends Repository<FlashcardEntity> {
@@ -50,7 +51,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         updatedAt: flashcard.updatedAt,
       };
     } catch (error) {
-      console.error('Error getting flashcard by ID:', error);
+      logger.error('Error getting flashcard by ID:', error);
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -83,7 +84,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         updatedAt: flashcard.updatedAt,
       }));
     } catch (error) {
-      console.error('Error getting flashcards by study set ID:', error);
+      logger.error('Error getting flashcards by study set ID:', error);
       throw new InternalServerErrorException('Error retrieving flashcards');
     }
   }
@@ -134,7 +135,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         updatedAt: savedFlashcard.updatedAt,
       };
     } catch (error) {
-      console.error('Error creating flashcard:', error);
+      logger.error('Error creating flashcard:', error);
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -153,7 +154,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         throw new NotFoundException(`Flashcard with ID ${id} not found`);
       }
     } catch (error) {
-      console.error('Error deleting flashcard by ID:', error);
+      logger.error('Error deleting flashcard:', error);
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -175,7 +176,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       Object.assign(flashcard, updateFlashcardDto);
       return await this.save(flashcard);
     } catch (error) {
-      console.error('Error updating flashcard by ID:', error);
+      logger.error('Error updating flashcard by ID:', error);
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -197,7 +198,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       flashcard.rating = updateFlashcardRatingDto.rating;
       return await this.save(flashcard);
     } catch (error) {
-      console.error('Error updating flashcard rating:', error);
+      logger.error('Error updating flashcard rating:', error);
       if (error instanceof NotFoundException) {
         throw error;
       }

@@ -20,8 +20,4 @@ export class UpdateFlashcardDto {
   @IsOptional()
   @IsString()
   explanation?: string;
-
-  @IsOptional()
-  @IsString()
-  rating?: string;
 }
