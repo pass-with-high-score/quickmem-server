@@ -17,7 +17,7 @@ import { LoginCredentialsDto } from './dto/bodies/login-credentials.dto';
 import { ConfigService } from '@nestjs/config';
 import { SignupResponseInterface } from './interfaces/signup-response.interface';
 import { VerifyOtpDto } from './dto/bodies/verify-otp.dto';
-import { SendResetPasswordDto } from './dto/bodies/send-reset-password.dto';
+import { SendEmailDto } from './dto/bodies/send-email.dto';
 import { SendResetPasswordResponseInterface } from './interfaces/send-reset-password-response.interface';
 import { ResetPasswordDto } from './dto/bodies/reset-password.dto';
 import { ResetPasswordResponseInterface } from './interfaces/reset-password-response.interface';
@@ -26,7 +26,6 @@ import { Queue } from 'bull';
 import { MailerService } from '@nestjs-modules/mailer';
 import { SetNewPasswordDto } from './dto/bodies/set-new-password.dto';
 import { SetNewPasswordResponseInterface } from './interfaces/set-new-password-response.interface';
-import { ResendVerificationEmailDto } from './dto/bodies/resend-verification-email.dto';
 import { ResendVerificationEmailResponseInterface } from './interfaces/resend-verification-email-response.interface';
 import { UpdateFullnameResponseInterfaceDto } from './interfaces/update-fullname-response.interface.dto';
 import { UpdateFullnameDto } from './dto/bodies/update-fullname.dto';
@@ -378,9 +377,9 @@ export class AuthRepository extends Repository<UserEntity> {
   }
 
   async sendResetPasswordEmail(
-    sendResetPasswordDto: SendResetPasswordDto,
+    sendEmailDto: SendEmailDto,
   ): Promise<SendResetPasswordResponseInterface> {
-    const { email } = sendResetPasswordDto;
+    const { email } = sendEmailDto;
     const user = await this.findOne({ where: { email } });
 
     if (!user) {
@@ -512,9 +511,9 @@ export class AuthRepository extends Repository<UserEntity> {
   }
 
   async resendVerificationEmail(
-    resendVerificationEmailDto: ResendVerificationEmailDto,
+    sendEmailDto: SendEmailDto,
   ): Promise<ResendVerificationEmailResponseInterface> {
-    const { email } = resendVerificationEmailDto;
+    const { email } = sendEmailDto;
     const user = await this.findOne({ where: { email } });
 
     if (!user) {

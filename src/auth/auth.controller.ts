@@ -10,7 +10,6 @@ import {
   Res,
   Session,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupCredentialsDto } from './dto/bodies/signup-credentials.dto';
@@ -18,14 +17,13 @@ import { AuthResponseInterface } from './interfaces/auth-response.interface';
 import { LoginCredentialsDto } from './dto/bodies/login-credentials.dto';
 import { SignupResponseInterface } from './interfaces/signup-response.interface';
 import { VerifyOtpDto } from './dto/bodies/verify-otp.dto';
-import { SendResetPasswordDto } from './dto/bodies/send-reset-password.dto';
+import { SendEmailDto } from './dto/bodies/send-email.dto';
 import { SendResetPasswordResponseInterface } from './interfaces/send-reset-password-response.interface';
 import { ResetPasswordDto } from './dto/bodies/reset-password.dto';
 import { ResetPasswordResponseInterface } from './interfaces/reset-password-response.interface';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { SetNewPasswordResponseInterface } from './interfaces/set-new-password-response.interface';
 import { SetNewPasswordDto } from './dto/bodies/set-new-password.dto';
-import { ResendVerificationEmailDto } from './dto/bodies/resend-verification-email.dto';
 import { ResendVerificationEmailResponseInterface } from './interfaces/resend-verification-email-response.interface';
 import { UpdateFullnameDto } from './dto/bodies/update-fullname.dto';
 import { UpdateFullnameResponseInterfaceDto } from './interfaces/update-fullname-response.interface.dto';
@@ -141,9 +139,9 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('/send-reset-password')
   async sendResetPassword(
-    @Body() sendResetPasswordDto: SendResetPasswordDto,
+    @Body() sendEmailDto: SendEmailDto,
   ): Promise<SendResetPasswordResponseInterface> {
-    return this.authService.sendResetPassword(sendResetPasswordDto);
+    return this.authService.sendResetPassword(sendEmailDto);
   }
 
   @SkipThrottle()
@@ -169,9 +167,9 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('/resend-verification-email')
   async resendVerificationEmail(
-    @Body() resendVerificationEmailDto: ResendVerificationEmailDto,
+    @Body() sendEmailDto: SendEmailDto,
   ): Promise<ResendVerificationEmailResponseInterface> {
-    return this.authService.resendVerificationEmail(resendVerificationEmailDto);
+    return this.authService.resendVerificationEmail(sendEmailDto);
   }
 
   @UseGuards(OwnershipGuard)

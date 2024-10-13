@@ -1,7 +1,7 @@
 import { Column } from 'typeorm';
 import { IsEmail, IsNotEmpty } from 'class-validator';
 
-export class SendResetPasswordDto {
+export class SendEmailDto {
   @IsEmail()
   @IsNotEmpty()
   @Column()
