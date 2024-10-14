@@ -17,10 +17,22 @@ export class SubscriptionEntity {
   @ManyToOne(() => UserEntity, (user) => user.subscriptions)
   user: UserEntity;
 
+  @Column({ type: 'boolean', default: false })
+  isTrial: boolean;
+
+  @Column({
+    type: 'enum',
+    enum: SubscriptionTypeEnum,
+    nullable: true,
+    enumName: 'trial_for_type_enum',
+  })
+  trialForType: string;
+
   @Column({
     type: 'enum',
     enum: SubscriptionTypeEnum,
     default: SubscriptionTypeEnum.FREE_TRIAL,
+    enumName: 'subscription_type_enum',
   })
   subscriptionType: SubscriptionTypeEnum;
 
@@ -32,6 +44,9 @@ export class SubscriptionEntity {
 
   @Column({ default: false })
   isActive: boolean;
+
+  @Column({ default: true })
+  isAutoRenew: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
