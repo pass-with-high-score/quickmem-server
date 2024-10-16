@@ -6,7 +6,6 @@ import {
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from '../../auth/entities/user.entity';

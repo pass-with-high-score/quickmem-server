@@ -143,7 +143,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         throw new NotFoundException('Study set not found');
       }
 
-      return this.mapStudySetToResponse(studySet);
+      return this.mapStudySetToResponse(studySet, true);
     } catch (error) {
       console.log('Error getting study set', error);
       if (error instanceof NotFoundException) {

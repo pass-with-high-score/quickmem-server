@@ -9,7 +9,7 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards, UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
