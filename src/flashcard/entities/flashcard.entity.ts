@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { FlashcardStatusEnum } from './flashcard-status.enum';
+import { FlashcardStatusEnum } from '../enums/flashcard-status.enum';
 import { StudySetEntity } from '../../study-set/entities/study-set.entity';
 
 @Entity('flashcards')
