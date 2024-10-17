@@ -1,5 +1,6 @@
 export class FlashcardResponseInterface {
   id: string;
+  studySetId?: string;
   term: string;
   definition: string;
   definitionImageURL?: string;

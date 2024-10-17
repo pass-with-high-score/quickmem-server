@@ -40,6 +40,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
 
       return {
         id: flashcard.id,
+        studySetId: flashcard.studySet.id,
         term: flashcard.term,
         definition: flashcard.definition,
         definitionImageURL: flashcard.definitionImageURL,
@@ -73,6 +74,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
 
       return flashcards.map((flashcard) => ({
         id: flashcard.id,
+        studySetId: flashcard.studySet.id,
         term: flashcard.term,
         definition: flashcard.definition,
         definitionImageURL: flashcard.definitionImageURL,
@@ -124,6 +126,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
 
       return {
         id: savedFlashcard.id,
+        studySetId: flashcard.studySet.id,
         term: savedFlashcard.term,
         definition: savedFlashcard.definition,
         definitionImageURL: savedFlashcard.definitionImageURL,
