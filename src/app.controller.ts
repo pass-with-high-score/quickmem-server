@@ -204,7 +204,7 @@ export class AppController {
         <div class="team-member"><strong><a href="https://github.com/nqmgaming">Nguyễn Quang Minh</a></strong> - Team Leader</div>
         <div class="team-member"><strong><a href="https://github.com/daocon">Hà Văn Đạo</a></strong> - Developer</div>
         <div class="team-member"><strong><a href="https://github.com/thinguyendinh04">Nguyễn Đình Thi</a></strong> - Developer</div>
-        <div class="team-member"><strong><a href="https://github.com/vuhai7868">Nguyễn Văn Hải</a></strong> - Developer</div>
+        <div class="team-member"><strong><a href="https://github.com/vanhai7868">Nguyễn Văn Hải</a></strong> - Developer</div>
         <div class="team-member"><strong><a href="https://github.com/VuDucHuan2811">Vũ Đức Huân</a></strong> - Developer</div>
         <div class="team-member"><strong><a href="https://github.com/nguyenVu401">Vũ Hữu Nguyên</a></strong> - Developer</div>
       </div>
