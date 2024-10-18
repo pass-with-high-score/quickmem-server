@@ -115,7 +115,7 @@ export class FolderRepository extends Repository<FolderEntity> {
       user: {
         id: folder.owner.id,
         username: folder.owner.username,
-        avatarUrl: folder.owner.avatarUrl,
+        avatarUrl: `${process.env.HOST}/public/images/avatar/${folder.owner.avatarUrl}.png`,
         role: folder.owner.role,
       },
       studySets: showFlashcards

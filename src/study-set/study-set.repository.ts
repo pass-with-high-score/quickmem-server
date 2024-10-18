@@ -20,6 +20,7 @@ import { DeleteStudySetResponseInterface } from './interfaces/delete-study-set-r
 import { DuplicateStudySetDto } from './dto/bodies/duplicate-study-set.dto';
 import { SearchStudySetParamsDto } from './dto/queries/search-study-set-params.dto';
 import { FlashcardEntity } from 'src/flashcard/entities/flashcard.entity';
+import * as process from 'node:process';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -395,7 +396,9 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       user: {
         id: studySet.owner ? studySet.owner.id : undefined,
         username: studySet.owner ? studySet.owner.username : undefined,
-        avatarUrl: studySet.owner ? studySet.owner.avatarUrl : undefined,
+        avatarUrl: studySet.owner
+          ? `${process.env.HOST}/public/images/avatar/${studySet.owner.avatarUrl}.png`
+          : undefined,
         role: studySet.owner ? studySet.owner.role : undefined,
       },
       color: studySet.color

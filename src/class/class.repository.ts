@@ -28,6 +28,7 @@ import { AddStudySetsToClassDto } from './dto/bodies/add-study-sets-to-class.dto
 import { StudySetEntity } from '../study-set/entities/study-set.entity';
 import { RemoveStudySetsFromClassDto } from './dto/bodies/remove-study-sets-from-class.dto';
 import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-class.dto';
+import process from 'node:process';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -665,7 +666,7 @@ export class ClassRepository extends Repository<ClassEntity> {
       owner: {
         id: classEntity.owner.id,
         username: classEntity.owner.username,
-        avatarUrl: classEntity.owner.avatarUrl,
+        avatarUrl: `${process.env.HOST}/public/images/avatar/${classEntity.owner.avatarUrl}.png`,
       },
       memberCount: classEntity.members.length,
       studySetCount: classEntity.studySets.length,
@@ -674,7 +675,7 @@ export class ClassRepository extends Repository<ClassEntity> {
         ? classEntity.members.map((member) => ({
             id: member.id,
             username: member.username,
-            avatarUrl: member.avatarUrl,
+            avatarUrl: `${process.env.HOST}/public/images/avatar/${member.avatarUrl}.png`,
           }))
         : undefined,
       studySets: showStudySets
@@ -688,7 +689,7 @@ export class ClassRepository extends Repository<ClassEntity> {
             owner: {
               id: studySet.owner.id,
               username: studySet.owner.username,
-              avatarUrl: studySet.owner.avatarUrl,
+              avatarUrl: `${process.env.HOST}/public/images/avatar/${studySet.owner.avatarUrl}.png`,
             },
             createdAt: studySet.createdAt,
             updatedAt: studySet.updatedAt,
@@ -705,7 +706,7 @@ export class ClassRepository extends Repository<ClassEntity> {
             user: {
               id: folder.owner.id,
               username: folder.owner.username,
-              avatarUrl: folder.owner.avatarUrl,
+              avatarUrl: `${process.env.HOST}/public/images/avatar/${folder.owner.avatarUrl}.png`,
               role: folder.owner.role,
             },
             createdAt: folder.createdAt,
