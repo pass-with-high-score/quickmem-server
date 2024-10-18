@@ -12,7 +12,7 @@ import { UserEntity } from '../auth/entities/user.entity';
 import { logger } from '../winston-logger.service';
 import { UpdateSubscriptionTypeParamDto } from './dto/params/update-subscription-type.param.dto';
 import { UpdateSubscriptionBodyDto } from './dto/bodies/update-subscription.body.dto';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { SubscriptionTypeEnum } from './enums/subscription.enum';
 import { addDays } from 'date-fns';
 import { UpdateAutoRenewParamDto } from './dto/params/update-auto-renew.param.dto';
@@ -172,12 +172,11 @@ export class SubscriptionRepository extends Repository<SubscriptionEntity> {
     };
   }
 
-  // Cron job kiểm tra và xử lý các đăng ký hết hạn
-  @Cron('0 0 * * *') // Chạy lúc 00:00 mỗi ngày
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async checkExpiredSubscriptions() {
     const currentDate = new Date();
 
-    // Lấy tất cả các đăng ký đã hết hạn, đang hoạt động (không cần kiểm tra isAutoRenew ở đây vì sẽ xử lý logic sau)
+    logger.info('Checking for expired subscriptions...');
     const expiredSubscriptions = await this.dataSource
       .getRepository(SubscriptionEntity)
       .find({
@@ -190,9 +189,9 @@ export class SubscriptionRepository extends Repository<SubscriptionEntity> {
     for (const subscription of expiredSubscriptions) {
       try {
         if (subscription.isAutoRenew) {
-          // Nếu có tự động gia hạn
+          logger.info(`Renewing subscription ID ${subscription.id}...`);
           if (subscription.isTrial) {
-            // Chuyển từ FREE_TRIAL sang gói trả phí tương ứng
+            logger.info(`Renewing trial subscription ID ${subscription.id}...`);
             switch (subscription.trialForType) {
               case 'MONTHLY':
                 subscription.subscriptionType = SubscriptionTypeEnum.MONTHLY;
@@ -205,7 +204,7 @@ export class SubscriptionRepository extends Repository<SubscriptionEntity> {
             }
 
             subscription.isTrial = false;
-            subscription.isAutoRenew = true; // Đảm bảo gói trả phí mới có tự động gia hạn
+            subscription.isAutoRenew = true;
           }
 
           // Gia hạn subscription
@@ -221,7 +220,6 @@ export class SubscriptionRepository extends Repository<SubscriptionEntity> {
             `Successfully renewed subscription ID ${subscription.id}`,
           );
         } else {
-          // Nếu không tự động gia hạn, hủy gói đăng ký
           subscription.isActive = false;
 
           await this.dataSource
@@ -233,7 +231,6 @@ export class SubscriptionRepository extends Repository<SubscriptionEntity> {
         logger.error(
           `Failed to process subscription ID ${subscription.id}: ${error.message}`,
         );
-        // Tiếp tục xử lý các đăng ký khác
         continue;
       }
     }

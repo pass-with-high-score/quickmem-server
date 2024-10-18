@@ -36,8 +36,6 @@ export class CloudinaryProvider {
   }
 
   async deleteImage(imageURL: string): Promise<any> {
-    // imageURL: https://res.cloudinary.com/ddqearyoe/image/upload/v1727803864/flashcards/zptoz0lc3iyawme744p2.png
-    // id: flashcards/zptoz0lc3iyawme744p2
     const publicId = imageURL.split('/').slice(-2).join('/').split('.')[0];
     return cloudinary.uploader.destroy(publicId);
   }

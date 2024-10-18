@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { FlashcardStatusEnum } from '../enums/flashcard-status.enum';
 import { StudySetEntity } from '../../study-set/entities/study-set.entity';
+import { ImageEntity } from '../../cloudinary/entities/image.entity';
 
 @Entity('flashcards')
 export class FlashcardEntity {
@@ -43,6 +44,11 @@ export class FlashcardEntity {
     default: FlashcardStatusEnum.NOT_STUDIED,
   })
   rating: FlashcardStatusEnum;
+
+  @ManyToOne(() => ImageEntity, (image) => image.flashcards, {
+    onDelete: 'SET NULL',
+  })
+  image: ImageEntity;
 
   @CreateDateColumn()
   createdAt: Date;
