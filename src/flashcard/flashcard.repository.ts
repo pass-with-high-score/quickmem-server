@@ -33,6 +33,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         .getRepository(FlashcardEntity)
         .findOne({
           where: { id },
+          relations: ['studySet'],
         });
 
       if (!flashcard) {
@@ -53,12 +54,16 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     getFlashcardsByStudySetIdDto: GetFlashcardsByStudySetIdDto,
   ): Promise<FlashcardResponseInterface[]> {
     const { id } = getFlashcardsByStudySetIdDto;
+    logger.info(
+      `getFlashcardByStudySetIdDto: ${JSON.stringify(getFlashcardsByStudySetIdDto)}`,
+    );
 
     try {
       const flashcards = await this.dataSource
         .getRepository(FlashcardEntity)
         .find({
           where: { studySet: { id: id } },
+          relations: ['studySet'],
         });
 
       const flashcardResponses = await Promise.all(
@@ -88,7 +93,10 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     try {
       const studySet = await this.dataSource
         .getRepository(StudySetEntity)
-        .findOne({ where: { id: studySetId } });
+        .findOne({
+          where: { id: studySetId },
+          relations: ['studySet'],
+        });
 
       if (!studySet) {
         throw new NotFoundException(
@@ -141,7 +149,10 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
   ): Promise<FlashcardResponseInterface> {
     const { id } = updateFlashcardParamDto;
     try {
-      const flashcard = await this.findOne({ where: { id } });
+      const flashcard = await this.findOne({
+        where: { id },
+        relations: ['studySet'],
+      });
       if (!flashcard) {
         throw new NotFoundException(`Flashcard with ID ${id} not found`);
       }
@@ -164,7 +175,10 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
   ): Promise<FlashcardEntity> {
     const { id } = updateFlashcardParamDto;
     try {
-      const flashcard = await this.findOne({ where: { id } });
+      const flashcard = await this.findOne({
+        where: { id },
+        relations: ['studySet'],
+      });
       if (!flashcard) {
         throw new NotFoundException(`Flashcard with ID ${id} not found`);
       }
@@ -186,13 +200,17 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
   ): Promise<FlashcardResponseInterface> {
     const { id } = updateFlashcardParamDto;
     try {
-      const flashcard = await this.findOne({ where: { id } });
+      const flashcard = await this.findOne({
+        where: { id },
+        relations: ['studySet'],
+      });
       if (!flashcard) {
         throw new NotFoundException(`Flashcard with ID ${id} not found`);
       }
 
       flashcard.isStarred = updateFlashcardStarredDto.isStarred;
-      return await this.save(flashcard);
+      await this.save(flashcard);
+      return this.mapFlashcardEntityToResponseInterface(flashcard);
     } catch (error) {
       logger.error('Error updating flashcard starred:', error);
       if (error instanceof NotFoundException) {

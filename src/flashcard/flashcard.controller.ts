@@ -44,7 +44,7 @@ export class FlashcardController {
   async getFlashcardByStudySetId(
     @Param() getFlashcardsByStudySetIdDto: GetFlashcardsByStudySetIdDto,
   ): Promise<FlashcardResponseInterface[]> {
-    logger.info('getFlashcardByStudySetIdDto', getFlashcardsByStudySetIdDto);
+    logger.info(`getFlashcardByStudySetIdDto: ${JSON.stringify(getFlashcardsByStudySetIdDto)}`);
     return this.flashcardService.getFlashcardByStudySetId(
       getFlashcardsByStudySetIdDto,
     );
