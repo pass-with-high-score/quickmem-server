@@ -15,6 +15,7 @@ import { DeleteFlashcardParamDto } from './dto/params/delete-flashcard-param.dto
 import { UpdateFlashcardParamDto } from './dto/params/update-flashcard-param.dto';
 import { UpdateFlashcardRatingDto } from './dto/bodies/update-flashcard-rating.dto';
 import { logger } from '../winston-logger.service';
+import { StarredFlashcardDto } from './dto/bodies/starred-flashcard.dto';
 
 @Injectable()
 export class FlashcardRepository extends Repository<FlashcardEntity> {
@@ -38,19 +39,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         throw new NotFoundException(`Flashcard with ID ${id} not found`);
       }
 
-      return {
-        id: flashcard.id,
-        studySetId: flashcard.studySet.id,
-        term: flashcard.term,
-        definition: flashcard.definition,
-        definitionImageURL: flashcard.definitionImageURL,
-        isStarred: flashcard.isStarred,
-        hint: flashcard.hint,
-        explanation: flashcard.explanation,
-        rating: flashcard.rating,
-        createdAt: flashcard.createdAt,
-        updatedAt: flashcard.updatedAt,
-      };
+      return this.mapFlashcardEntityToResponseInterface(flashcard);
     } catch (error) {
       logger.error('Error getting flashcard by ID:', error);
       if (error instanceof NotFoundException) {
@@ -72,19 +61,12 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
           where: { studySet: { id: id } },
         });
 
-      return flashcards.map((flashcard) => ({
-        id: flashcard.id,
-        studySetId: flashcard.studySet.id,
-        term: flashcard.term,
-        definition: flashcard.definition,
-        definitionImageURL: flashcard.definitionImageURL,
-        isStarred: flashcard.isStarred,
-        hint: flashcard.hint,
-        explanation: flashcard.explanation,
-        rating: flashcard.rating,
-        createdAt: flashcard.createdAt,
-        updatedAt: flashcard.updatedAt,
-      }));
+      const flashcardResponses = await Promise.all(
+        flashcards.map((flashcard) =>
+          this.mapFlashcardEntityToResponseInterface(flashcard),
+        ),
+      );
+      return flashcardResponses;
     } catch (error) {
       logger.error('Error getting flashcards by study set ID:', error);
       throw new InternalServerErrorException('Error retrieving flashcards');
@@ -124,19 +106,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
 
       const savedFlashcard = await this.save(flashcard);
 
-      return {
-        id: savedFlashcard.id,
-        studySetId: flashcard.studySet.id,
-        term: savedFlashcard.term,
-        definition: savedFlashcard.definition,
-        definitionImageURL: savedFlashcard.definitionImageURL,
-        isStarred: savedFlashcard.isStarred,
-        hint: savedFlashcard.hint,
-        explanation: savedFlashcard.explanation,
-        rating: savedFlashcard.rating,
-        createdAt: savedFlashcard.createdAt,
-        updatedAt: savedFlashcard.updatedAt,
-      };
+      return this.mapFlashcardEntityToResponseInterface(savedFlashcard);
     } catch (error) {
       logger.error('Error creating flashcard:', error);
       if (error instanceof NotFoundException) {
@@ -168,7 +138,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
   async updateFlashcardById(
     updateFlashcardParamDto: UpdateFlashcardParamDto,
     updateFlashcardDto: UpdateFlashcardDto,
-  ): Promise<FlashcardEntity> {
+  ): Promise<FlashcardResponseInterface> {
     const { id } = updateFlashcardParamDto;
     try {
       const flashcard = await this.findOne({ where: { id } });
@@ -177,7 +147,8 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       }
 
       Object.assign(flashcard, updateFlashcardDto);
-      return await this.save(flashcard);
+      await this.save(flashcard);
+      return this.mapFlashcardEntityToResponseInterface(flashcard);
     } catch (error) {
       logger.error('Error updating flashcard by ID:', error);
       if (error instanceof NotFoundException) {
@@ -207,5 +178,47 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       }
       throw new InternalServerErrorException('Error updating flashcard rating');
     }
+  }
+
+  async updateFlashcardStarred(
+    updateFlashcardParamDto: UpdateFlashcardParamDto,
+    updateFlashcardStarredDto: StarredFlashcardDto,
+  ): Promise<FlashcardResponseInterface> {
+    const { id } = updateFlashcardParamDto;
+    try {
+      const flashcard = await this.findOne({ where: { id } });
+      if (!flashcard) {
+        throw new NotFoundException(`Flashcard with ID ${id} not found`);
+      }
+
+      flashcard.isStarred = updateFlashcardStarredDto.starred;
+      return await this.save(flashcard);
+    } catch (error) {
+      logger.error('Error updating flashcard starred:', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Error updating flashcard starred',
+      );
+    }
+  }
+
+  async mapFlashcardEntityToResponseInterface(
+    flashcard: FlashcardEntity,
+  ): Promise<FlashcardResponseInterface> {
+    return {
+      id: flashcard.id,
+      studySetId: flashcard.studySet.id,
+      term: flashcard.term,
+      definition: flashcard.definition,
+      definitionImageURL: flashcard.definitionImageURL,
+      hint: flashcard.hint,
+      explanation: flashcard.explanation,
+      isStarred: flashcard.isStarred,
+      rating: flashcard.rating,
+      createdAt: flashcard.createdAt,
+      updatedAt: flashcard.updatedAt,
+    };
   }
 }

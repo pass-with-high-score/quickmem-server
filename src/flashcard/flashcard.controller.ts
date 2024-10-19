@@ -21,9 +21,9 @@ import { GetFlashcardsByStudySetIdDto } from './dto/params/get-flashcards-by-stu
 import { DeleteFlashcardParamDto } from './dto/params/delete-flashcard-param.dto';
 import { UpdateFlashcardParamDto } from './dto/params/update-flashcard-param.dto';
 import { UpdateFlashcardDto } from './dto/bodies/update-flashcard.dto';
-import { FlashcardEntity } from './entities/flashcard.entity';
 import { UpdateFlashcardRatingDto } from './dto/bodies/update-flashcard-rating.dto';
 import { logger } from '../winston-logger.service';
+import { StarredFlashcardDto } from './dto/bodies/starred-flashcard.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -32,6 +32,7 @@ export class FlashcardController {
   constructor(private readonly flashcardService: FlashcardService) {}
 
   @Get('/:id')
+  @HttpCode(HttpStatus.OK)
   async getFlashcardById(
     @Param() getFlashcardByIdDto: GetFlashcardByIdDto,
   ): Promise<FlashcardResponseInterface> {
@@ -39,6 +40,7 @@ export class FlashcardController {
   }
 
   @Get('/study-set/:id')
+  @HttpCode(HttpStatus.OK)
   async getFlashcardByStudySetId(
     @Param() getFlashcardsByStudySetIdDto: GetFlashcardsByStudySetIdDto,
   ): Promise<FlashcardResponseInterface[]> {
@@ -58,6 +60,7 @@ export class FlashcardController {
   }
 
   @Delete('/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deleteFlashcardById(
     @Param() deleteFlashcardParamDto: DeleteFlashcardParamDto,
   ): Promise<void> {
@@ -65,10 +68,11 @@ export class FlashcardController {
   }
 
   @Put('/:id')
+  @HttpCode(HttpStatus.OK)
   async updateFlashcardById(
     @Param() updateFlashcardParamDto: UpdateFlashcardParamDto,
     @Body() updateFlashcardDto: UpdateFlashcardDto,
-  ): Promise<FlashcardEntity> {
+  ): Promise<FlashcardResponseInterface> {
     return this.flashcardService.updateFlashcardById(
       updateFlashcardParamDto,
       updateFlashcardDto,
@@ -76,13 +80,26 @@ export class FlashcardController {
   }
 
   @Patch('/:id/rating')
+  @HttpCode(HttpStatus.OK)
   async updateFlashcardRating(
     @Param() updateFlashcardParamDto: UpdateFlashcardParamDto,
     @Body() updateFlashcardRatingDto: UpdateFlashcardRatingDto,
-  ): Promise<FlashcardEntity> {
+  ): Promise<FlashcardResponseInterface> {
     return this.flashcardService.updateFlashcardRating(
       updateFlashcardParamDto,
       updateFlashcardRatingDto,
+    );
+  }
+
+  @Patch('/:id/starred')
+  @HttpCode(HttpStatus.OK)
+  async starredFlashcard(
+    @Param() updateFlashcardParamDto: UpdateFlashcardParamDto,
+    @Body() starredFlashcardDto: StarredFlashcardDto,
+  ): Promise<FlashcardResponseInterface> {
+    return this.flashcardService.updateFlashcardStarred(
+      updateFlashcardParamDto,
+      starredFlashcardDto,
     );
   }
 }

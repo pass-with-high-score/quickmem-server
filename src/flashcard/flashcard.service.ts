@@ -7,8 +7,8 @@ import { GetFlashcardsByStudySetIdDto } from './dto/params/get-flashcards-by-stu
 import { DeleteFlashcardParamDto } from './dto/params/delete-flashcard-param.dto';
 import { UpdateFlashcardParamDto } from './dto/params/update-flashcard-param.dto';
 import { UpdateFlashcardDto } from './dto/bodies/update-flashcard.dto';
-import { FlashcardEntity } from './entities/flashcard.entity';
 import { UpdateFlashcardRatingDto } from './dto/bodies/update-flashcard-rating.dto';
+import { StarredFlashcardDto } from './dto/bodies/starred-flashcard.dto';
 
 @Injectable()
 export class FlashcardService {
@@ -45,7 +45,7 @@ export class FlashcardService {
   async updateFlashcardById(
     updateFlashcardParamDto: UpdateFlashcardParamDto,
     updateFlashcardDto: UpdateFlashcardDto,
-  ): Promise<FlashcardEntity> {
+  ): Promise<FlashcardResponseInterface> {
     return this.flashcardRepository.updateFlashcardById(
       updateFlashcardParamDto,
       updateFlashcardDto,
@@ -55,10 +55,20 @@ export class FlashcardService {
   async updateFlashcardRating(
     updateFlashcardParamDto: UpdateFlashcardParamDto,
     updateFlashcardRatingDto: UpdateFlashcardRatingDto,
-  ): Promise<FlashcardEntity> {
+  ): Promise<FlashcardResponseInterface> {
     return this.flashcardRepository.updateFlashcardRating(
       updateFlashcardParamDto,
       updateFlashcardRatingDto,
+    );
+  }
+
+  async updateFlashcardStarred(
+    updateFlashcardParamDto: UpdateFlashcardParamDto,
+    updateFlashcardStarredDto: StarredFlashcardDto,
+  ): Promise<FlashcardResponseInterface> {
+    return this.flashcardRepository.updateFlashcardStarred(
+      updateFlashcardParamDto,
+      updateFlashcardStarredDto,
     );
   }
 }
