@@ -55,7 +55,7 @@ export class UploadController {
     }
   }
 
-  @Delete()
+  @Post('/delete')
   async deleteImage(@Body() deleteImageDto: DeleteImageDto) {
     const { imageURL } = deleteImageDto;
     try {
