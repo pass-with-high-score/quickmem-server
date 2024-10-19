@@ -18,7 +18,7 @@ export class CreateFlashcardDto {
   @IsOptional()
   @IsUrl()
   @IsString()
-  definitionImageUrl: string;
+  definitionImageURL: string;
 
   @IsOptional()
   @IsString()

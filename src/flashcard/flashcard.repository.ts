@@ -84,7 +84,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     const {
       term,
       definition,
-      definitionImageUrl,
+      definitionImageURL,
       hint,
       explanation,
       studySetId,
@@ -106,7 +106,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       const flashcard = new FlashcardEntity();
       flashcard.term = term;
       flashcard.definition = definition;
-      flashcard.definitionImageURL = definitionImageUrl;
+      flashcard.definitionImageURL = definitionImageURL;
       flashcard.hint = hint;
       flashcard.explanation = explanation;
       flashcard.studySet = studySet;
