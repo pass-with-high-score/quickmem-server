@@ -21,6 +21,7 @@ import { DuplicateStudySetDto } from './dto/bodies/duplicate-study-set.dto';
 import { SearchStudySetParamsDto } from './dto/queries/search-study-set-params.dto';
 import { FlashcardEntity } from 'src/flashcard/entities/flashcard.entity';
 import * as process from 'node:process';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -67,6 +68,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       }
 
       studySet.owner = owner;
+      studySet.link = randomBytes(7).toString('base64').substring(0, 7);
 
       await this.dataSource.getRepository(StudySetEntity).save(studySet);
 
@@ -115,10 +117,9 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       const studySets = await this.dataSource
         .getRepository(StudySetEntity)
         .find({
-          where: { owner: { id: ownerId } }, // Filter by ownerId
-          relations: ['owner', 'subject', 'color', 'flashcards'], // Load relations (subject and color)
+          where: { owner: { id: ownerId } },
+          relations: ['owner', 'subject', 'color', 'flashcards'],
         });
-      console.log('studySets', studySets);
 
       return studySets.map((studySet) => this.mapStudySetToResponse(studySet));
     } catch (error) {
@@ -137,7 +138,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         .getRepository(StudySetEntity)
         .findOne({
           where: { id }, // Filter by study set ID
-          relations: ['owner', 'subject', 'color', 'flashcards'], // Load related entities
+          relations: ['owner', 'subject', 'color', 'flashcards'],
         });
 
       if (!studySet) {
@@ -387,6 +388,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       createdAt: studySet.createdAt,
       updatedAt: studySet.updatedAt,
       ownerId: studySet.owner ? studySet.owner.id : undefined,
+      linkShareCode: studySet.link,
       subject: studySet.subject
         ? {
             id: studySet.subject.id,

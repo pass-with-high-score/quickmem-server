@@ -160,9 +160,11 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         updateFlashcardDto;
       flashcard.term = term || flashcard.term;
       flashcard.definition = definition || flashcard.definition;
-      flashcard.definitionImageURL = definitionImageURL;
-      flashcard.hint = hint || flashcard.hint;
-      flashcard.explanation = explanation || flashcard.explanation;
+      flashcard.definitionImageURL =
+        definitionImageURL || flashcard.definitionImageURL;
+      flashcard.hint = hint;
+      flashcard.explanation = explanation;
+      console.log('flashcard', flashcard);
 
       await this.save(flashcard);
       return this.mapFlashcardEntityToResponseInterface(flashcard);

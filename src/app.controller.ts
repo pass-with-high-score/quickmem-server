@@ -10,6 +10,7 @@ import {
 import { JoinClassByTokenParamDto } from './class/dto/params/join-class-by-token-param.dto';
 import { Response } from 'express';
 import { logger } from './winston-logger.service';
+import { JoinClassByLinkParamDto } from './study-set/dto/params/join-class-by-link-param.dto';
 
 @Controller()
 export class AppController {
@@ -108,6 +109,104 @@ export class AppController {
     </body>
     </html>
   `;
+
+    // Send HTML as response
+    response.status(HttpStatus.OK).send(htmlContent);
+  }
+
+  @Get('/study-set/share/:studySetLinkCode')
+  @HttpCode(HttpStatus.OK)
+  async shareStudySet(
+    @Param() studySetLinkCode: JoinClassByLinkParamDto,
+    @Res() response: Response,
+  ): Promise<void> {
+    // Create deep link for study set
+    logger.info(
+      `Sharing study set with code: ${studySetLinkCode.studySetLinkCode}`,
+    );
+    const deepLinkUrl = `quickmem://share/study-set?code=${studySetLinkCode.studySetLinkCode}`;
+    logger.info(`Deep link URL: ${deepLinkUrl}`);
+
+    // Create HTML content
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Share Study Set</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f4f4f4;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+        }
+        .container {
+          background-color: #fff;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          max-width: 400px;
+          text-align: center;
+        }
+        h1 {
+          font-size: 24px;
+          color: #333;
+        }
+        p {
+          font-size: 16px;
+          color: #555;
+          margin-bottom: 20px;
+        }
+        .study-set-name {
+          font-size: 18px;
+          color: #007bff;
+          font-weight: bold;
+          margin-bottom: 20px;
+        }
+        .btn {
+          background-color: #007bff;
+          color: #fff;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 5px;
+          font-size: 16px;
+          cursor: pointer;
+          text-decoration: none;
+          display: inline-block;
+        }
+        .btn:hover {
+          background-color: #0056b3;
+        }
+        .footer {
+          margin-top: 30px;
+          font-size: 12px;
+          color: #888;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>Share Study Set Invitation</h1>
+        <p>You are invited to access the study set:</p>
+        <div class="study-set-name">QuickMem - Advanced Flashcards</div>
+
+        <p>Click the button below to view and study this set of flashcards.</p>
+        
+        <a href="${deepLinkUrl}" class="btn">Access Study Set</a>
+
+        <div class="footer">
+          <p>Need help? Contact support for assistance.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
 
     // Send HTML as response
     response.status(HttpStatus.OK).send(htmlContent);

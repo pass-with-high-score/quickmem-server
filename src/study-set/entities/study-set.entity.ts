@@ -58,6 +58,9 @@ export class StudySetEntity {
   })
   folders: FolderEntity[];
 
+  @Column({ nullable: true })
+  link: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
