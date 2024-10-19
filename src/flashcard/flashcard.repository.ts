@@ -156,7 +156,14 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         throw new NotFoundException(`Flashcard with ID ${id} not found`);
       }
 
-      Object.assign(flashcard, updateFlashcardDto);
+      const { term, definition, definitionImageURL, hint, explanation } =
+        updateFlashcardDto;
+      flashcard.term = term || flashcard.term;
+      flashcard.definition = definition || flashcard.definition;
+      flashcard.definitionImageURL = definitionImageURL;
+      flashcard.hint = hint || flashcard.hint;
+      flashcard.explanation = explanation || flashcard.explanation;
+
       await this.save(flashcard);
       return this.mapFlashcardEntityToResponseInterface(flashcard);
     } catch (error) {
