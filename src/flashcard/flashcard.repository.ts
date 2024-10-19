@@ -191,7 +191,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         throw new NotFoundException(`Flashcard with ID ${id} not found`);
       }
 
-      flashcard.isStarred = updateFlashcardStarredDto.starred;
+      flashcard.isStarred = updateFlashcardStarredDto.isStarred;
       return await this.save(flashcard);
     } catch (error) {
       logger.error('Error updating flashcard starred:', error);
