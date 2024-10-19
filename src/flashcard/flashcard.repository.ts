@@ -95,7 +95,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         .getRepository(StudySetEntity)
         .findOne({
           where: { id: studySetId },
-          relations: ['studySet'],
         });
 
       if (!studySet) {
