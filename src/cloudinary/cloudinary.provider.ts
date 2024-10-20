@@ -39,4 +39,8 @@ export class CloudinaryProvider {
     const publicId = imageURL.split('/').slice(-2).join('/').split('.')[0];
     return cloudinary.uploader.destroy(publicId);
   }
+
+  async getAllImages(): Promise<any> {
+    return cloudinary.api.resources({ type: 'upload', max_results: 500 });
+  }
 }

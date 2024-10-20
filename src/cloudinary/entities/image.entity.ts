@@ -1,4 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  OneToOne,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { FlashcardEntity } from '../../flashcard/entities/flashcard.entity';
 
 @Entity('flashcard_images')
@@ -9,6 +18,17 @@ export class ImageEntity {
   @Column()
   url: string;
 
-  @OneToMany(() => FlashcardEntity, (flashcard) => flashcard.image)
-  flashcards: FlashcardEntity[];
+  @OneToOne(() => FlashcardEntity, (flashcard) => flashcard.image, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({
+    name: 'flashcard',
+  })
+  flashcard: FlashcardEntity;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

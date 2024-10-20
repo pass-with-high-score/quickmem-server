@@ -16,6 +16,7 @@ import { UpdateFlashcardParamDto } from './dto/params/update-flashcard-param.dto
 import { UpdateFlashcardRatingDto } from './dto/bodies/update-flashcard-rating.dto';
 import { logger } from '../winston-logger.service';
 import { StarredFlashcardDto } from './dto/bodies/starred-flashcard.dto';
+import { ImageEntity } from '../cloudinary/entities/image.entity';
 
 @Injectable()
 export class FlashcardRepository extends Repository<FlashcardEntity> {
@@ -112,6 +113,19 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       flashcard.studySet = studySet;
 
       const savedFlashcard = await this.save(flashcard);
+
+      // find image in image entity by url, if have update flashcard id for image
+      if (definitionImageURL) {
+        const image = await this.dataSource.getRepository(ImageEntity).findOne({
+          where: { url: definitionImageURL },
+        });
+        console.log('image', image);
+        if (image) {
+          image.flashcard = savedFlashcard;
+          console.log('image', image.flashcard);
+          await this.dataSource.getRepository(ImageEntity).update(image.id, image);
+        }
+      }
 
       return this.mapFlashcardEntityToResponseInterface(savedFlashcard);
     } catch (error) {

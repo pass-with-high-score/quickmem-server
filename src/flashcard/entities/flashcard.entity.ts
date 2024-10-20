@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -45,7 +46,7 @@ export class FlashcardEntity {
   })
   rating: FlashcardStatusEnum;
 
-  @ManyToOne(() => ImageEntity, (image) => image.flashcards, {
+  @OneToOne(() => ImageEntity, (image) => image.flashcard, {
     onDelete: 'SET NULL',
   })
   image: ImageEntity;

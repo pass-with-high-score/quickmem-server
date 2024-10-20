@@ -21,26 +21,50 @@ export class ImageService {
 
   @Cron(CronExpression.EVERY_30_MINUTES)
   async deleteUnusedImages(): Promise<void> {
-    logger.info('Deleting unused images every 30 minutes');
-    const images = await this.imageRepository.find({
-      relations: ['flashcards'],
-    });
-    const unusedImages = images.filter(
-      (image) => image.flashcards.length === 0,
-    );
+    try {
+      logger.info('Deleting unused images every 30 minutes');
+      const images = await this.imageRepository.find({
+        relations: ['flashcard'],
+      });
+      const imageUrls = images.map((image) => {
+        // only return image url if image.flashcard is null
+        if (!image.flashcard) {
+          return image.url;
+        }
+      });
+      console.log('imageUrls:', imageUrls);
+      const cloudinaryImages = await this.cloudinaryProvider.getAllImages();
 
-    for (const image of unusedImages) {
-      logger.info(`Deleting image ${image.url}`);
-      await this.cloudinaryProvider.deleteImage(image.url);
-      await this.imageRepository.remove(image);
+      const cloudinaryImageUrls = cloudinaryImages.resources.map(
+        (cloudinaryImage: { secure_url: any }) => cloudinaryImage.secure_url,
+      );
+      console.log('cloudinaryImageUrls:', cloudinaryImageUrls);
+
+      const unusedImages = imageUrls.filter(
+        (imageUrl) => !cloudinaryImageUrls.includes(imageUrl),
+      );
+      console.log('unusedImages:', unusedImages);
+
+      await Promise.all(
+        unusedImages.map((unusedImageUrl) =>
+          this.deleteImageByUrl(unusedImageUrl),
+        ),
+      );
+    } catch (error) {
+      console.log('Error deleting unused images:', error);
+      logger.error('Error deleting unused images:', error);
     }
   }
 
   async deleteImageByUrl(imageURL: string): Promise<void> {
+    if (!imageURL) {
+      return;
+    }
     const image = await this.imageRepository.findOne({
       where: { url: imageURL },
     });
     if (image) {
+      await this.cloudinaryProvider.deleteImage(imageURL);
       await this.imageRepository.remove(image);
     }
   }
