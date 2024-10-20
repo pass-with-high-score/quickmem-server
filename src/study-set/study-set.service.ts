@@ -11,6 +11,8 @@ import { DeleteStudySetByIdParamDto } from './dto/params/delete-study-set-by-id-
 import { DeleteStudySetResponseInterface } from './interfaces/delete-study-set-response.interface';
 import { DuplicateStudySetDto } from './dto/bodies/duplicate-study-set.dto';
 import { SearchStudySetParamsDto } from './dto/queries/search-study-set-params.dto';
+import { ResetFlashcardProgressParamDto } from './dto/params/reset-flashcard-progress-param.dto';
+import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flashcard-progress-response.interface';
 
 @Injectable()
 export class StudySetService {
@@ -69,6 +71,14 @@ export class StudySetService {
   ): Promise<GetAllStudySetResponseInterface[]> {
     return await this.studySetRepository.searchStudySetByTitle(
       searchStudySeParamsDto,
+    );
+  }
+
+  async resetFlashcardProgress(
+    resetFlashcardProgressParamDto: ResetFlashcardProgressParamDto,
+  ): Promise<ResetFlashcardProgressResponseInterface> {
+    return this.studySetRepository.resetFlashcardProgress(
+      resetFlashcardProgressParamDto,
     );
   }
 }

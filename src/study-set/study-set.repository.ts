@@ -22,6 +22,9 @@ import { SearchStudySetParamsDto } from './dto/queries/search-study-set-params.d
 import { FlashcardEntity } from 'src/flashcard/entities/flashcard.entity';
 import * as process from 'node:process';
 import { randomBytes } from 'crypto';
+import { FlashcardStatusEnum } from 'src/flashcard/enums/flashcard-status.enum';
+import { ResetFlashcardProgressParamDto } from './dto/params/reset-flashcard-progress-param.dto';
+import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flashcard-progress-response.interface';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -376,6 +379,30 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       console.log('Error searching study set', error);
       throw new InternalServerErrorException('Error searching study set');
     }
+  }
+
+  // Reset progress of all flashcards in a study set
+  async resetFlashcardProgress(
+    resetFlashcardProgressParamDto: ResetFlashcardProgressParamDto,
+  ): Promise<ResetFlashcardProgressResponseInterface> {
+    const { id } = resetFlashcardProgressParamDto;
+    const studySet = await this.findOne({
+      where: { id },
+      relations: ['flashcards'],
+    });
+
+    if (!studySet) {
+      throw new NotFoundException('Study set not found');
+    }
+
+    for (const flashcard of studySet.flashcards) {
+      flashcard.rating = FlashcardStatusEnum.NOT_STUDIED;
+      await this.dataSource.getRepository(FlashcardEntity).save(flashcard);
+    }
+    return {
+      message: 'Flashcard progress reset successfully',
+      studySetId: id,
+    };
   }
 
   private mapStudySetToResponse(

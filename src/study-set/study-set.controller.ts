@@ -25,6 +25,8 @@ import { DeleteStudySetByIdParamDto } from './dto/params/delete-study-set-by-id-
 import { DeleteStudySetResponseInterface } from './interfaces/delete-study-set-response.interface';
 import { DuplicateStudySetDto } from './dto/bodies/duplicate-study-set.dto';
 import { SearchStudySetParamsDto } from './dto/queries/search-study-set-params.dto';
+import { ResetFlashcardProgressParamDto } from './dto/params/reset-flashcard-progress-param.dto';
+import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flashcard-progress-response.interface';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -85,6 +87,16 @@ export class StudySetController {
     return await this.studySetService.updateStudySetById(
       updateStudySetByIdParamDto,
       updateStudySetByIdBodyDto,
+    );
+  }
+
+  @Patch('/:id/reset-progress')
+  @HttpCode(HttpStatus.OK)
+  async resetFlashcardProgress(
+    @Param() resetFlashcardProgressParamDto: ResetFlashcardProgressParamDto,
+  ): Promise<ResetFlashcardProgressResponseInterface> {
+    return this.studySetService.resetFlashcardProgress(
+      resetFlashcardProgressParamDto,
     );
   }
 
