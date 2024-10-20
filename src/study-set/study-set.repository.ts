@@ -188,7 +188,9 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       studySet.description =
         updateStudySetByIdBodyDto.description || studySet.description;
       studySet.isPublic =
-        updateStudySetByIdBodyDto.isPublic || studySet.isPublic;
+        updateStudySetByIdBodyDto.isPublic !== undefined
+          ? updateStudySetByIdBodyDto.isPublic
+          : studySet.isPublic;
 
       if (updateStudySetByIdBodyDto.subjectId) {
         const subject = await this.dataSource
