@@ -9,6 +9,8 @@ import { UpdateFlashcardParamDto } from './dto/params/update-flashcard-param.dto
 import { UpdateFlashcardDto } from './dto/bodies/update-flashcard.dto';
 import { UpdateFlashcardRatingDto } from './dto/bodies/update-flashcard-rating.dto';
 import { StarredFlashcardDto } from './dto/bodies/starred-flashcard.dto';
+import { UpdateFlashcardInterface } from './interface/update-flashcard.interface';
+import { UpdateFlashcardFlipStatusDto } from './dto/bodies/update-flashcard-flip-status.dto';
 
 @Injectable()
 export class FlashcardService {
@@ -55,7 +57,7 @@ export class FlashcardService {
   async updateFlashcardRating(
     updateFlashcardParamDto: UpdateFlashcardParamDto,
     updateFlashcardRatingDto: UpdateFlashcardRatingDto,
-  ): Promise<FlashcardResponseInterface> {
+  ): Promise<UpdateFlashcardInterface> {
     return this.flashcardRepository.updateFlashcardRating(
       updateFlashcardParamDto,
       updateFlashcardRatingDto,
@@ -65,10 +67,20 @@ export class FlashcardService {
   async updateFlashcardStarred(
     updateFlashcardParamDto: UpdateFlashcardParamDto,
     updateFlashcardStarredDto: StarredFlashcardDto,
-  ): Promise<FlashcardResponseInterface> {
+  ): Promise<UpdateFlashcardInterface> {
     return this.flashcardRepository.updateFlashcardStarred(
       updateFlashcardParamDto,
       updateFlashcardStarredDto,
+    );
+  }
+
+  async updateFlashcardFlipStatus(
+    updateFlashcardParamDto: UpdateFlashcardParamDto,
+    updateFlashcardFlipStatusDto: UpdateFlashcardFlipStatusDto,
+  ): Promise<UpdateFlashcardInterface> {
+    return this.flashcardRepository.updateFlashcardFlipStatus(
+      updateFlashcardParamDto,
+      updateFlashcardFlipStatusDto,
     );
   }
 }

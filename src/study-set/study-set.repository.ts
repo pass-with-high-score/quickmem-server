@@ -25,6 +25,7 @@ import { randomBytes } from 'crypto';
 import { FlashcardStatusEnum } from 'src/flashcard/enums/flashcard-status.enum';
 import { ResetFlashcardProgressParamDto } from './dto/params/reset-flashcard-progress-param.dto';
 import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flashcard-progress-response.interface';
+import { FlipFlashcardStatus } from '../flashcard/enums/flip-flashcard-status';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -75,7 +76,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
       await this.dataSource.getRepository(StudySetEntity).save(studySet);
 
-      const response: CreateStudySetResponseInterface = {
+      return {
         id: studySet.id,
         title: studySet.title,
         ownerId: studySet.owner.id,
@@ -86,7 +87,6 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         createdAt: studySet.createdAt,
         updatedAt: studySet.updatedAt,
       };
-      return response;
     } catch (error) {
       console.log('Error creating study set', error);
       if (error instanceof NotFoundException) {
@@ -397,6 +397,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
     for (const flashcard of studySet.flashcards) {
       flashcard.rating = FlashcardStatusEnum.NOT_STUDIED;
+      flashcard.flipStatus = FlipFlashcardStatus.NONE;
       await this.dataSource.getRepository(FlashcardEntity).save(flashcard);
     }
     return {

@@ -2,8 +2,8 @@ import { DataSource, Repository } from 'typeorm';
 import { FlashcardEntity } from './entities/flashcard.entity';
 import {
   Injectable,
-  NotFoundException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateFlashcardDto } from './dto/bodies/create-flashcard.dto';
 import { FlashcardResponseInterface } from './interface/flashcard-response.interface';
@@ -17,6 +17,8 @@ import { UpdateFlashcardRatingDto } from './dto/bodies/update-flashcard-rating.d
 import { logger } from '../winston-logger.service';
 import { StarredFlashcardDto } from './dto/bodies/starred-flashcard.dto';
 import { ImageEntity } from '../cloudinary/entities/image.entity';
+import { UpdateFlashcardFlipStatusDto } from './dto/bodies/update-flashcard-flip-status.dto';
+import { UpdateFlashcardInterface } from './interface/update-flashcard.interface';
 
 @Injectable()
 export class FlashcardRepository extends Repository<FlashcardEntity> {
@@ -67,12 +69,11 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
           relations: ['studySet'],
         });
 
-      const flashcardResponses = await Promise.all(
+      return await Promise.all(
         flashcards.map((flashcard) =>
           this.mapFlashcardEntityToResponseInterface(flashcard),
         ),
       );
-      return flashcardResponses;
     } catch (error) {
       logger.error('Error getting flashcards by study set ID:', error);
       throw new InternalServerErrorException('Error retrieving flashcards');
@@ -123,7 +124,9 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         if (image) {
           image.flashcard = savedFlashcard;
           console.log('image', image.flashcard);
-          await this.dataSource.getRepository(ImageEntity).update(image.id, image);
+          await this.dataSource
+            .getRepository(ImageEntity)
+            .update(image.id, image);
         }
       }
 
@@ -194,7 +197,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
   async updateFlashcardRating(
     updateFlashcardParamDto: UpdateFlashcardParamDto,
     updateFlashcardRatingDto: UpdateFlashcardRatingDto,
-  ): Promise<FlashcardEntity> {
+  ): Promise<UpdateFlashcardInterface> {
     const { id } = updateFlashcardParamDto;
     try {
       const flashcard = await this.findOne({
@@ -206,7 +209,12 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       }
 
       flashcard.rating = updateFlashcardRatingDto.rating;
-      return await this.save(flashcard);
+      await this.save(flashcard);
+      return {
+        id: flashcard.id,
+        rating: flashcard.rating,
+        message: 'Flashcard rating updated successfully',
+      };
     } catch (error) {
       logger.error('Error updating flashcard rating:', error);
       if (error instanceof NotFoundException) {
@@ -216,10 +224,42 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     }
   }
 
+  async updateFlashcardFlipStatus(
+    updateFlashcardParamDto: UpdateFlashcardParamDto,
+    updateFlashcardFlipStatusDto: UpdateFlashcardFlipStatusDto,
+  ): Promise<UpdateFlashcardInterface> {
+    const { id } = updateFlashcardParamDto;
+    try {
+      const flashcard = await this.findOne({
+        where: { id },
+        relations: ['studySet'],
+      });
+      if (!flashcard) {
+        throw new NotFoundException(`Flashcard with ID ${id} not found`);
+      }
+
+      flashcard.flipStatus = updateFlashcardFlipStatusDto.flipStatus;
+      await this.save(flashcard);
+      return {
+        id: flashcard.id,
+        flipStatus: flashcard.flipStatus,
+        message: 'Flashcard flip status updated successfully',
+      };
+    } catch (error) {
+      logger.error('Error updating flashcard flip status:', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Error updating flashcard flip status',
+      );
+    }
+  }
+
   async updateFlashcardStarred(
     updateFlashcardParamDto: UpdateFlashcardParamDto,
     updateFlashcardStarredDto: StarredFlashcardDto,
-  ): Promise<FlashcardResponseInterface> {
+  ): Promise<UpdateFlashcardInterface> {
     const { id } = updateFlashcardParamDto;
     try {
       const flashcard = await this.findOne({
@@ -232,7 +272,11 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
 
       flashcard.isStarred = updateFlashcardStarredDto.isStarred;
       await this.save(flashcard);
-      return this.mapFlashcardEntityToResponseInterface(flashcard);
+      return {
+        id: flashcard.id,
+        isStarred: flashcard.isStarred,
+        message: 'Flashcard starred status updated successfully',
+      };
     } catch (error) {
       logger.error('Error updating flashcard starred:', error);
       if (error instanceof NotFoundException) {
@@ -257,6 +301,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       explanation: flashcard.explanation,
       isStarred: flashcard.isStarred,
       rating: flashcard.rating,
+      flipStatus: flashcard.flipStatus,
       createdAt: flashcard.createdAt,
       updatedAt: flashcard.updatedAt,
     };

@@ -22,8 +22,9 @@ import { DeleteFlashcardParamDto } from './dto/params/delete-flashcard-param.dto
 import { UpdateFlashcardParamDto } from './dto/params/update-flashcard-param.dto';
 import { UpdateFlashcardDto } from './dto/bodies/update-flashcard.dto';
 import { UpdateFlashcardRatingDto } from './dto/bodies/update-flashcard-rating.dto';
-import { logger } from '../winston-logger.service';
 import { StarredFlashcardDto } from './dto/bodies/starred-flashcard.dto';
+import { UpdateFlashcardInterface } from './interface/update-flashcard.interface';
+import { UpdateFlashcardFlipStatusDto } from './dto/bodies/update-flashcard-flip-status.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -44,7 +45,6 @@ export class FlashcardController {
   async getFlashcardByStudySetId(
     @Param() getFlashcardsByStudySetIdDto: GetFlashcardsByStudySetIdDto,
   ): Promise<FlashcardResponseInterface[]> {
-    logger.info(`getFlashcardByStudySetIdDto: ${JSON.stringify(getFlashcardsByStudySetIdDto)}`);
     return this.flashcardService.getFlashcardByStudySetId(
       getFlashcardsByStudySetIdDto,
     );
@@ -84,10 +84,22 @@ export class FlashcardController {
   async updateFlashcardRating(
     @Param() updateFlashcardParamDto: UpdateFlashcardParamDto,
     @Body() updateFlashcardRatingDto: UpdateFlashcardRatingDto,
-  ): Promise<FlashcardResponseInterface> {
+  ): Promise<UpdateFlashcardInterface> {
     return this.flashcardService.updateFlashcardRating(
       updateFlashcardParamDto,
       updateFlashcardRatingDto,
+    );
+  }
+
+  @Patch('/:id/flip-status')
+  @HttpCode(HttpStatus.OK)
+  async updateFlashcardFlipStatus(
+    @Param() updateFlashcardParamDto: UpdateFlashcardParamDto,
+    @Body() updateFlashcardFlipStatusDto: UpdateFlashcardFlipStatusDto,
+  ): Promise<UpdateFlashcardInterface> {
+    return this.flashcardService.updateFlashcardFlipStatus(
+      updateFlashcardParamDto,
+      updateFlashcardFlipStatusDto,
     );
   }
 
@@ -96,7 +108,7 @@ export class FlashcardController {
   async starredFlashcard(
     @Param() updateFlashcardParamDto: UpdateFlashcardParamDto,
     @Body() starredFlashcardDto: StarredFlashcardDto,
-  ): Promise<FlashcardResponseInterface> {
+  ): Promise<UpdateFlashcardInterface> {
     return this.flashcardService.updateFlashcardStarred(
       updateFlashcardParamDto,
       starredFlashcardDto,
