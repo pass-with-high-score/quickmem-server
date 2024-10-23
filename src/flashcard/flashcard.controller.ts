@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { FlashcardService } from './flashcard.service';
@@ -25,6 +26,7 @@ import { UpdateFlashcardRatingDto } from './dto/bodies/update-flashcard-rating.d
 import { StarredFlashcardDto } from './dto/bodies/starred-flashcard.dto';
 import { UpdateFlashcardInterface } from './interface/update-flashcard.interface';
 import { UpdateFlashcardFlipStatusDto } from './dto/bodies/update-flashcard-flip-status.dto';
+import { GetFlashcardByIdParam } from './dto/queries/get-flashcard-by-id.param';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -44,9 +46,11 @@ export class FlashcardController {
   @HttpCode(HttpStatus.OK)
   async getFlashcardByStudySetId(
     @Param() getFlashcardsByStudySetIdDto: GetFlashcardsByStudySetIdDto,
+    @Query() getFlashcardByIdParam: GetFlashcardByIdParam,
   ): Promise<FlashcardResponseInterface[]> {
     return this.flashcardService.getFlashcardByStudySetId(
       getFlashcardsByStudySetIdDto,
+      getFlashcardByIdParam,
     );
   }
 

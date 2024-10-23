@@ -27,6 +27,8 @@ import { DuplicateStudySetDto } from './dto/bodies/duplicate-study-set.dto';
 import { SearchStudySetParamsDto } from './dto/queries/search-study-set-params.dto';
 import { ResetFlashcardProgressParamDto } from './dto/params/reset-flashcard-progress-param.dto';
 import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flashcard-progress-response.interface';
+import { ImportFlashcardDto } from './dto/bodies/import-flashcard.dto';
+import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcard-from-quizlet.param.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -116,5 +118,17 @@ export class StudySetController {
     @Body() duplicateStudySet: DuplicateStudySetDto,
   ): Promise<GetAllStudySetResponseInterface> {
     return await this.studySetService.duplicateStudySet(duplicateStudySet);
+  }
+
+  @Post('/import/:userId')
+  async importFromUrl(
+    @Body() importFlashcardDto: ImportFlashcardDto,
+    @Param()
+    importFlashcardFromQuizletParamDto: ImportFlashcardFromQuizletParamDto,
+  ): Promise<GetAllStudySetResponseInterface> {
+    return this.studySetService.importFromUrl(
+      importFlashcardDto,
+      importFlashcardFromQuizletParamDto,
+    );
   }
 }

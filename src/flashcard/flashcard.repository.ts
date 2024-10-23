@@ -19,6 +19,9 @@ import { StarredFlashcardDto } from './dto/bodies/starred-flashcard.dto';
 import { ImageEntity } from '../cloudinary/entities/image.entity';
 import { UpdateFlashcardFlipStatusDto } from './dto/bodies/update-flashcard-flip-status.dto';
 import { UpdateFlashcardInterface } from './interface/update-flashcard.interface';
+import { GetFlashcardByIdParam } from './dto/queries/get-flashcard-by-id.param';
+import { LearnModeEnum } from './enums/learn-mode.enum';
+import { FlipFlashcardStatus } from './enums/flip-flashcard-status';
 
 @Injectable()
 export class FlashcardRepository extends Repository<FlashcardEntity> {
@@ -55,11 +58,10 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
 
   async getFlashcardByStudySetId(
     getFlashcardsByStudySetIdDto: GetFlashcardsByStudySetIdDto,
+    getFlashcardByIdParam: GetFlashcardByIdParam,
   ): Promise<FlashcardResponseInterface[]> {
     const { id } = getFlashcardsByStudySetIdDto;
-    logger.info(
-      `getFlashcardByStudySetIdDto: ${JSON.stringify(getFlashcardsByStudySetIdDto)}`,
-    );
+    const { learnMode } = getFlashcardByIdParam;
 
     try {
       const flashcards = await this.dataSource
@@ -69,8 +71,20 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
           relations: ['studySet'],
         });
 
+      let filteredFlashcards: FlashcardEntity[];
+
+      if (learnMode === LearnModeEnum.FLIP) {
+        filteredFlashcards = flashcards.filter(
+          (flashcard) =>
+            flashcard.flipStatus === FlipFlashcardStatus.NONE ||
+            flashcard.flipStatus === FlipFlashcardStatus.STILL_LEARNING,
+        );
+      } else {
+        filteredFlashcards = flashcards;
+      }
+
       return await Promise.all(
-        flashcards.map((flashcard) =>
+        filteredFlashcards.map((flashcard) =>
           this.mapFlashcardEntityToResponseInterface(flashcard),
         ),
       );

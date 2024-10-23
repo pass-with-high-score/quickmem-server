@@ -13,6 +13,8 @@ import { DuplicateStudySetDto } from './dto/bodies/duplicate-study-set.dto';
 import { SearchStudySetParamsDto } from './dto/queries/search-study-set-params.dto';
 import { ResetFlashcardProgressParamDto } from './dto/params/reset-flashcard-progress-param.dto';
 import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flashcard-progress-response.interface';
+import { ImportFlashcardDto } from './dto/bodies/import-flashcard.dto';
+import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcard-from-quizlet.param.dto';
 
 @Injectable()
 export class StudySetService {
@@ -79,6 +81,16 @@ export class StudySetService {
   ): Promise<ResetFlashcardProgressResponseInterface> {
     return this.studySetRepository.resetFlashcardProgress(
       resetFlashcardProgressParamDto,
+    );
+  }
+
+  async importFromUrl(
+    importFlashcardDto: ImportFlashcardDto,
+    importFlashcardFromQuizletParamDto: ImportFlashcardFromQuizletParamDto,
+  ): Promise<GetAllStudySetResponseInterface> {
+    return this.studySetRepository.importFromUrl(
+      importFlashcardDto,
+      importFlashcardFromQuizletParamDto,
     );
   }
 }

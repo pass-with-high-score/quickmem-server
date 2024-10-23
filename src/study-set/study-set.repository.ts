@@ -26,6 +26,9 @@ import { FlashcardStatusEnum } from 'src/flashcard/enums/flashcard-status.enum';
 import { ResetFlashcardProgressParamDto } from './dto/params/reset-flashcard-progress-param.dto';
 import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flashcard-progress-response.interface';
 import { FlipFlashcardStatus } from '../flashcard/enums/flip-flashcard-status';
+import { ImportFlashcardDto } from './dto/bodies/import-flashcard.dto';
+import axios from 'axios';
+import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcard-from-quizlet.param.dto';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -45,7 +48,6 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       const owner = await this.dataSource
         .getRepository(UserEntity)
         .findOneBy({ id: createStudySetDto.ownerId });
-      console.log('owner', owner);
 
       if (!owner) {
         throw new NotFoundException('User not found or username is missing');
@@ -404,6 +406,118 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       message: 'Flashcard progress reset successfully',
       studySetId: id,
     };
+  }
+
+  async importFromUrl(
+    importFlashcardDto: ImportFlashcardDto,
+    importFlashcardFromQuizletParamDto: ImportFlashcardFromQuizletParamDto,
+  ): Promise<GetAllStudySetResponseInterface> {
+    const { userId } = importFlashcardFromQuizletParamDto;
+    const { url } = importFlashcardDto;
+    try {
+      console.log(url);
+      const quizletId = url.split('/')[4];
+      console.log(quizletId);
+      const LIMIT = 1000;
+      const quizletUrl = `https://quizlet.com/webapi/3.4/studiable-item-documents?filters%5BstudiableContainerId%5D=${quizletId}&filters%5BstudiableContainerType%5D=1&perPage=${LIMIT}&page=1`;
+      const apiKey = '6e9c093be7ae9995786fe958e7ee32eb';
+      const response = await axios.get(`https://api.scraperapi.com/`, {
+        params: {
+          api_key: apiKey,
+          url: quizletUrl,
+        },
+      });
+
+      console.log(response.data);
+
+      const data = response.data;
+
+      if (!data.responses || !data.responses.length || !data.responses[0]) {
+        throw new Error('Invalid Quizlet response');
+      }
+
+      const terms = data.responses[0].models.studiableItem;
+      const parsedTerms = [];
+
+      for (const term of terms) {
+        const wordSide = term.cardSides.find((side) => side.label === 'word');
+        const definitionSide = term.cardSides.find(
+          (side) => side.label === 'definition',
+        );
+
+        if (!wordSide?.media[0] || !definitionSide?.media[0]) {
+          continue;
+        }
+
+        const definitionMedia = definitionSide.media.map((media) => ({
+          plainText: media.plainText,
+          attribution: media.attribution,
+          imageUrl: media.url,
+        }));
+
+        parsedTerms.push({
+          word: wordSide.media[0].plainText,
+          definition: definitionSide.media[0].plainText,
+          definitionMedia,
+        });
+      }
+      console.log(userId);
+      // save to database
+      const studySet = new StudySetEntity();
+      studySet.title = 'Imported from Quizlet';
+      studySet.description = 'Imported from Quizlet';
+      studySet.isPublic = false;
+      studySet.link = randomBytes(7).toString('base64').substring(0, 7);
+
+      const owner = await this.dataSource
+        .getRepository(UserEntity)
+        .findOneBy({ id: userId });
+
+      if (!owner) {
+        throw new NotFoundException('User not found or username is missing');
+      }
+
+      studySet.owner = owner;
+
+      const subject = await this.dataSource
+        .getRepository(SubjectEntity)
+        .findOneBy({ id: 1 });
+
+      if (!subject) {
+        throw new NotFoundException('Subject not found');
+      }
+
+      studySet.subject = subject;
+
+      const color = await this.dataSource
+        .getRepository(ColorEntity)
+        .findOneBy({ id: 1 });
+
+      if (!color) {
+        throw new NotFoundException('Color not found');
+      }
+
+      studySet.color = color;
+
+      await this.dataSource.getRepository(StudySetEntity).save(studySet);
+
+      const flashcards = parsedTerms.map((fc) => {
+        // console.log(fc.definitionMedia[1]);
+        const flashcard = new FlashcardEntity();
+        flashcard.term = fc.word;
+        flashcard.definition = fc.definition;
+        flashcard.definitionImageURL = fc.definitionMedia[1]?.imageUrl;
+        flashcard.studySet = studySet;
+        return flashcard;
+      });
+
+      await this.dataSource.getRepository(FlashcardEntity).save(flashcards);
+
+      return this.mapStudySetToResponse(studySet, true);
+    } catch (error) {
+      console.error('Error while importing from Quizlet:', error.message);
+      throw new Error('Failed to import flashcards from Quizlet');
+    }
   }
 
   private mapStudySetToResponse(

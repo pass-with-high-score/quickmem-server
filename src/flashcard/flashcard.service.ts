@@ -11,6 +11,7 @@ import { UpdateFlashcardRatingDto } from './dto/bodies/update-flashcard-rating.d
 import { StarredFlashcardDto } from './dto/bodies/starred-flashcard.dto';
 import { UpdateFlashcardInterface } from './interface/update-flashcard.interface';
 import { UpdateFlashcardFlipStatusDto } from './dto/bodies/update-flashcard-flip-status.dto';
+import { GetFlashcardByIdParam } from './dto/queries/get-flashcard-by-id.param';
 
 @Injectable()
 export class FlashcardService {
@@ -24,9 +25,11 @@ export class FlashcardService {
 
   async getFlashcardByStudySetId(
     getFlashcardsByStudySetIdDto: GetFlashcardsByStudySetIdDto,
+    getFlashcardByIdParam: GetFlashcardByIdParam,
   ): Promise<FlashcardResponseInterface[]> {
     return this.flashcardRepository.getFlashcardByStudySetId(
       getFlashcardsByStudySetIdDto,
+      getFlashcardByIdParam,
     );
   }
 
