@@ -29,10 +29,16 @@ import { FlipFlashcardStatus } from '../flashcard/enums/flip-flashcard-status';
 import { ImportFlashcardDto } from './dto/bodies/import-flashcard.dto';
 import axios from 'axios';
 import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcard-from-quizlet.param.dto';
+import { ConfigService } from '@nestjs/config';
+import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.dto';
+import client from 'src/cohere-client';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
-  constructor(private dataSource: DataSource) {
+  constructor(
+    private dataSource: DataSource,
+    private configService: ConfigService,
+  ) {
     super(StudySetEntity, dataSource.createEntityManager());
   }
 
@@ -417,10 +423,11 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     try {
       console.log(url);
       const quizletId = url.split('/')[4];
+      const studySetName = url.split('/')[5].split('-').slice(0, -1).join(' ');
       console.log(quizletId);
       const LIMIT = 1000;
       const quizletUrl = `https://quizlet.com/webapi/3.4/studiable-item-documents?filters%5BstudiableContainerId%5D=${quizletId}&filters%5BstudiableContainerType%5D=1&perPage=${LIMIT}&page=1`;
-      const apiKey = '6e9c093be7ae9995786fe958e7ee32eb';
+      const apiKey = this.configService.get<string>('SCRAPER_API_KEY');
       const response = await axios.get(`https://api.scraperapi.com/`, {
         params: {
           api_key: apiKey,
@@ -462,10 +469,40 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         });
       }
       console.log(userId);
+      const aiResponse: any = await client.chat({
+        message: url,
+        model: 'command-r-08-2024',
+        responseFormat: {
+          type: 'json_object',
+          schema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+              },
+              description: {
+                type: 'string',
+              },
+            },
+            required: ['name', 'description'],
+          },
+        },
+        preamble:
+          'Bạn là người đặt tên cho Study Set từ một liên kết, với tên và mô tả sẽ phụ thuộc vào nội dung và ngôn ngữ trong liên kết. Ví dụ, với liên kết: https://quizlet.com/br/102542503/matematica-flash-cards/?i=640bon&x=1jqt, bạn sẽ trả về tên và mô tả theo ngôn ngữ của tiêu đề "matematica-flash-cards". \n\nNếu tiêu đề là tiếng Bồ Đào Nha, kết quả sẽ như sau:\n\n**Tên**: Matematica Flash Cards  \n**Mô tả**: Um conjunto de cartões de memorização para revisar conceitos fundamentais de Matemática.\n\nTùy vào ngôn ngữ của tiêu đề trong liên kết, bạn sẽ trả về tên và mô tả phù hợp với ngôn ngữ đó.',
+      });
+      console.log('aiResponse', aiResponse);
+
+      const parsedText: any = JSON.parse(aiResponse.text);
+      console.log('parsedText', parsedText);
+
+      const aiGeneratedName = parsedText.name || studySetName;
+      const aiGeneratedDescription =
+        parsedText.description || 'This study set was imported from Quizlet.';
+
       // save to database
       const studySet = new StudySetEntity();
-      studySet.title = 'Imported from Quizlet';
-      studySet.description = 'Imported from Quizlet';
+      studySet.title = aiGeneratedName;
+      studySet.description = aiGeneratedDescription;
       studySet.isPublic = false;
       studySet.link = randomBytes(7).toString('base64').substring(0, 7);
 
@@ -517,6 +554,142 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     } catch (error) {
       console.error('Error while importing from Quizlet:', error.message);
       throw new Error('Failed to import flashcards from Quizlet');
+    }
+  }
+
+  async createStudySetFromAI(
+    createStudySetFromAiDto: CreateStudySetFromAiDto,
+  ): Promise<GetAllStudySetResponseInterface> {
+    const { userId, title } = createStudySetFromAiDto;
+    try {
+      const aiResponse: any = await client.chat({
+        message: title,
+        model: 'command-r-08-2024',
+        responseFormat: {
+          type: 'json_object',
+          schema: {
+            type: 'object',
+            properties: {
+              title: {
+                type: 'string',
+              },
+              description: {
+                type: 'string',
+              },
+              flashcard: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    term: {
+                      type: 'string',
+                    },
+                    definition: {
+                      type: 'string',
+                    },
+                    hint: {
+                      type: 'string',
+                    },
+                    explanation: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['term', 'definition'],
+                },
+              },
+            },
+            required: ['title', 'flashcard'],
+          },
+        },
+        preamble:
+          'Bạn sẽ tạo ra một bộ flashcard bao gồm 10 thẻ(bắt buộc không được thiếu hay thừa), với mỗi thẻ có các thuộc tính `term` (thuật ngữ), `definition` (định nghĩa), và có thể có `hint` (gợi ý) và `explanation` (giải thích). Bộ flashcard sẽ được tạo dựa trên yêu cầu của người dùng, bao gồm tên bộ flashcard và mô tả. Đầu ra của bạn phải tuân theo cấu trúc JSON dưới đây, và số lượng flashcard không được vượt quá 10.\n' +
+          '\n' +
+          'Đây là ví dụ về cấu trúc JSON mong muốn:\n' +
+          '\n' +
+          '```json\n' +
+          '{\n' +
+          '  "title": "Tên bộ flashcard",\n' +
+          '  "description": "Mô tả về bộ flashcard này.",\n' +
+          '  "flashcard": [\n' +
+          '    {\n' +
+          '      "term": "Thuật ngữ 1",\n' +
+          '      "definition": "Định nghĩa cho thuật ngữ 1.",\n' +
+          '      "hint": "Gợi ý (tuỳ chọn).",\n' +
+          '      "explanation": "Giải thích chi tiết hơn về thuật ngữ (tuỳ chọn)."\n' +
+          '    },\n' +
+          '    {\n' +
+          '      "term": "Thuật ngữ 2",\n' +
+          '      "definition": "Định nghĩa cho thuật ngữ 2."\n' +
+          '    }\n' +
+          '  ]\n' +
+          '}\n' +
+          '```\n' +
+          '\n' +
+          'Người dùng có thể cung cấp thông tin như tên bộ flashcard và mô tả để bắt đầu.',
+      });
+      console.log('aiResponse', aiResponse);
+
+      const parsedText: any = JSON.parse(aiResponse.text);
+      console.log('parsedText', parsedText);
+
+      const aiGeneratedName = parsedText.title || title;
+      const aiGeneratedDescription =
+        parsedText.description || 'This study set was generated by AI.';
+
+      // save to database
+      const studySet = new StudySetEntity();
+      studySet.title = aiGeneratedName;
+      studySet.description = aiGeneratedDescription;
+      studySet.isPublic = false;
+      studySet.link = randomBytes(7).toString('base64').substring(0, 7);
+
+      const owner = await this.dataSource
+        .getRepository(UserEntity)
+        .findOneBy({ id: userId });
+
+      if (!owner) {
+        throw new NotFoundException('User not found or username is missing');
+      }
+
+      studySet.owner = owner;
+
+      const subject = await this.dataSource
+        .getRepository(SubjectEntity)
+        .findOneBy({ id: 1 });
+
+      if (!subject) {
+        throw new NotFoundException('Subject not found');
+      }
+
+      studySet.subject = subject;
+
+      const color = await this.dataSource
+        .getRepository(ColorEntity)
+        .findOneBy({ id: 1 });
+
+      if (!color) {
+        throw new NotFoundException('Color not found');
+      }
+
+      studySet.color = color;
+
+      await this.dataSource.getRepository(StudySetEntity).save(studySet);
+
+      const flashcards = parsedText.flashcard.map((fc) => {
+        const flashcard = new FlashcardEntity();
+        flashcard.term = fc.term;
+        flashcard.definition = fc.definition;
+        flashcard.hint = fc.hint;
+        flashcard.explanation = fc.explanation;
+        flashcard.studySet = studySet;
+        return flashcard;
+      });
+
+      await this.dataSource.getRepository(FlashcardEntity).save(flashcards);
+      return this.mapStudySetToResponse(studySet, true);
+    } catch (error) {
+      console.error('Error while creating study set from AI:', error.message);
+      throw new Error('Failed to create study set from AI');
     }
   }
 

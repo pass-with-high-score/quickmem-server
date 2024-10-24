@@ -15,6 +15,7 @@ import { ResetFlashcardProgressParamDto } from './dto/params/reset-flashcard-pro
 import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flashcard-progress-response.interface';
 import { ImportFlashcardDto } from './dto/bodies/import-flashcard.dto';
 import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcard-from-quizlet.param.dto';
+import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.dto';
 
 @Injectable()
 export class StudySetService {
@@ -91,6 +92,14 @@ export class StudySetService {
     return this.studySetRepository.importFromUrl(
       importFlashcardDto,
       importFlashcardFromQuizletParamDto,
+    );
+  }
+
+  async createStudySetFromAI(
+    createStudySetFromAiDto: CreateStudySetFromAiDto,
+  ): Promise<GetAllStudySetResponseInterface> {
+    return this.studySetRepository.createStudySetFromAI(
+      createStudySetFromAiDto,
     );
   }
 }
