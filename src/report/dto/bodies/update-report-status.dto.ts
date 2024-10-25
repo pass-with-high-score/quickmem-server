@@ -1,3 +1,3 @@
 export class UpdateReportStatusDto {
-    status: string;
-  }
+  status: string;
+}

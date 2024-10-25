@@ -1,4 +1,15 @@
-import { Controller, UseGuards, UseInterceptors, Post, Body, Get, Param, HttpException, HttpStatus, HttpCode, Patch } from '@nestjs/common';
+import {
+  Controller,
+  UseGuards,
+  Post,
+  Body,
+  Get,
+  Param,
+  HttpException,
+  HttpStatus,
+  HttpCode,
+  Patch,
+} from '@nestjs/common';
 import { ReportService } from './report.service';
 import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
@@ -15,7 +26,7 @@ export class ReportController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createReport(
-    @Body() createReportDto: CreateReportDto
+    @Body() createReportDto: CreateReportDto,
   ): Promise<ReportResponseInterface> {
     try {
       return this.reportService.createReport(createReportDto);
@@ -33,8 +44,10 @@ export class ReportController {
     }
   }
 
-  @Get(':id')
-  async getReportById(@Param('id') id: number): Promise<ReportResponseInterface> {
+  @Get('/:id')
+  async getReportById(
+    @Param('id') id: string,
+  ): Promise<ReportResponseInterface> {
     try {
       const report = await this.reportService.findReportById(id);
       if (!report) {
@@ -47,7 +60,9 @@ export class ReportController {
   }
 
   @Get('reporter/:reporterId')
-  async getReportsByReporter(@Param('reporterId') reporterId: number): Promise<ReportResponseInterface[]> {
+  async getReportsByReporter(
+    @Param('reporterId') reporterId: string,
+  ): Promise<ReportResponseInterface[]> {
     try {
       return await this.reportService.findReportsByReporter(reporterId);
     } catch (error) {
@@ -55,17 +70,24 @@ export class ReportController {
     }
   }
 
-  @Patch(':id/status/in-progress')
-  async setInProgress(@Param('id') id: number): Promise<ReportResponseInterface> {
+  @Patch('/:id/status/in-progress')
+  async setInProgress(
+    @Param('id') id: string,
+  ): Promise<ReportResponseInterface> {
+    console.log('id', id);
     try {
-      return this.reportService.updateReportStatus(id, ReportStatus.IN_PROGRESS);
+      return this.reportService.updateReportStatus(
+        id,
+        ReportStatus.IN_PROGRESS,
+      );
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  @Patch(':id/status/resolved')
-  async setResolved(@Param('id') id: number): Promise<ReportResponseInterface> {
+  @Patch('/:id/status/resolved')
+  async setResolved(@Param('id') id: string): Promise<ReportResponseInterface> {
+    console.log('id', id);
     try {
       return this.reportService.updateReportStatus(id, ReportStatus.RESOLVED);
     } catch (error) {
@@ -73,8 +95,9 @@ export class ReportController {
     }
   }
 
-  @Patch(':id/status/closed')
-  async setClosed(@Param('id') id: number): Promise<ReportResponseInterface> {
+  @Patch('/:id/status/closed')
+  async setClosed(@Param('id') id: string): Promise<ReportResponseInterface> {
+    console.log('id', id);
     try {
       return this.reportService.updateReportStatus(id, ReportStatus.CLOSED);
     } catch (error) {

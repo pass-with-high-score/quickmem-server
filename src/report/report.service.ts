@@ -15,13 +15,13 @@ export class ReportService {
   }
 
   async updateReportStatus(
-    reportId: number,
+    reportId: string,
     status: ReportStatus,
   ): Promise<ReportResponseInterface> {
     return this.reportRepository.updateReportStatus(reportId, status);
   }
 
-  async findReportById(id: number): Promise<ReportResponseInterface> {
+  async findReportById(id: string): Promise<ReportResponseInterface> {
     return this.reportRepository.findReportById(id);
   }
 
@@ -29,7 +29,9 @@ export class ReportService {
     return this.reportRepository.findAllReports();
   }
 
-  async findReportsByReporter(reporterId: number): Promise<ReportResponseInterface[]> {
+  async findReportsByReporter(
+    reporterId: string,
+  ): Promise<ReportResponseInterface[]> {
     return this.reportRepository.findReportsByReporter(reporterId);
   }
 }

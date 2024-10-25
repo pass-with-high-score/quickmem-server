@@ -10,16 +10,17 @@ export class ReportRepository extends Repository<ReportEntity> {
   constructor(private readonly dataSource: DataSource) {
     super(ReportEntity, dataSource.createEntityManager());
   }
-  // Todo: Implement the following methods
-  // create report
+
   async createReport(
     createReportDto: CreateReportDto,
   ): Promise<ReportResponseInterface> {
-    const { reason, reportedEntityId, reportedType, reporterId } = createReportDto;
+    const { reason, reportedEntityId, reportedType, reporterId } =
+      createReportDto;
 
-    const reporter = await this.dataSource
-      .getRepository(UserEntity)
-      .findOneBy({ id: reporterId });
+    const reporter = await this.dataSource.getRepository(UserEntity).findOne({
+      where: { id: reporterId },
+      relations: ['reports'],
+    });
     if (!reporter) {
       throw new NotFoundException('Reporter not found');
     }
@@ -50,10 +51,14 @@ export class ReportRepository extends Repository<ReportEntity> {
   }
 
   async updateReportStatus(
-    reportId: number,
+    reportId: string,
     status: string,
   ): Promise<ReportResponseInterface> {
-    const report = await this.findOneBy({ id: reportId.toString() });
+    console.log('reportId', reportId);
+    const report = await this.findOne({
+      where: { id: reportId },
+      relations: ['reporter'],
+    });
     if (!report) {
       throw new NotFoundException('Report not found');
     }
@@ -78,8 +83,11 @@ export class ReportRepository extends Repository<ReportEntity> {
     }
   }
 
-  async findReportById(id: number): Promise<ReportResponseInterface> {
-    const report = await this.findOneBy({ id: id.toString() });
+  async findReportById(id: string): Promise<ReportResponseInterface> {
+    const report = await this.findOne({
+      where: { id },
+      relations: ['reporter'],
+    });
     if (!report) {
       throw new NotFoundException('Report not found');
     }
@@ -110,15 +118,21 @@ export class ReportRepository extends Repository<ReportEntity> {
     }));
   }
 
-  async findReportsByReporter(reporterId: number): Promise<ReportResponseInterface[]> {
-    const reporter = await this.dataSource
-      .getRepository(UserEntity)
-      .findOneBy({ id: reporterId.toString() });
+  async findReportsByReporter(
+    reporterId: string,
+  ): Promise<ReportResponseInterface[]> {
+    const reporter = await this.dataSource.getRepository(UserEntity).findOne({
+      where: { id: reporterId },
+      relations: ['reports'],
+    });
     if (!reporter) {
       throw new NotFoundException('Reporter not found');
     }
 
-    const reports = await this.find({ where: { reporter: { id: reporterId.toString() } }, relations: ['reporter'] });
+    const reports = await this.find({
+      where: { reporter: { id: reporterId } },
+      relations: ['reporter'],
+    });
     return reports.map((report) => ({
       id: report.id,
       reason: report.reason,
