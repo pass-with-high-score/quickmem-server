@@ -46,6 +46,15 @@ export class ReportController {
     }
   }
 
+  @Get('reporter/:reporterId')
+  async getReportsByReporter(@Param('reporterId') reporterId: number): Promise<ReportResponseInterface[]> {
+    try {
+      return await this.reportService.findReportsByReporter(reporterId);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   @Patch(':id/status/in-progress')
   async setInProgress(@Param('id') id: number): Promise<ReportResponseInterface> {
     try {

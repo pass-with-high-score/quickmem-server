@@ -104,4 +104,24 @@ export class ReportRepository extends Repository<ReportEntity> {
       updatedAt: report.updatedAt,
     }));
   }
+
+  async findReportsByReporter(reporterId: number): Promise<ReportResponseInterface[]> {
+    const reporter = await this.dataSource
+      .getRepository(UserEntity)
+      .findOneBy({ id: reporterId.toString() });
+    if (!reporter) {
+      throw new NotFoundException('Reporter not found');
+    }
+
+    const reports = await this.find({ where: { reporter: { id: reporterId.toString() } }, relations: ['reporter'] });
+    return reports.map((report) => ({
+      id: report.id,
+      reason: report.reason,
+      reporter: report.reporter.id,
+      reportedType: report.reportedType,
+      status: report.status,
+      createdAt: report.createdAt,
+      updatedAt: report.updatedAt,
+    }));
+  }
 }

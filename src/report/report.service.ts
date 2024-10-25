@@ -28,4 +28,8 @@ export class ReportService {
   async findAllReports(): Promise<ReportResponseInterface[]> {
     return this.reportRepository.findAllReports();
   }
+
+  async findReportsByReporter(reporterId: number): Promise<ReportResponseInterface[]> {
+    return this.reportRepository.findReportsByReporter(reporterId);
+  }
 }
