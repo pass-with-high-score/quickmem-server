@@ -4,6 +4,9 @@ import { DataSource, Repository } from 'typeorm';
 import { ReportEntity } from './entities/report.entity';
 import { ReportResponseInterface } from './interfaces/report-response.interface';
 import { UserEntity } from 'src/auth/entities/user.entity';
+import { UpdateStatusParamDto } from './dto/params/update-status-param.dto';
+import { UpdateStatusDto } from './dto/bodies/update-status.dto';
+import { ReportStatusEnum } from './enums/report-status.enum';
 
 @Injectable()
 export class ReportRepository extends Repository<ReportEntity> {
@@ -30,7 +33,7 @@ export class ReportRepository extends Repository<ReportEntity> {
     report.reportedEntityId = reportedEntityId;
     report.reportedType = reportedType;
     report.reporter = reporter;
-    report.status = 'pending';
+    report.status = ReportStatusEnum.PENDING;
 
     try {
       await this.dataSource.getRepository(ReportEntity).save(report);
@@ -51,12 +54,13 @@ export class ReportRepository extends Repository<ReportEntity> {
   }
 
   async updateReportStatus(
-    reportId: string,
-    status: string,
+    updateStatusParamDto: UpdateStatusParamDto,
+    updateStatusDto: UpdateStatusDto,
   ): Promise<ReportResponseInterface> {
-    console.log('reportId', reportId);
+    const { status } = updateStatusDto;
+    const { id } = updateStatusParamDto;
     const report = await this.findOne({
-      where: { id: reportId },
+      where: { id: id },
       relations: ['reporter'],
     });
     if (!report) {

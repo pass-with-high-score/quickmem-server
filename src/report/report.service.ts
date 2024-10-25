@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ReportRepository } from './report.repository';
 import { CreateReportDto } from './dto/bodies/create-report.dto';
 import { ReportResponseInterface } from './interfaces/report-response.interface';
-import { ReportStatus } from './enums/report-status.enum';
+import { UpdateStatusParamDto } from './dto/params/update-status-param.dto';
+import { UpdateStatusDto } from './dto/bodies/update-status.dto';
 
 @Injectable()
 export class ReportService {
@@ -15,10 +16,13 @@ export class ReportService {
   }
 
   async updateReportStatus(
-    reportId: string,
-    status: ReportStatus,
+    updateStatusParamDto: UpdateStatusParamDto,
+    updateStatusDto: UpdateStatusDto,
   ): Promise<ReportResponseInterface> {
-    return this.reportRepository.updateReportStatus(reportId, status);
+    return this.reportRepository.updateReportStatus(
+      updateStatusParamDto,
+      updateStatusDto,
+    );
   }
 
   async findReportById(id: string): Promise<ReportResponseInterface> {

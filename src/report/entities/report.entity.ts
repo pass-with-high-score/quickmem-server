@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from '../../auth/entities/user.entity';
 import { ReportEnum } from '../enums/report.enum';
+import { ReportStatusEnum } from '../enums/report-status.enum';
 
 @Entity('reports')
 export class ReportEntity {
@@ -17,13 +18,13 @@ export class ReportEntity {
   @Column()
   reason: string;
 
-  @Column({ default: 'pending' })
-  status: string;
+  @Column({ type: 'enum', enum: ReportStatusEnum, enumName: 'report_status' })
+  status: ReportStatusEnum;
 
   @Column({ type: 'enum', enum: ReportEnum, enumName: 'report_enum' })
   reportedType: ReportEnum;
 
-  @Column( { nullable: true } )
+  @Column({ nullable: true })
   reportedEntityId: string;
 
   @ManyToOne(() => UserEntity, (user) => user.reports)

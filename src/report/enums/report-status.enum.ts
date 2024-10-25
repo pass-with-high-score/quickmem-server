@@ -1,6 +1,6 @@
-export enum ReportStatus {
-  PENDING = 'PENDING',
-  IN_PROGRESS = 'IN_PROGRESS',
-  RESOLVED = 'RESOLVED',
-  CLOSED = 'CLOSED',
+export enum ReportStatusEnum {
+  PENDING = 'pending',
+  IN_PROGRESS = 'in-progress',
+  RESOLVED = 'resolved',
+  CLOSED = 'closed',
 }
