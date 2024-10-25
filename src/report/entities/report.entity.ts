@@ -23,6 +23,9 @@ export class ReportEntity {
   @Column({ type: 'enum', enum: ReportEnum, enumName: 'report_enum' })
   reportedType: ReportEnum;
 
+  @Column( { nullable: true } )
+  reportedEntityId: string;
+
   @ManyToOne(() => UserEntity, (user) => user.reports)
   reporter: UserEntity;
 

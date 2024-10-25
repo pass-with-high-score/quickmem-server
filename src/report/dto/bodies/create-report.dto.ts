@@ -6,6 +6,10 @@ export class CreateReportDto {
   @IsNotEmpty()
   reason: string;
 
+  @IsString()
+  @IsNotEmpty()
+  reportedEntityId: string;
+
   @IsEnum(ReportEnum)
   reportedType: ReportEnum;
 

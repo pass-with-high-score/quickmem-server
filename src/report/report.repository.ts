@@ -15,7 +15,7 @@ export class ReportRepository extends Repository<ReportEntity> {
   async createReport(
     createReportDto: CreateReportDto,
   ): Promise<ReportResponseInterface> {
-    const { reason, reportedType, reporterId } = createReportDto;
+    const { reason, reportedEntityId, reportedType, reporterId } = createReportDto;
 
     const reporter = await this.dataSource
       .getRepository(UserEntity)
@@ -26,6 +26,7 @@ export class ReportRepository extends Repository<ReportEntity> {
 
     const report = new ReportEntity();
     report.reason = reason;
+    report.reportedEntityId = reportedEntityId;
     report.reportedType = reportedType;
     report.reporter = reporter;
     report.status = 'pending';
@@ -35,6 +36,7 @@ export class ReportRepository extends Repository<ReportEntity> {
       return {
         id: report.id,
         reason: report.reason,
+        reportedEntityId: report.reportedEntityId,
         reporter: report.reporter.id,
         reportedType: report.reportedType,
         status: report.status,
@@ -63,6 +65,7 @@ export class ReportRepository extends Repository<ReportEntity> {
       return {
         id: report.id,
         reason: report.reason,
+        reportedEntityId: report.reportedEntityId,
         reporter: report.reporter.id,
         reportedType: report.reportedType,
         status: report.status,
@@ -84,6 +87,7 @@ export class ReportRepository extends Repository<ReportEntity> {
     return {
       id: report.id,
       reason: report.reason,
+      reportedEntityId: report.reportedEntityId,
       reporter: report.reporter.id,
       reportedType: report.reportedType,
       status: report.status,
@@ -97,6 +101,7 @@ export class ReportRepository extends Repository<ReportEntity> {
     return reports.map((report) => ({
       id: report.id,
       reason: report.reason,
+      reportedEntityId: report.reportedEntityId,
       reporter: report.reporter.id,
       reportedType: report.reportedType,
       status: report.status,
@@ -117,6 +122,7 @@ export class ReportRepository extends Repository<ReportEntity> {
     return reports.map((report) => ({
       id: report.id,
       reason: report.reason,
+      reportedEntityId: report.reportedEntityId,
       reporter: report.reporter.id,
       reportedType: report.reportedType,
       status: report.status,
