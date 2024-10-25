@@ -4,6 +4,7 @@ export interface ReportResponseInterface {
     id: string;
     reason: string;
     status: string;
+    reporter: string; 
     reportedType: ReportEnum;
     createdAt: Date;
     updatedAt: Date;

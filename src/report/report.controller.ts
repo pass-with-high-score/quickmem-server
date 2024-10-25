@@ -46,16 +46,6 @@ export class ReportController {
     }
   }
 
-
-  @Patch(':id/status/pending')
-  async setPending(@Param('id') id: number): Promise<ReportResponseInterface> {
-    try {
-      return this.reportService.updateReportStatus(id, ReportStatus.PENDING);
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
   @Patch(':id/status/in-progress')
   async setInProgress(@Param('id') id: number): Promise<ReportResponseInterface> {
     try {

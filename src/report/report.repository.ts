@@ -35,6 +35,7 @@ export class ReportRepository extends Repository<ReportEntity> {
       return {
         id: report.id,
         reason: report.reason,
+        reporter: report.reporter.id,
         reportedType: report.reportedType,
         status: report.status,
         createdAt: report.createdAt,
@@ -62,6 +63,7 @@ export class ReportRepository extends Repository<ReportEntity> {
       return {
         id: report.id,
         reason: report.reason,
+        reporter: report.reporter.id,
         reportedType: report.reportedType,
         status: report.status,
         createdAt: report.createdAt,
@@ -82,6 +84,7 @@ export class ReportRepository extends Repository<ReportEntity> {
     return {
       id: report.id,
       reason: report.reason,
+      reporter: report.reporter.id,
       reportedType: report.reportedType,
       status: report.status,
       createdAt: report.createdAt,
@@ -94,6 +97,7 @@ export class ReportRepository extends Repository<ReportEntity> {
     return reports.map((report) => ({
       id: report.id,
       reason: report.reason,
+      reporter: report.reporter.id,
       reportedType: report.reportedType,
       status: report.status,
       createdAt: report.createdAt,
