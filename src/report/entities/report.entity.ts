@@ -17,6 +17,9 @@ export class ReportEntity {
   @Column()
   reason: string;
 
+  @Column({ default: 'pending' })
+  status: string;
+
   @Column({ type: 'enum', enum: ReportEnum, enumName: 'report_enum' })
   reportedType: ReportEnum;
 

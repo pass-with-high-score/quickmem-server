@@ -28,6 +28,7 @@ export class ReportRepository extends Repository<ReportEntity> {
     report.reason = reason;
     report.reportedType = reportedType;
     report.reporter = reporter;
+    report.status = 'pending';
 
     try {
       await this.dataSource.getRepository(ReportEntity).save(report);
@@ -35,6 +36,7 @@ export class ReportRepository extends Repository<ReportEntity> {
         id: report.id,
         reason: report.reason,
         reportedType: report.reportedType,
+        status: report.status,
         createdAt: report.createdAt,
         updatedAt: report.updatedAt,
       };
@@ -44,5 +46,58 @@ export class ReportRepository extends Repository<ReportEntity> {
     }
   }
 
+  async updateReportStatus(
+    reportId: number,
+    status: string,
+  ): Promise<ReportResponseInterface> {
+    const report = await this.findOneBy({ id: reportId.toString() });
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
 
+    report.status = status;
+
+    try {
+      await this.save(report);
+      return {
+        id: report.id,
+        reason: report.reason,
+        reportedType: report.reportedType,
+        status: report.status,
+        createdAt: report.createdAt,
+        updatedAt: report.updatedAt,
+      };
+    } catch (error) {
+      console.log('Error updating report status:', error);
+      throw new Error('Error updating report status');
+    }
+  }
+
+  async findReportById(id: number): Promise<ReportResponseInterface> {
+    const report = await this.findOneBy({ id: id.toString() });
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+
+    return {
+      id: report.id,
+      reason: report.reason,
+      reportedType: report.reportedType,
+      status: report.status,
+      createdAt: report.createdAt,
+      updatedAt: report.updatedAt,
+    };
+  }
+
+  async findAllReports(): Promise<ReportResponseInterface[]> {
+    const reports = await this.find();
+    return reports.map((report) => ({
+      id: report.id,
+      reason: report.reason,
+      reportedType: report.reportedType,
+      status: report.status,
+      createdAt: report.createdAt,
+      updatedAt: report.updatedAt,
+    }));
+  }
 }
