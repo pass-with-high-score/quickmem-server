@@ -32,6 +32,7 @@ import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcar
 import { ConfigService } from '@nestjs/config';
 import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.dto';
 import client from 'src/cohere-client';
+import { ResetFlashcardProgressParamsDto } from './dto/queries/reset-flashcard-progress-params.dto';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -392,8 +393,10 @@ export class StudySetRepository extends Repository<StudySetEntity> {
   // Reset progress of all flashcards in a study set
   async resetFlashcardProgress(
     resetFlashcardProgressParamDto: ResetFlashcardProgressParamDto,
+    resetFlashcardProgressParamsDto: ResetFlashcardProgressParamsDto,
   ): Promise<ResetFlashcardProgressResponseInterface> {
     const { id } = resetFlashcardProgressParamDto;
+    const { resetType } = resetFlashcardProgressParamsDto;
     const studySet = await this.findOne({
       where: { id },
       relations: ['flashcards'],
@@ -404,8 +407,14 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     }
 
     for (const flashcard of studySet.flashcards) {
-      flashcard.rating = FlashcardStatusEnum.NOT_STUDIED;
-      flashcard.flipStatus = FlipFlashcardStatus.NONE;
+      if (resetType === 'resetAll') {
+        flashcard.rating = FlashcardStatusEnum.NOT_STUDIED;
+        flashcard.flipStatus = FlipFlashcardStatus.NONE;
+      } else if (resetType === 'flipStatus') {
+        flashcard.flipStatus = FlipFlashcardStatus.NONE;
+      } else if (resetType === 'rating') {
+        flashcard.rating = FlashcardStatusEnum.NOT_STUDIED;
+      }
       await this.dataSource.getRepository(FlashcardEntity).save(flashcard);
     }
     return {

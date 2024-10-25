@@ -16,6 +16,7 @@ import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flas
 import { ImportFlashcardDto } from './dto/bodies/import-flashcard.dto';
 import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcard-from-quizlet.param.dto';
 import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.dto';
+import { ResetFlashcardProgressParamsDto } from './dto/queries/reset-flashcard-progress-params.dto';
 
 @Injectable()
 export class StudySetService {
@@ -79,9 +80,11 @@ export class StudySetService {
 
   async resetFlashcardProgress(
     resetFlashcardProgressParamDto: ResetFlashcardProgressParamDto,
+    resetFlashcardProgressParamsDto: ResetFlashcardProgressParamsDto,
   ): Promise<ResetFlashcardProgressResponseInterface> {
     return this.studySetRepository.resetFlashcardProgress(
       resetFlashcardProgressParamDto,
+      resetFlashcardProgressParamsDto,
     );
   }
 

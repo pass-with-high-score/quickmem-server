@@ -30,6 +30,7 @@ import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flas
 import { ImportFlashcardDto } from './dto/bodies/import-flashcard.dto';
 import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcard-from-quizlet.param.dto';
 import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.dto';
+import { ResetFlashcardProgressParamsDto } from './dto/queries/reset-flashcard-progress-params.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -97,9 +98,12 @@ export class StudySetController {
   @HttpCode(HttpStatus.OK)
   async resetFlashcardProgress(
     @Param() resetFlashcardProgressParamDto: ResetFlashcardProgressParamDto,
+    @Query()
+    resetFlashcardProgressParamsDto: ResetFlashcardProgressParamsDto,
   ): Promise<ResetFlashcardProgressResponseInterface> {
     return this.studySetService.resetFlashcardProgress(
       resetFlashcardProgressParamDto,
+      resetFlashcardProgressParamsDto,
     );
   }
 

@@ -22,6 +22,7 @@ import { UpdateFlashcardInterface } from './interface/update-flashcard.interface
 import { GetFlashcardByIdParam } from './dto/queries/get-flashcard-by-id.param';
 import { LearnModeEnum } from './enums/learn-mode.enum';
 import { FlipFlashcardStatus } from './enums/flip-flashcard-status';
+import { FlashcardStatusEnum } from './enums/flashcard-status.enum';
 
 @Injectable()
 export class FlashcardRepository extends Repository<FlashcardEntity> {
@@ -79,8 +80,12 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
             flashcard.flipStatus === FlipFlashcardStatus.NONE ||
             flashcard.flipStatus === FlipFlashcardStatus.STILL_LEARNING,
         );
-      } else {
-        filteredFlashcards = flashcards;
+      } else if (learnMode == LearnModeEnum.NORMAL) {
+        filteredFlashcards = flashcards.filter(
+          (flashcard) =>
+            flashcard.rating === FlashcardStatusEnum.NOT_STUDIED ||
+            flashcard.rating === FlashcardStatusEnum.STILL_LEARNING,
+        );
       }
 
       return await Promise.all(
