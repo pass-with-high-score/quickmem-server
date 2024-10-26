@@ -4,6 +4,7 @@ import { CreateReportDto } from './dto/bodies/create-report.dto';
 import { ReportResponseInterface } from './interfaces/report-response.interface';
 import { UpdateStatusParamDto } from './dto/params/update-status-param.dto';
 import { UpdateStatusDto } from './dto/bodies/update-status.dto';
+import { GetReporterIdParamDto } from './dto/params/get-reporterId-param.dto';
 
 @Injectable()
 export class ReportService {
@@ -25,8 +26,12 @@ export class ReportService {
     );
   }
 
-  async findReportById(id: string): Promise<ReportResponseInterface> {
-    return this.reportRepository.findReportById(id);
+  async findReportById(
+    updateStatusParamDto: UpdateStatusParamDto,
+  ): Promise<ReportResponseInterface> {
+    return this.reportRepository.findReportById(
+      updateStatusParamDto
+    );
   }
 
   async findAllReports(): Promise<ReportResponseInterface[]> {
@@ -34,8 +39,10 @@ export class ReportService {
   }
 
   async findReportsByReporter(
-    reporterId: string,
+    getReporterIdParamDto: GetReporterIdParamDto
   ): Promise<ReportResponseInterface[]> {
-    return this.reportRepository.findReportsByReporter(reporterId);
+    return this.reportRepository.findReportsByReporter(
+      getReporterIdParamDto
+    );
   }
 }

@@ -7,6 +7,7 @@ import { UserEntity } from 'src/auth/entities/user.entity';
 import { UpdateStatusParamDto } from './dto/params/update-status-param.dto';
 import { UpdateStatusDto } from './dto/bodies/update-status.dto';
 import { ReportStatusEnum } from './enums/report-status.enum';
+import { GetReporterIdParamDto } from './dto/params/get-reporterId-param.dto';
 
 @Injectable()
 export class ReportRepository extends Repository<ReportEntity> {
@@ -87,9 +88,12 @@ export class ReportRepository extends Repository<ReportEntity> {
     }
   }
 
-  async findReportById(id: string): Promise<ReportResponseInterface> {
+  async findReportById(
+    updateStatusParamDto: UpdateStatusParamDto,
+  ): Promise<ReportResponseInterface> {
+    const { id } = updateStatusParamDto;
     const report = await this.findOne({
-      where: { id },
+      where: { id: id },
       relations: ['reporter'],
     });
     if (!report) {
@@ -123,8 +127,9 @@ export class ReportRepository extends Repository<ReportEntity> {
   }
 
   async findReportsByReporter(
-    reporterId: string,
+    getReporterIdParamDto: GetReporterIdParamDto
   ): Promise<ReportResponseInterface[]> {
+    const { reporterId } = getReporterIdParamDto;
     const reporter = await this.dataSource.getRepository(UserEntity).findOne({
       where: { id: reporterId },
       relations: ['reports'],

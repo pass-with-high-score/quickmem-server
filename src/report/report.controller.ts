@@ -17,6 +17,7 @@ import { CreateReportDto } from './dto/bodies/create-report.dto';
 import { ReportResponseInterface } from './interfaces/report-response.interface';
 import { UpdateStatusParamDto } from './dto/params/update-status-param.dto';
 import { UpdateStatusDto } from './dto/bodies/update-status.dto';
+import { GetReporterIdParamDto } from './dto/params/get-reporterId-param.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -36,7 +37,7 @@ export class ReportController {
     }
   }
 
-  @Get()
+  @Get('/all')
   @HttpCode(HttpStatus.OK)
   async getAllReports(): Promise<ReportResponseInterface[]> {
     try {
@@ -49,10 +50,10 @@ export class ReportController {
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
   async getReportById(
-    @Param('id') id: string,
+    @Param() updateStatusParamDto: UpdateStatusParamDto,
   ): Promise<ReportResponseInterface> {
     try {
-      const report = await this.reportService.findReportById(id);
+      const report = await this.reportService.findReportById(updateStatusParamDto);
       if (!report) {
         throw new HttpException('Report not found', HttpStatus.NOT_FOUND);
       }
@@ -65,10 +66,10 @@ export class ReportController {
   @Get('reporter/:reporterId')
   @HttpCode(HttpStatus.OK)
   async getReportsByReporter(
-    @Param('reporterId') reporterId: string,
+    @Param() getReporterIdParamDto: GetReporterIdParamDto
   ): Promise<ReportResponseInterface[]> {
     try {
-      return await this.reportService.findReportsByReporter(reporterId);
+      return await this.reportService.findReportsByReporter(getReporterIdParamDto);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
