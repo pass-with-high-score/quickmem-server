@@ -136,7 +136,7 @@ export class AuthController {
   }
 
   @Throttle({ default: { limit: 3, ttl: 60000 } })
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   @Post('/send-reset-password')
   async sendResetPassword(
     @Body() sendEmailDto: SendEmailDto,
