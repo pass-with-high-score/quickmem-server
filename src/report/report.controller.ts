@@ -30,21 +30,14 @@ export class ReportController {
   async createReport(
     @Body() createReportDto: CreateReportDto,
   ): Promise<ReportResponseInterface> {
-    try {
-      return this.reportService.createReport(createReportDto);
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    console.log('createReportDto', createReportDto);
+    return await this.reportService.createReport(createReportDto);
   }
 
   @Get('/all')
   @HttpCode(HttpStatus.OK)
-  async getAllReports(): Promise<ReportResponseInterface[]> {
-    try {
-      return await this.reportService.findAllReports();
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+  async getReports(): Promise<ReportResponseInterface[]> {
+    return await this.reportService.getReports();
   }
 
   @Get('/:id')
@@ -52,27 +45,15 @@ export class ReportController {
   async getReportById(
     @Param() updateStatusParamDto: UpdateStatusParamDto,
   ): Promise<ReportResponseInterface> {
-    try {
-      const report = await this.reportService.findReportById(updateStatusParamDto);
-      if (!report) {
-        throw new HttpException('Report not found', HttpStatus.NOT_FOUND);
-      }
-      return report;
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return await this.reportService.getReportById(updateStatusParamDto);
   }
 
-  @Get('reporter/:reporterId')
+  @Get('/:id/reporter')
   @HttpCode(HttpStatus.OK)
   async getReportsByReporter(
     @Param() getReporterIdParamDto: GetReporterIdParamDto
   ): Promise<ReportResponseInterface[]> {
-    try {
-      return await this.reportService.findReportsByReporter(getReporterIdParamDto);
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return await this.reportService.getReportsByReporter(getReporterIdParamDto);
   }
 
   @Patch('/:id/status')
@@ -80,13 +61,9 @@ export class ReportController {
     @Param() updateStatusParamDto: UpdateStatusParamDto,
     @Body() updateStatusDto: UpdateStatusDto,
   ): Promise<ReportResponseInterface> {
-    try {
-      return this.reportService.updateReportStatus(
-        updateStatusParamDto,
-        updateStatusDto,
-      );
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return await this.reportService.updateReportStatus(
+      updateStatusParamDto,
+      updateStatusDto,
+    );
   }
 }

@@ -18,7 +18,11 @@ export class ReportEntity {
   @Column()
   reason: string;
 
-  @Column({ type: 'enum', enum: ReportStatusEnum, enumName: 'report_status' })
+  @Column({ 
+    type: 'enum', 
+    enum: ReportStatusEnum, 
+    enumName: 'report_status', 
+    default: ReportStatusEnum.PENDING })
   status: ReportStatusEnum;
 
   @Column({ type: 'enum', enum: ReportEnum, enumName: 'report_enum' })

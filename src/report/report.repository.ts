@@ -1,5 +1,6 @@
+import { VerifyOtpDto } from './../auth/dto/bodies/verify-otp.dto';
 import { CreateReportDto } from './dto/bodies/create-report.dto';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { ReportEntity } from './entities/report.entity';
 import { ReportResponseInterface } from './interfaces/report-response.interface';
@@ -50,7 +51,7 @@ export class ReportRepository extends Repository<ReportEntity> {
       };
     } catch (error) {
       console.log('Error creating report:', error);
-      throw new Error('Error creating report');
+      throw new InternalServerErrorException('Error creating report');
     }
   }
 
@@ -65,7 +66,7 @@ export class ReportRepository extends Repository<ReportEntity> {
       relations: ['reporter'],
     });
     if (!report) {
-      throw new NotFoundException('Report not found');
+      throw new InternalServerErrorException('Report not found');
     }
 
     report.status = status;
@@ -84,22 +85,69 @@ export class ReportRepository extends Repository<ReportEntity> {
       };
     } catch (error) {
       console.log('Error updating report status:', error);
-      throw new Error('Error updating report status');
+      throw new InternalServerErrorException('Error updating report status');
     }
   }
 
-  async findReportById(
+  async getReportById(
     updateStatusParamDto: UpdateStatusParamDto,
   ): Promise<ReportResponseInterface> {
     const { id } = updateStatusParamDto;
-    const report = await this.findOne({
-      where: { id: id },
-      relations: ['reporter'],
-    });
-    if (!report) {
-      throw new NotFoundException('Report not found');
+    try {
+      const report = await this.dataSource
+        .getRepository(ReportEntity)
+        .findOne({ 
+          where: { id: id },
+          relations: ['reporter']
+        });
+      if (!report) {
+        throw new NotFoundException('Report not found');
+      }
+      return this.mapReportToReportResponse(report);
+    } catch (error) {
+      console.error('Error fetching report by ID:', error);
+      throw new InternalServerErrorException('Error fetching report by ID');
     }
+  }
 
+  async getReports(): Promise<ReportResponseInterface[]> {
+    try {
+      const reports = await this.dataSource
+        .getRepository(ReportEntity)
+        .find({ 
+          relations: ['reporter']
+        });
+
+      return reports.map((report) => this.mapReportToReportResponse(report));
+    } catch (error) {
+      console.log('Error getting reports:', error);
+      throw new InternalServerErrorException('Error getting reports');
+    }
+  }
+
+  async getReportsByReporter(
+    getReporterIdParamDto: GetReporterIdParamDto
+  ): Promise<ReportResponseInterface[]> {
+    const { id } = getReporterIdParamDto;
+    try {
+      const reports = await this.dataSource
+        .getRepository(ReportEntity)
+        .find({
+          where: { reporter: { id: id } },
+          relations: ['reporter'],
+        });
+
+      return reports.map((report) => this.mapReportToReportResponse(report));
+      
+    } catch (error) {
+      console.log('Error getting reports by reporter:', error);
+      throw new InternalServerErrorException('Error getting reports by reporter');
+    }
+  }
+
+  private mapReportToReportResponse(
+    report: ReportEntity
+  ): ReportResponseInterface {
     return {
       id: report.id,
       reason: report.reason,
@@ -110,47 +158,5 @@ export class ReportRepository extends Repository<ReportEntity> {
       createdAt: report.createdAt,
       updatedAt: report.updatedAt,
     };
-  }
-
-  async findAllReports(): Promise<ReportResponseInterface[]> {
-    const reports = await this.find();
-    return reports.map((report) => ({
-      id: report.id,
-      reason: report.reason,
-      reportedEntityId: report.reportedEntityId,
-      reporter: report.reporter.id,
-      reportedType: report.reportedType,
-      status: report.status,
-      createdAt: report.createdAt,
-      updatedAt: report.updatedAt,
-    }));
-  }
-
-  async findReportsByReporter(
-    getReporterIdParamDto: GetReporterIdParamDto
-  ): Promise<ReportResponseInterface[]> {
-    const { reporterId } = getReporterIdParamDto;
-    const reporter = await this.dataSource.getRepository(UserEntity).findOne({
-      where: { id: reporterId },
-      relations: ['reports'],
-    });
-    if (!reporter) {
-      throw new NotFoundException('Reporter not found');
-    }
-
-    const reports = await this.find({
-      where: { reporter: { id: reporterId } },
-      relations: ['reporter'],
-    });
-    return reports.map((report) => ({
-      id: report.id,
-      reason: report.reason,
-      reportedEntityId: report.reportedEntityId,
-      reporter: report.reporter.id,
-      reportedType: report.reportedType,
-      status: report.status,
-      createdAt: report.createdAt,
-      updatedAt: report.updatedAt,
-    }));
   }
 }

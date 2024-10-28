@@ -26,22 +26,22 @@ export class ReportService {
     );
   }
 
-  async findReportById(
+  async getReportById(
     updateStatusParamDto: UpdateStatusParamDto,
   ): Promise<ReportResponseInterface> {
-    return this.reportRepository.findReportById(
+    return this.reportRepository.getReportById(
       updateStatusParamDto
     );
   }
 
-  async findAllReports(): Promise<ReportResponseInterface[]> {
-    return this.reportRepository.findAllReports();
+  async getReports(): Promise<ReportResponseInterface[]> {
+    return this.reportRepository.getReports();
   }
 
-  async findReportsByReporter(
+  async getReportsByReporter(
     getReporterIdParamDto: GetReporterIdParamDto
   ): Promise<ReportResponseInterface[]> {
-    return this.reportRepository.findReportsByReporter(
+    return this.reportRepository.getReportsByReporter(
       getReporterIdParamDto
     );
   }
