@@ -32,18 +32,15 @@ export class ImageService {
           return image.url;
         }
       });
-      console.log('imageUrls:', imageUrls);
       const cloudinaryImages = await this.cloudinaryProvider.getAllImages();
 
       const cloudinaryImageUrls = cloudinaryImages.resources.map(
         (cloudinaryImage: { secure_url: any }) => cloudinaryImage.secure_url,
       );
-      console.log('cloudinaryImageUrls:', cloudinaryImageUrls);
 
       const unusedImages = imageUrls.filter(
         (imageUrl) => !cloudinaryImageUrls.includes(imageUrl),
       );
-      console.log('unusedImages:', unusedImages);
 
       await Promise.all(
         unusedImages.map((unusedImageUrl) =>
