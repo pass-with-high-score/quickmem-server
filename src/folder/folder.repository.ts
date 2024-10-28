@@ -115,7 +115,7 @@ export class FolderRepository extends Repository<FolderEntity> {
       user: {
         id: folder.owner.id,
         username: folder.owner.username,
-        avatarUrl: `${process.env.HOST}/public/images/avatar/${folder.owner.avatarUrl}.png`,
+        avatarUrl: `${process.env.HOST}/public/images/avatar/${folder.owner.avatarUrl}.jpg`,
         role: folder.owner.role,
       },
       studySets: showFlashcards
@@ -286,6 +286,7 @@ export class FolderRepository extends Repository<FolderEntity> {
       take: size,
       skip: page * size,
     });
+    console.log(total);
 
     if (!folders.length) {
       throw new NotFoundException('No folders found with the given title');

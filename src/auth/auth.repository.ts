@@ -33,6 +33,10 @@ import { SubscriptionTypeEnum } from '../subscription/enums/subscription.enum';
 import { UpdateCoinDto } from './dto/bodies/update-coin.dto';
 import { UpdateCoinResponseInterface } from './interfaces/update-coin-response.interface';
 import { logger } from '../winston-logger.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { UpdateAvatarParamDto } from './dto/params/update-avatar-param.dto';
+import { UpdateAvatarDto } from './dto/bodies/update-avatar.dto';
+import { UpdateAvatarInterface } from './interfaces/update-avatar.interface';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -213,7 +217,7 @@ export class AuthRepository extends Repository<UserEntity> {
         const refresh_token: string = this.jwtService.sign(payload, {
           expiresIn: '7d',
         });
-        const avatar = `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.png`;
+        const avatar = `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.jpg`;
         const isPremium = await this.isUserPremium(user.id);
         await this.sendEmailQueue.add('send-login-email', {
           fullName: user.fullName,
@@ -350,7 +354,7 @@ export class AuthRepository extends Repository<UserEntity> {
     };
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-    const avatar = `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.png`;
+    const avatar = `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.jpg`;
     user.refreshToken = refreshToken;
     await this.save(user);
     await this.sendEmailQueue.add('send-signup-email', {
@@ -558,6 +562,68 @@ export class AuthRepository extends Repository<UserEntity> {
         isVerified: false,
         success: true,
       };
+    }
+  }
+
+  // every 30 minutes remove every token, otp, and reset password token
+  @Cron(CronExpression.EVERY_30_MINUTES)
+  async removeExpiredTokens() {
+    try {
+      logger.info('Removing expired tokens every 30 minutes');
+      await this.createQueryBuilder()
+        .update(UserEntity)
+        .set({
+          otp: null,
+          otpExpires: null,
+          resetPasswordToken: null,
+          resetPasswordExpires: null,
+        })
+        .where('otpExpires < :date', { date: new Date() })
+        .orWhere('resetPasswordExpires < :date', { date: new Date() })
+        .execute();
+    } catch (error) {
+      logger.error(error);
+      logger.error('Error removing expired tokens:', error);
+    }
+  }
+
+  async updateAvatar(
+    updateAvatarParamDto: UpdateAvatarParamDto,
+    updateAvatarDto: UpdateAvatarDto,
+  ): Promise<UpdateAvatarInterface> {
+    const { id } = updateAvatarParamDto;
+    const { avatar } = updateAvatarDto;
+
+    try {
+      const user = await this.findOne({ where: { id } });
+      if (!user) {
+        throw new NotFoundException({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'User not found',
+        });
+      }
+
+      if (user.avatarUrl === avatar) {
+        throw new ConflictException({
+          statusCode: HttpStatus.CONFLICT,
+          message: 'Avatar is the same as the old avatar',
+        });
+      }
+      user.avatarUrl = avatar;
+      await this.save(user);
+
+      return {
+        message: 'Avatar updated successfully',
+        avatarUrl: `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.jpg`,
+      };
+    } catch (error) {
+      logger.error(
+        `Failed to update avatar for user ID ${id}: ${error.message}`,
+      );
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Failed to update avatar',
+      });
     }
   }
 

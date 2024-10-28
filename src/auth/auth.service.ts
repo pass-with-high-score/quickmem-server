@@ -16,19 +16,18 @@ import { UpdateFullnameDto } from './dto/bodies/update-fullname.dto';
 import { UpdateFullnameResponseInterfaceDto } from './interfaces/update-fullname-response.interface.dto';
 import axios from 'axios';
 import { OAuth2Client } from 'google-auth-library';
-import { ConfigService } from '@nestjs/config';
 import { logger } from '../winston-logger.service';
 import { UpdateCoinDto } from './dto/bodies/update-coin.dto';
 import { UpdateCoinResponseInterface } from './interfaces/update-coin-response.interface';
+import { UpdateAvatarParamDto } from './dto/params/update-avatar-param.dto';
+import { UpdateAvatarDto } from './dto/bodies/update-avatar.dto';
+import { UpdateAvatarInterface } from './interfaces/update-avatar.interface';
 
 @Injectable()
 export class AuthService {
   private googleClient: OAuth2Client;
 
-  constructor(
-    private readonly usersRepository: AuthRepository,
-    private configService: ConfigService,
-  ) {
+  constructor(private readonly usersRepository: AuthRepository) {
     this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   }
 
@@ -132,5 +131,15 @@ export class AuthService {
     updateCoinDto: UpdateCoinDto,
   ): Promise<UpdateCoinResponseInterface> {
     return this.usersRepository.updateCoin(updateCoinDto);
+  }
+
+  async updateAvatar(
+    updateAvatarParamDto: UpdateAvatarParamDto,
+    updateAvatarDto: UpdateAvatarDto,
+  ): Promise<UpdateAvatarInterface> {
+    return this.usersRepository.updateAvatar(
+      updateAvatarParamDto,
+      updateAvatarDto,
+    );
   }
 }

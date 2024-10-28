@@ -48,7 +48,7 @@ export class ClassRepository extends Repository<ClassEntity> {
       take: size,
       skip: page * size,
     });
-
+    console.log(total);
     if (!classes.length) {
       throw new NotFoundException('No classes found with the given title');
     }
@@ -664,7 +664,7 @@ export class ClassRepository extends Repository<ClassEntity> {
       owner: {
         id: classEntity.owner.id,
         username: classEntity.owner.username,
-        avatarUrl: `${process.env.HOST}/public/images/avatar/${classEntity.owner.avatarUrl}.png`,
+        avatarUrl: `${process.env.HOST}/public/images/avatar/${classEntity.owner.avatarUrl}.jpg`,
       },
       memberCount: classEntity.members.length,
       studySetCount: classEntity.studySets.length,
@@ -673,7 +673,7 @@ export class ClassRepository extends Repository<ClassEntity> {
         ? classEntity.members.map((member) => ({
             id: member.id,
             username: member.username,
-            avatarUrl: `${process.env.HOST}/public/images/avatar/${member.avatarUrl}.png`,
+            avatarUrl: `${process.env.HOST}/public/images/avatar/${member.avatarUrl}.jpg`,
           }))
         : undefined,
       studySets: showStudySets
@@ -687,7 +687,7 @@ export class ClassRepository extends Repository<ClassEntity> {
             owner: {
               id: studySet.owner.id,
               username: studySet.owner.username,
-              avatarUrl: `${process.env.HOST}/public/images/avatar/${studySet.owner.avatarUrl}.png`,
+              avatarUrl: `${process.env.HOST}/public/images/avatar/${studySet.owner.avatarUrl}.jpg`,
             },
             createdAt: studySet.createdAt,
             updatedAt: studySet.updatedAt,
@@ -704,7 +704,7 @@ export class ClassRepository extends Repository<ClassEntity> {
             user: {
               id: folder.owner.id,
               username: folder.owner.username,
-              avatarUrl: `${process.env.HOST}/public/images/avatar/${folder.owner.avatarUrl}.png`,
+              avatarUrl: `${process.env.HOST}/public/images/avatar/${folder.owner.avatarUrl}.jpg`,
               role: folder.owner.role,
             },
             createdAt: folder.createdAt,

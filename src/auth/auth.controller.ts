@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Patch,
   Post,
   Req,
@@ -34,6 +35,10 @@ import { FacebookAuthGuard } from './guard/facebook-auth.guard';
 import { AuthProviderEnum } from './enums/auth-provider.enum';
 import { UpdateCoinDto } from './dto/bodies/update-coin.dto';
 import { UpdateCoinResponseInterface } from './interfaces/update-coin-response.interface';
+import { UpdateAvatarParamDto } from './dto/params/update-avatar-param.dto';
+import { UpdateAvatarDto } from './dto/bodies/update-avatar.dto';
+import { UpdateAvatarInterface } from './interfaces/update-avatar.interface';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -161,6 +166,16 @@ export class AuthController {
     @Body() setNewPasswordDto: SetNewPasswordDto,
   ): Promise<SetNewPasswordResponseInterface> {
     return this.authService.setNewPassword(setNewPasswordDto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  @Patch('/user/avatar/:id')
+  async updateAvatar(
+    @Param() updateAvatarParamDto: UpdateAvatarParamDto,
+    @Body() updateAvatarDto: UpdateAvatarDto,
+  ): Promise<UpdateAvatarInterface> {
+    return this.authService.updateAvatar(updateAvatarParamDto, updateAvatarDto);
   }
 
   @Throttle({ default: { limit: 3, ttl: 60000 } })
