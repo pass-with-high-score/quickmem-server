@@ -88,7 +88,6 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       return {
         id: studySet.id,
         title: studySet.title,
-        ownerId: studySet.owner.id,
         subjectId: studySet.subject?.id,
         colorId: studySet.color?.id,
         isPublic: studySet.isPublic,
@@ -456,20 +455,24 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       const parsedTerms = [];
 
       for (const term of terms) {
-        const wordSide = term.cardSides.find((side) => side.label === 'word');
+        const wordSide = term.cardSides.find(
+          (side: { label: string }) => side.label === 'word',
+        );
         const definitionSide = term.cardSides.find(
-          (side) => side.label === 'definition',
+          (side: { label: string }) => side.label === 'definition',
         );
 
         if (!wordSide?.media[0] || !definitionSide?.media[0]) {
           continue;
         }
 
-        const definitionMedia = definitionSide.media.map((media) => ({
-          plainText: media.plainText,
-          attribution: media.attribution,
-          imageUrl: media.url,
-        }));
+        const definitionMedia = definitionSide.media.map(
+          (media: { plainText: any; attribution: any; url: any }) => ({
+            plainText: media.plainText,
+            attribution: media.attribution,
+            imageUrl: media.url,
+          }),
+        );
 
         parsedTerms.push({
           word: wordSide.media[0].plainText,
@@ -684,15 +687,22 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
       await this.dataSource.getRepository(StudySetEntity).save(studySet);
 
-      const flashcards = parsedText.flashcard.map((fc) => {
-        const flashcard = new FlashcardEntity();
-        flashcard.term = fc.term;
-        flashcard.definition = fc.definition;
-        flashcard.hint = fc.hint;
-        flashcard.explanation = fc.explanation;
-        flashcard.studySet = studySet;
-        return flashcard;
-      });
+      const flashcards = parsedText.flashcard.map(
+        (fc: {
+          term: string;
+          definition: string;
+          hint: string;
+          explanation: string;
+        }) => {
+          const flashcard = new FlashcardEntity();
+          flashcard.term = fc.term;
+          flashcard.definition = fc.definition;
+          flashcard.hint = fc.hint;
+          flashcard.explanation = fc.explanation;
+          flashcard.studySet = studySet;
+          return flashcard;
+        },
+      );
 
       await this.dataSource.getRepository(FlashcardEntity).save(flashcards);
       return this.mapStudySetToResponse(studySet, true);
