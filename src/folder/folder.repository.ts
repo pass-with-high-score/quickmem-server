@@ -122,7 +122,9 @@ export class FolderRepository extends Repository<FolderEntity> {
         ? folder.studySets.map((studySet) => ({
             id: studySet.id,
             title: studySet.title,
-            flashcardCount: studySet.flashcards.length,
+            flashcardCount: studySet.flashcards
+              ? studySet.flashcards.length
+              : 0,
             owner: {
               id: studySet.owner.id,
               username: studySet.owner.username,
