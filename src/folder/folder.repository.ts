@@ -62,7 +62,13 @@ export class FolderRepository extends Repository<FolderEntity> {
     try {
       const folder = await this.findOne({
         where: { id: id },
-        relations: ['owner', 'studySets.owner', 'studySets.flashcards'],
+        relations: [
+          'owner',
+          'studySets.owner',
+          'studySets.flashcards',
+          'studySets.color',
+          'studySets.subject',
+        ],
       });
 
       if (!folder) {
@@ -242,12 +248,7 @@ export class FolderRepository extends Repository<FolderEntity> {
 
     const [folders, total] = await this.findAndCount({
       where: { title: ILike(`%${title}%`), isPublic: true },
-      relations: [
-        'owner',
-        'studySets',
-        'studySets.owner',
-        'studySets.flashcards',
-      ],
+      relations: ['owner', 'studySets', 'studySets.owner'],
       take: size,
       skip: page * size,
     });
