@@ -1,3 +1,5 @@
+import { GetAllStudySetResponseInterface } from '../../study-set/interfaces/get-all-study-set-response.interface';
+
 export interface GetFolderResponseInterface {
   id: string;
   title: string;
@@ -11,17 +13,7 @@ export interface GetFolderResponseInterface {
     avatarUrl: string;
     role: string;
   };
-  studySets: {
-    id: string;
-    title: string;
-    flashcardCount: number;
-    owner: {
-      id: string;
-      username: string;
-      avatarUrl: string;
-      role: string;
-    };
-  }[];
+  studySets: GetAllStudySetResponseInterface[];
   createdAt: Date;
   updatedAt: Date;
 }

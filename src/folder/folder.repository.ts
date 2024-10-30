@@ -101,43 +101,6 @@ export class FolderRepository extends Repository<FolderEntity> {
     }
   }
 
-  async mapFolderToGetFolderResponseInterface(
-    folder: FolderEntity,
-    showFlashcards = false,
-  ): Promise<GetFolderResponseInterface> {
-    return {
-      id: folder.id,
-      title: folder.title,
-      description: folder.description,
-      isPublic: folder.isPublic,
-      studySetCount: folder.studySets.length,
-      ownerId: folder.owner.id,
-      user: {
-        id: folder.owner.id,
-        username: folder.owner.username,
-        avatarUrl: `${process.env.HOST}/public/images/avatar/${folder.owner.avatarUrl}.jpg`,
-        role: folder.owner.role,
-      },
-      studySets: showFlashcards
-        ? folder.studySets.map((studySet) => ({
-            id: studySet.id,
-            title: studySet.title,
-            flashcardCount: studySet.flashcards
-              ? studySet.flashcards.length
-              : 0,
-            owner: {
-              id: studySet.owner.id,
-              username: studySet.owner.username,
-              avatarUrl: studySet.owner.avatarUrl,
-              role: studySet.owner.role,
-            },
-          }))
-        : [],
-      createdAt: folder.createdAt,
-      updatedAt: folder.updatedAt,
-    };
-  }
-
   async updateFolder(
     updateFoldersByIdDto: UpdateFolderByIdDto,
     updateFolderDto: UpdateFolderDto,
@@ -165,7 +128,7 @@ export class FolderRepository extends Repository<FolderEntity> {
 
     try {
       await this.save(folder);
-      return this.mapFolderToGetFolderResponseInterface(folder, true);
+      return this.mapFolderToGetFolderResponseInterface(folder, false, false);
     } catch (error) {
       console.error('Error updating folder:', error);
       throw new Error('Error updating folder');
@@ -221,7 +184,7 @@ export class FolderRepository extends Repository<FolderEntity> {
 
     await this.save(folder);
 
-    return this.mapFolderToGetFolderResponseInterface(folder, true);
+    return this.mapFolderToGetFolderResponseInterface(folder, false, false);
   }
 
   async removeStudySetsFromFolder(
@@ -257,7 +220,7 @@ export class FolderRepository extends Repository<FolderEntity> {
 
     await this.save(folder);
 
-    return this.mapFolderToGetFolderResponseInterface(folder, true);
+    return this.mapFolderToGetFolderResponseInterface(folder, false, false);
   }
 
   async deleteFolder(deleteFolderByIdDto: DeleteFolderByIdDto): Promise<void> {
@@ -296,8 +259,68 @@ export class FolderRepository extends Repository<FolderEntity> {
 
     return Promise.all(
       folders.map((folder) =>
-        this.mapFolderToGetFolderResponseInterface(folder, true),
+        this.mapFolderToGetFolderResponseInterface(folder, false),
       ),
     );
+  }
+
+  async mapFolderToGetFolderResponseInterface(
+    folder: FolderEntity,
+    showFlashcards = false,
+    showUser = true,
+  ): Promise<GetFolderResponseInterface> {
+    return {
+      id: folder.id,
+      title: folder.title,
+      description: folder.description,
+      isPublic: folder.isPublic,
+      studySetCount: folder.studySets.length,
+      ownerId: folder.owner.id,
+      user: showUser
+        ? {
+            id: folder.owner.id,
+            username: folder.owner.username,
+            avatarUrl: `${process.env.HOST}/public/images/avatar/${folder.owner.avatarUrl}.jpg`,
+            role: folder.owner.role,
+          }
+        : undefined,
+      studySets: showFlashcards
+        ? folder.studySets.map((studySet) => ({
+            id: studySet.id,
+            title: studySet.title,
+            description: studySet.description,
+            isPublic: studySet.isPublic,
+            ownerId: studySet.owner.id,
+            flashCardCount: studySet.flashcards
+              ? studySet.flashcards.length
+              : 0,
+            linkShareCode: studySet.link,
+            flashcards: [],
+            subject: studySet.subject
+              ? {
+                  id: studySet.subject.id,
+                  name: studySet.subject.name,
+                }
+              : undefined,
+            user: {
+              id: studySet.owner.id,
+              username: studySet.owner.username,
+              avatarUrl: `${process.env.HOST}/public/images/avatar/${studySet.owner.avatarUrl}.jpg`,
+              role: studySet.owner.role,
+            },
+            color: studySet.color
+              ? {
+                  id: studySet.color.id,
+                  name: studySet.color.name,
+                  hexValue: studySet.color.hexValue,
+                }
+              : undefined,
+            createdAt: studySet.createdAt,
+            updatedAt: studySet.updatedAt,
+          }))
+        : [],
+      createdAt: folder.createdAt,
+      updatedAt: folder.updatedAt,
+    };
   }
 }
