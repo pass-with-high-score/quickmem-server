@@ -248,7 +248,12 @@ export class FolderRepository extends Repository<FolderEntity> {
 
     const [folders, total] = await this.findAndCount({
       where: { title: ILike(`%${title}%`), isPublic: true },
-      relations: ['owner', 'studySets', 'studySets.owner'],
+      relations: [
+        'owner',
+        'studySets',
+        'studySets.owner',
+        'studySets.flashcards',
+      ],
       take: size,
       skip: page * size,
     });
