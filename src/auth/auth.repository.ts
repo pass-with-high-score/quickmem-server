@@ -620,6 +620,12 @@ export class AuthRepository extends Repository<UserEntity> {
       logger.error(
         `Failed to update avatar for user ID ${id}: ${error.message}`,
       );
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      if (error instanceof ConflictException) {
+        throw error;
+      }
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Failed to update avatar',
