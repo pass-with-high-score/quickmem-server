@@ -95,6 +95,7 @@ export class FolderController {
   }
 
   @Delete('/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deleteFolder(
     @Param() deleteFolderByIdDto: DeleteFolderByIdDto,
   ): Promise<void> {

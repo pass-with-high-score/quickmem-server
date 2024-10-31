@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { DataSource, ILike, In, Repository } from 'typeorm';
 import { FolderEntity } from './entities/folder.entity';
 import { CreateFolderDto } from './dto/bodies/create-folder.dto';
@@ -237,8 +241,12 @@ export class FolderRepository extends Repository<FolderEntity> {
       throw new NotFoundException('Folder not found');
     }
 
-    await this.remove(folder);
-    throw new NotFoundException('Folder deleted successfully');
+    try {
+      await this.remove(folder);
+    } catch (error) {
+      console.error('Error deleting folder:', error);
+      throw new InternalServerErrorException('Error deleting folder');
+    }
   }
 
   async searchFolderByTitle(
