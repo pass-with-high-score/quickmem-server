@@ -28,7 +28,6 @@ import { AddStudySetsToClassDto } from './dto/bodies/add-study-sets-to-class.dto
 import { StudySetEntity } from '../study-set/entities/study-set.entity';
 import { RemoveStudySetsFromClassDto } from './dto/bodies/remove-study-sets-from-class.dto';
 import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-class.dto';
-import process from 'node:process';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
