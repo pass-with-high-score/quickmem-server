@@ -662,6 +662,7 @@ export class ClassRepository extends Repository<ClassEntity> {
       description: classEntity.description,
       owner: {
         id: classEntity.owner.id,
+        role: classEntity.owner.role,
         username: classEntity.owner.username,
         avatarUrl: `${process.env.HOST}/public/images/avatar/${classEntity.owner.avatarUrl}.jpg`,
       },

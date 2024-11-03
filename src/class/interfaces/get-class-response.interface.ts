@@ -7,6 +7,7 @@ export interface GetClassResponseInterface {
   description?: string;
   owner: {
     id: string;
+    role: string;
     username: string;
     avatarUrl: string;
   };
