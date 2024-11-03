@@ -290,7 +290,6 @@ export class FolderRepository extends Repository<FolderEntity> {
       description: folder.description,
       isPublic: folder.isPublic,
       studySetCount: folder.studySets.length,
-      ownerId: folder.owner.id,
       user: showUser
         ? {
             id: folder.owner.id,
