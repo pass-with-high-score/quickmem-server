@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -169,7 +170,7 @@ export class FolderRepository extends Repository<FolderEntity> {
     }
 
     if (studySets.some((studySet) => studySet.owner.id !== folder.owner.id)) {
-      throw new NotFoundException(
+      throw new ConflictException(
         'One or more study sets do not belong to user',
       );
     }
@@ -179,7 +180,7 @@ export class FolderRepository extends Repository<FolderEntity> {
         studySet.folders.some((f) => f.id === folder.id),
       )
     ) {
-      throw new NotFoundException('One or more study sets already in folder');
+      throw new ConflictException('One or more study sets already in folder');
     }
 
     folder.studySets = [
