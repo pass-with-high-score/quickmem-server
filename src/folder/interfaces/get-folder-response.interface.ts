@@ -4,7 +4,7 @@ export interface GetFolderResponseInterface {
   id: string;
   title: string;
   description?: string;
-  isPublic: boolean;
+  isPublic?: boolean;
   studySetCount: number;
   user: {
     id: string;
@@ -12,7 +12,7 @@ export interface GetFolderResponseInterface {
     avatarUrl: string;
     role: string;
   };
-  studySets: GetAllStudySetResponseInterface[];
-  createdAt: Date;
-  updatedAt: Date;
+  studySets?: GetAllStudySetResponseInterface[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }

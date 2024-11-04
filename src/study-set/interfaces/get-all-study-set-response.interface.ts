@@ -3,12 +3,11 @@ import { FlashcardResponseInterface } from '../../flashcard/interface/flashcard-
 export interface GetAllStudySetResponseInterface {
   id: string;
   title: string;
-  description: string;
-  isPublic: boolean;
-  ownerId: string;
-  flashCardCount: number;
-  linkShareCode: string;
-  flashcards: FlashcardResponseInterface[];
+  description?: string;
+  isPublic?: boolean;
+  flashCardCount?: number;
+  linkShareCode?: string;
+  flashcards?: FlashcardResponseInterface[];
   subject?: {
     id: number;
     name: string;
@@ -24,6 +23,6 @@ export interface GetAllStudySetResponseInterface {
     name: string;
     hexValue: string;
   };
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

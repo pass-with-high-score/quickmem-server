@@ -1,9 +1,9 @@
 export interface GetClassResponseInterface {
   id: string;
   title: string;
-  joinToken: string;
-  allowSetManagement: boolean;
-  allowMemberManagement: boolean;
+  joinToken?: string;
+  allowSetManagement?: boolean;
+  allowMemberManagement?: boolean;
   description?: string;
   owner: {
     id: string;
@@ -11,15 +11,15 @@ export interface GetClassResponseInterface {
     username: string;
     avatarUrl: string;
   };
-  memberCount: number;
-  studySetCount: number;
-  folderCount: number;
-  members: {
+  memberCount?: number;
+  studySetCount?: number;
+  folderCount?: number;
+  members?: {
     id: string;
     username: string;
     avatarUrl: string;
   }[];
-  studySets: {
+  studySets?: {
     id: string;
     title: string;
     flashcardCount: number;
@@ -31,7 +31,7 @@ export interface GetClassResponseInterface {
     createdAt: Date;
     updatedAt: Date;
   }[];
-  folders: {
+  folders?: {
     id: string;
     title: string;
     description?: string;

@@ -22,6 +22,9 @@ import { UpdateCoinResponseInterface } from './interfaces/update-coin-response.i
 import { UpdateAvatarParamDto } from './dto/params/update-avatar-param.dto';
 import { UpdateAvatarDto } from './dto/bodies/update-avatar.dto';
 import { UpdateAvatarInterface } from './interfaces/update-avatar.interface';
+import { GetUserDetailBodyDto } from './dto/bodies/get-user-detail-body.dto';
+import { GetUserDetailParamDto } from './dto/params/get-user-detail-param.dto';
+import { UserDetailResponseInterface } from './interfaces/user-detail-response.interface';
 
 @Injectable()
 export class AuthService {
@@ -140,6 +143,16 @@ export class AuthService {
     return this.usersRepository.updateAvatar(
       updateAvatarParamDto,
       updateAvatarDto,
+    );
+  }
+
+  async getUserProfileDetail(
+    getUserDetailBodyDto: GetUserDetailBodyDto,
+    getUserDetailParamDto: GetUserDetailParamDto,
+  ): Promise<UserDetailResponseInterface> {
+    return this.usersRepository.getUserProfileDetail(
+      getUserDetailBodyDto,
+      getUserDetailParamDto,
     );
   }
 }

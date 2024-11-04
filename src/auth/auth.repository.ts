@@ -37,6 +37,12 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { UpdateAvatarParamDto } from './dto/params/update-avatar-param.dto';
 import { UpdateAvatarDto } from './dto/bodies/update-avatar.dto';
 import { UpdateAvatarInterface } from './interfaces/update-avatar.interface';
+import { UserDetailResponseInterface } from './interfaces/user-detail-response.interface';
+import { GetUserDetailParamDto } from './dto/params/get-user-detail-param.dto';
+import { GetUserDetailBodyDto } from './dto/bodies/get-user-detail-body.dto';
+import { ClassEntity } from '../class/entities/class.entity';
+import { FolderEntity } from '../folder/entities/folder.entity';
+import { StudySetEntity } from '../study-set/entities/study-set.entity';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -631,6 +637,115 @@ export class AuthRepository extends Repository<UserEntity> {
         message: 'Failed to update avatar',
       });
     }
+  }
+
+  async getUserProfileDetail(
+    getUserDetailBodyDto: GetUserDetailBodyDto,
+    getUserDetailParamDto: GetUserDetailParamDto,
+  ): Promise<UserDetailResponseInterface> {
+    const { id } = getUserDetailParamDto;
+    const { isOwner } = getUserDetailBodyDto;
+
+    logger.info(`Getting user profile detail for user ID ${id}`);
+
+    // Step 1: Fetch basic user information
+    const user = await this.findOne({
+      where: { id },
+      select: ['id', 'username', 'fullName', 'role', 'avatarUrl'],
+    });
+
+    if (!user) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    // Step 2: Fetch study sets separately
+    const studySets = await this.dataSource.getRepository(StudySetEntity).find({
+      where: { owner: { id }, isPublic: isOwner ? undefined : true },
+      relations: ['color', 'subject', 'flashcards', 'owner'],
+    });
+
+    const formattedStudySets = studySets.map((studySet) => ({
+      id: studySet.id,
+      title: studySet.title,
+      flashcardCount: studySet.flashcards.length,
+      user: {
+        id: studySet.owner.id,
+        username: studySet.owner.username,
+        avatarUrl: `${process.env.HOST}/public/images/avatar/${studySet.owner.avatarUrl}.jpg`,
+        role: studySet.owner.role,
+      },
+      color: {
+        id: studySet.color.id,
+        name: studySet.color.name,
+        hexValue: studySet.color.hexValue,
+      },
+      subject: {
+        id: studySet.subject.id,
+        name: studySet.subject.name,
+      },
+      createdAt: studySet.createdAt,
+      updatedAt: studySet.updatedAt,
+    }));
+
+    // Step 3: Fetch folders separately
+    const folders = await this.dataSource.getRepository(FolderEntity).find({
+      where: { owner: { id }, isPublic: isOwner ? undefined : true },
+      relations: ['studySets', 'owner'],
+    });
+
+    const formattedFolders = folders.map((folder) => ({
+      id: folder.id,
+      title: folder.title,
+      description: folder.description,
+      isPublic: folder.isPublic,
+      studySetCount: folder.studySets.length,
+      user: {
+        id: folder.owner.id,
+        username: folder.owner.username,
+        avatarUrl: `${process.env.HOST}/public/images/avatar/${folder.owner.avatarUrl}.jpg`,
+        role: folder.owner.role,
+      },
+      createdAt: folder.createdAt,
+      updatedAt: folder.updatedAt,
+    }));
+
+    // Step 4: Fetch classes separately
+    const classes = await this.dataSource.getRepository(ClassEntity).find({
+      where: { owner: { id } },
+      relations: ['studySets', 'owner'],
+    });
+
+    const formattedClasses = classes.map((classItem) => ({
+      id: classItem.id,
+      title: classItem.title,
+      description: classItem.description,
+      owner: {
+        id: classItem.owner.id,
+        role: classItem.owner.role,
+        username: classItem.owner.username,
+        avatarUrl: `${process.env.HOST}/public/images/avatar/${classItem.owner.avatarUrl}.jpg`,
+      },
+      studySetCount: classItem.studySets.length,
+      createdAt: classItem.createdAt,
+      updatedAt: classItem.updatedAt,
+    }));
+
+    // Step 5: Construct response
+    const avatar = `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.jpg`;
+
+    return {
+      id: user.id,
+      username: user.username,
+      fullname: user.fullName,
+      role: user.role,
+      avatarUrl: avatar,
+      studySets: formattedStudySets,
+      folders: formattedFolders,
+      classes: formattedClasses,
+    };
   }
 
   async isUserPremium(userId: string): Promise<boolean> {

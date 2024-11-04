@@ -39,6 +39,9 @@ import { UpdateAvatarParamDto } from './dto/params/update-avatar-param.dto';
 import { UpdateAvatarDto } from './dto/bodies/update-avatar.dto';
 import { UpdateAvatarInterface } from './interfaces/update-avatar.interface';
 import { AuthGuard } from '@nestjs/passport';
+import { GetUserDetailBodyDto } from './dto/bodies/get-user-detail-body.dto';
+import { GetUserDetailParamDto } from './dto/params/get-user-detail-param.dto';
+import { UserDetailResponseInterface } from './interfaces/user-detail-response.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -46,6 +49,7 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
+  @HttpCode(HttpStatus.OK)
   googleAuthRedirect(@Req() request: Request, @Res() response: Response) {
     console.log('User information from Google', request.user);
     const user = request.user as any;
@@ -75,6 +79,7 @@ export class AuthController {
 
   @Get('facebook')
   @UseGuards(FacebookAuthGuard)
+  @HttpCode(HttpStatus.OK)
   async facebookAuth(@Req() request: Request) {
     // Guard sẽ xử lý yêu cầu đến Facebook OAuth
     console.log('User information from Facebook', request.user);
@@ -82,6 +87,7 @@ export class AuthController {
 
   @Get('facebook/callback')
   @UseGuards(FacebookAuthGuard)
+  @HttpCode(HttpStatus.OK)
   facebookAuthRedirect(@Req() request: Request, @Res() response: Response) {
     console.log('User information from Facebook', request.user);
     const user = request.user as any;
@@ -96,6 +102,19 @@ export class AuthController {
     });
     const deepLinkUrl = `quickmem://oauth/facebook/callback?${params.toString()}`;
     return response.redirect(deepLinkUrl);
+  }
+
+  @Get('/me/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  async getUserProfileDetail(
+    @Body() getUserDetailBodyDto: GetUserDetailBodyDto,
+    @Param() getUserDetailParamDto: GetUserDetailParamDto,
+  ): Promise<UserDetailResponseInterface> {
+    return this.authService.getUserProfileDetail(
+      getUserDetailBodyDto,
+      getUserDetailParamDto,
+    );
   }
 
   @SkipThrottle()

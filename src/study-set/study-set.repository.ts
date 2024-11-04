@@ -723,7 +723,6 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       isPublic: studySet.isPublic,
       createdAt: studySet.createdAt,
       updatedAt: studySet.updatedAt,
-      ownerId: studySet.owner ? studySet.owner.id : undefined,
       linkShareCode: studySet.link,
       subject: studySet.subject
         ? {
