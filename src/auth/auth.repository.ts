@@ -43,6 +43,8 @@ import { GetUserDetailBodyDto } from './dto/bodies/get-user-detail-body.dto';
 import { ClassEntity } from '../class/entities/class.entity';
 import { FolderEntity } from '../folder/entities/folder.entity';
 import { StudySetEntity } from '../study-set/entities/study-set.entity';
+import { VerifyPasswordBodyDto } from './dto/bodies/verify-password-body.dto';
+import { VerifyPasswordResponseInterface } from './interfaces/verify-password-response.interface';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -745,6 +747,28 @@ export class AuthRepository extends Repository<UserEntity> {
       studySets: formattedStudySets,
       folders: formattedFolders,
       classes: formattedClasses,
+    };
+  }
+
+  async verifyPassword(
+    verifyPasswordDto: VerifyPasswordBodyDto,
+  ): Promise<VerifyPasswordResponseInterface> {
+    const { userId, password } = verifyPasswordDto;
+    const user = await this.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isPasswordMatching = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordMatching) {
+      throw new UnauthorizedException('Incorrect password');
+    }
+
+    return {
+      success: true,
+      message: 'Password verified successfully',
     };
   }
 

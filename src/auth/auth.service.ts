@@ -25,6 +25,8 @@ import { UpdateAvatarInterface } from './interfaces/update-avatar.interface';
 import { GetUserDetailBodyDto } from './dto/bodies/get-user-detail-body.dto';
 import { GetUserDetailParamDto } from './dto/params/get-user-detail-param.dto';
 import { UserDetailResponseInterface } from './interfaces/user-detail-response.interface';
+import { VerifyPasswordBodyDto } from './dto/bodies/verify-password-body.dto';
+import { VerifyPasswordResponseInterface } from './interfaces/verify-password-response.interface';
 
 @Injectable()
 export class AuthService {
@@ -154,5 +156,11 @@ export class AuthService {
       getUserDetailBodyDto,
       getUserDetailParamDto,
     );
+  }
+
+  async verifyPassword(
+    verifyPasswordDto: VerifyPasswordBodyDto,
+  ): Promise<VerifyPasswordResponseInterface> {
+    return this.usersRepository.verifyPassword(verifyPasswordDto);
   }
 }

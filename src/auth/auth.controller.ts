@@ -42,6 +42,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { GetUserDetailBodyDto } from './dto/bodies/get-user-detail-body.dto';
 import { GetUserDetailParamDto } from './dto/params/get-user-detail-param.dto';
 import { UserDetailResponseInterface } from './interfaces/user-detail-response.interface';
+import { VerifyPasswordBodyDto } from './dto/bodies/verify-password-body.dto';
+import { VerifyPasswordResponseInterface } from './interfaces/verify-password-response.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -157,6 +159,15 @@ export class AuthController {
   @Post('/verify-otp')
   async verifyOtp(@Body() dto: VerifyOtpDto): Promise<AuthResponseInterface> {
     return this.authService.verifyOtp(dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/verify-password')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  async verifyPassword(
+    @Body() verifyPasswordDto: VerifyPasswordBodyDto,
+  ): Promise<VerifyPasswordResponseInterface> {
+    return this.authService.verifyPassword(verifyPasswordDto);
   }
 
   @Throttle({ default: { limit: 3, ttl: 60000 } })
