@@ -25,11 +25,10 @@ import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
-import { AddFoldersToClassDto } from './dto/bodies/add-folders-to-class.dto';
-import { RemoveFoldersFromClassDto } from './dto/bodies/remove-folders-from-class.dto';
-import { AddStudySetsToClassDto } from './dto/bodies/add-study-sets-to-class.dto';
-import { RemoveStudySetsFromClassDto } from './dto/bodies/remove-study-sets-from-class.dto';
+import { UpdateFoldersInClassDto } from './dto/bodies/update-folders-in-class.dto';
+import { UpdateStudySetsInClassDto } from './dto/bodies/update-study-sets-in-class.dto';
 import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-class.dto';
+import { UpdateItemInClassResponseInterface } from './interfaces/update-item-in-class-response.interface';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -98,36 +97,18 @@ export class ClassController {
 
   @Post('/folders')
   @HttpCode(HttpStatus.CREATED)
-  async addFoldersToClass(
-    @Body() addFoldersToClassDto: AddFoldersToClassDto,
-  ): Promise<GetClassResponseInterface> {
-    return this.classService.addFoldersToClass(addFoldersToClassDto);
+  async updateClassFolders(
+   @Body() updateFoldersInClassDto: UpdateFoldersInClassDto,
+  ): Promise<UpdateItemInClassResponseInterface> {
+    return this.classService.updateClassFolders(updateFoldersInClassDto);
   }
 
   @Post('/study-sets')
   @HttpCode(HttpStatus.CREATED)
-  async addStudySetsToClass(
-    @Body() addStudySetsToClassDto: AddStudySetsToClassDto,
-  ): Promise<GetClassResponseInterface> {
-    return this.classService.addStudySetsToClass(addStudySetsToClassDto);
-  }
-
-  @Delete('/folders')
-  @HttpCode(HttpStatus.OK)
-  async removeFoldersFromClass(
-    @Body() removeFoldersFromClassDto: RemoveFoldersFromClassDto,
-  ): Promise<GetClassResponseInterface> {
-    return this.classService.removeFoldersFromClass(removeFoldersFromClassDto);
-  }
-
-  @Delete('/study-sets')
-  @HttpCode(HttpStatus.OK)
-  async removeStudySetsFromClass(
-    @Body() removeStudySetsFromClassDto: RemoveStudySetsFromClassDto,
-  ): Promise<GetClassResponseInterface> {
-    return this.classService.removeStudySetsFromClass(
-      removeStudySetsFromClassDto,
-    );
+  async updateStudySetsInClass(
+    @Body() updateStudySetsInClassDto: UpdateStudySetsInClassDto,
+  ): Promise<UpdateItemInClassResponseInterface> {
+    return this.classService.updateStudySetsInClass(updateStudySetsInClassDto);
   }
 
   @Delete('/members')

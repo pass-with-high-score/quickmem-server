@@ -21,13 +21,12 @@ import { randomBytes } from 'crypto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
 import { logger } from '../winston-logger.service';
-import { AddFoldersToClassDto } from './dto/bodies/add-folders-to-class.dto';
-import { RemoveFoldersFromClassDto } from './dto/bodies/remove-folders-from-class.dto';
+import { UpdateFoldersInClassDto } from './dto/bodies/update-folders-in-class.dto';
 import { FolderEntity } from '../folder/entities/folder.entity';
-import { AddStudySetsToClassDto } from './dto/bodies/add-study-sets-to-class.dto';
+import { UpdateStudySetsInClassDto } from './dto/bodies/update-study-sets-in-class.dto';
 import { StudySetEntity } from '../study-set/entities/study-set.entity';
-import { RemoveStudySetsFromClassDto } from './dto/bodies/remove-study-sets-from-class.dto';
 import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-class.dto';
+import { UpdateItemInClassResponseInterface } from './interfaces/update-item-in-class-response.interface';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -375,10 +374,10 @@ export class ClassRepository extends Repository<ClassEntity> {
     }
   }
 
-  async addFoldersToClass(
-    addFoldersToClassDto: AddFoldersToClassDto,
-  ): Promise<GetClassResponseInterface> {
-    const { classId, userId, folderIds } = addFoldersToClassDto;
+  async updateClassFolders(
+    updateFoldersInClassDto: UpdateFoldersInClassDto,
+  ): Promise<UpdateItemInClassResponseInterface> {
+    const { classId, userId, folderIds } = updateFoldersInClassDto;
 
     const classEntity = await this.findClassAndValidatePermissions(
       classId,
@@ -403,78 +402,32 @@ export class ClassRepository extends Repository<ClassEntity> {
       'folder',
     );
 
+    if (folders.length !== folderIds.length) {
+      throw new NotFoundException('One or more folders not found');
+    }
+
     // Check if all folders belong to the user
     await this.validateOwnershipOrManagement(folders, userId, 'folder');
 
-    // Check if any folder is already added to the class
-    for (const folder of folders) {
-      if (
-        classEntity.folders.some(
-          (existingFolder) => existingFolder.id === folder.id,
-        )
-      ) {
-        throw new ConflictException(
-          `Folder with id ${folder.id} is already added to the class`,
-        );
-      }
-    }
-
-    // Add folders to class
-    classEntity.folders = [...classEntity.folders, ...folders];
+    classEntity.folders = folders;
 
     try {
       await this.save(classEntity);
-      return this.mapClassEntityToResponse(classEntity);
+      return {
+        message: 'Folder update in class',
+        length: classEntity.folders.length,
+        success: true,
+      };
     } catch (error) {
       logger.error('Error adding folders to class:', error);
       throw new InternalServerErrorException('Error adding folders to class');
     }
   }
 
-  async removeFoldersFromClass(
-    removeFoldersFromClassDto: RemoveFoldersFromClassDto,
-  ): Promise<GetClassResponseInterface> {
-    const { classId, userId, folderIds } = removeFoldersFromClassDto;
-
-    const classEntity = await this.findClassAndValidatePermissions(
-      classId,
-      userId,
-      ['folders', 'owner', 'members', 'studySets'],
-      false,
-      true,
-    );
-
-    // Find folders
-    const folders = await this.findItemsByIds(
-      this.dataSource.getRepository(FolderEntity),
-      folderIds,
-      ['owner'],
-      'folder',
-    );
-
-    // Check if all folders belong to the user
-    await this.validateOwnershipOrManagement(folders, userId, 'folder');
-
-    // Remove folders from class
-    classEntity.folders = classEntity.folders.filter(
-      (existingFolder) => !folderIds.includes(existingFolder.id),
-    );
-
-    try {
-      await this.save(classEntity);
-      return this.mapClassEntityToResponse(classEntity);
-    } catch (error) {
-      logger.error('Error removing folders from class:', error);
-      throw new InternalServerErrorException(
-        'Error removing folders from class',
-      );
-    }
-  }
-
-  async addStudySetsToClass(
-    addStudySetsToClassDto: AddStudySetsToClassDto,
-  ): Promise<GetClassResponseInterface> {
-    const { classId, userId, studySetIds } = addStudySetsToClassDto;
+  async updateStudySetsInClass(
+    updateStudySetsInClassDto: UpdateStudySetsInClassDto,
+  ): Promise<UpdateItemInClassResponseInterface> {
+    const { classId, userId, studySetIds } = updateStudySetsInClassDto;
 
     const classEntity = await this.findClassAndValidatePermissions(
       classId,
@@ -499,79 +452,27 @@ export class ClassRepository extends Repository<ClassEntity> {
       'study set',
     );
 
+    if (studySets.length !== studySetIds.length) {
+      throw new NotFoundException('One or more study sets not found');
+    }
+
     // Check if all study sets belong to the user
     await this.validateOwnershipOrManagement(studySets, userId, 'study set');
 
-    // Check if any study set is already added to the class
-    for (const studySet of studySets) {
-      if (
-        classEntity.studySets.some(
-          (existingStudySet) => existingStudySet.id === studySet.id,
-        )
-      ) {
-        throw new ConflictException(
-          `Study set with id ${studySet.id} is already added to the class`,
-        );
-      }
-    }
-
     // Add study sets to class
-    classEntity.studySets = [...classEntity.studySets, ...studySets];
+    classEntity.studySets = studySets;
 
     try {
       await this.save(classEntity);
-      return this.mapClassEntityToResponse(classEntity);
+      return {
+        message: 'Study sets updated successfully',
+        success: true,
+        length: classEntity.studySets.length,
+      };
     } catch (error) {
       logger.error('Error adding study sets to class:', error);
       throw new InternalServerErrorException(
         'Error adding study sets to class',
-      );
-    }
-  }
-
-  async removeStudySetsFromClass(
-    removeStudySetsFromClassDto: RemoveStudySetsFromClassDto,
-  ): Promise<GetClassResponseInterface> {
-    const { classId, userId, studySetIds } = removeStudySetsFromClassDto;
-
-    const classEntity = await this.findClassAndValidatePermissions(
-      classId,
-      userId,
-      [
-        'owner',
-        'members',
-        'folders',
-        'studySets',
-        'folders.studySets',
-        'folders.owner',
-      ],
-      false,
-      true,
-    );
-
-    // Find study sets
-    const studySets = await this.findItemsByIds(
-      this.dataSource.getRepository(StudySetEntity),
-      studySetIds,
-      ['owner'],
-      'study set',
-    );
-
-    // Check if all study sets belong to the user
-    await this.validateOwnershipOrManagement(studySets, userId, 'study set');
-
-    // Remove study sets from class
-    classEntity.studySets = classEntity.studySets.filter(
-      (existingStudySet) => !studySetIds.includes(existingStudySet.id),
-    );
-
-    try {
-      await this.save(classEntity);
-      return this.mapClassEntityToResponse(classEntity);
-    } catch (error) {
-      logger.error('Error removing study sets from class:', error);
-      throw new InternalServerErrorException(
-        'Error removing study sets from class',
       );
     }
   }

@@ -9,14 +9,12 @@ import { UpdateClassByIdDto } from './dto/bodies/update-class-by-id.dto';
 import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.dto';
 import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
-import { AddMemberToClassDto } from './dto/bodies/add-member-to-class.dto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
-import { AddFoldersToClassDto } from './dto/bodies/add-folders-to-class.dto';
-import { RemoveFoldersFromClassDto } from './dto/bodies/remove-folders-from-class.dto';
-import { AddStudySetsToClassDto } from './dto/bodies/add-study-sets-to-class.dto';
-import { RemoveStudySetsFromClassDto } from './dto/bodies/remove-study-sets-from-class.dto';
+import { UpdateStudySetsInClassDto } from './dto/bodies/update-study-sets-in-class.dto';
 import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-class.dto';
+import { UpdateItemInClassResponseInterface } from './interfaces/update-item-in-class-response.interface';
+import { UpdateFoldersInClassDto } from './dto/bodies/update-folders-in-class.dto';
 
 @Injectable()
 export class ClassService {
@@ -72,31 +70,17 @@ export class ClassService {
     return this.classRepository.exitClass(exitClassDto);
   }
 
-  async addFoldersToClass(
-    addFoldersToClassDto: AddFoldersToClassDto,
-  ): Promise<GetClassResponseInterface> {
-    return this.classRepository.addFoldersToClass(addFoldersToClassDto);
+  async updateClassFolders(
+    updateFoldersInClassDto: UpdateFoldersInClassDto,
+  ): Promise<UpdateItemInClassResponseInterface> {
+    return this.classRepository.updateClassFolders(updateFoldersInClassDto);
   }
 
-  async removeFoldersFromClass(
-    removeFoldersFromClassDto: RemoveFoldersFromClassDto,
-  ): Promise<GetClassResponseInterface> {
-    return this.classRepository.removeFoldersFromClass(
-      removeFoldersFromClassDto,
-    );
-  }
-
-  async addStudySetsToClass(
-    addStudySetsToClassDto: AddStudySetsToClassDto,
-  ): Promise<GetClassResponseInterface> {
-    return this.classRepository.addStudySetsToClass(addStudySetsToClassDto);
-  }
-
-  async removeStudySetsFromClass(
-    removeStudySetsFromClassDto: RemoveStudySetsFromClassDto,
-  ): Promise<GetClassResponseInterface> {
-    return this.classRepository.removeStudySetsFromClass(
-      removeStudySetsFromClassDto,
+  async updateStudySetsInClass(
+    updateStudySetsInClassDto: UpdateStudySetsInClassDto,
+  ): Promise<UpdateItemInClassResponseInterface> {
+    return this.classRepository.updateStudySetsInClass(
+      updateStudySetsInClassDto,
     );
   }
 
