@@ -19,12 +19,12 @@ import { AuthGuard } from '@nestjs/passport';
 import { GetFoldersByOwnerIdDto } from './dto/params/get-folders-by-owner-id.dto';
 import { GetFolderResponseInterface } from './interfaces/get-folder-response.interface';
 import { GetFoldersByIdDto } from './dto/params/get-folders-by-id.dto';
-import { AddStudySetsToFolderDto } from './dto/bodies/add-study-sets-to-folder.dto';
+import { UpdateStudySetsInFolderDto } from './dto/bodies/update-study-sets-in-folder.dto';
 import { UpdateFolderByIdDto } from './dto/params/update-folder-by-id.dto';
 import { UpdateFolderDto } from './dto/bodies/update-folder.dto';
-import { RemoveStudySetsFromFolderDto } from './dto/bodies/remove-study-sets-from-folder.dto';
 import { DeleteFolderByIdDto } from './dto/params/delete-folder-by-id.dto';
 import { SearchFolderByTitleDto } from './dto/queries/search-folder-by-title';
+import { UpdateStudySetsInFolderResponseInterface } from './interfaces/update-study-sets-in-folder-response.interface';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -70,10 +70,12 @@ export class FolderController {
 
   @Post('/study-sets')
   @HttpCode(HttpStatus.CREATED)
-  async addStudySetsToFolder(
-    @Body() addStudySetsToFolderDto: AddStudySetsToFolderDto,
-  ): Promise<GetFolderResponseInterface> {
-    return this.folderService.addStudySetsToFolder(addStudySetsToFolderDto);
+  async updateStudySetsInFolder(
+    @Body() updateStudySetsInFolderDto: UpdateStudySetsInFolderDto,
+  ): Promise<UpdateStudySetsInFolderResponseInterface> {
+    return this.folderService.updateStudySetsInFolder(
+      updateStudySetsInFolderDto,
+    );
   }
 
   @Post()
@@ -82,16 +84,6 @@ export class FolderController {
     @Body() createFolderDto: CreateFolderDto,
   ): Promise<FolderResponseInterface> {
     return this.folderService.createFolder(createFolderDto);
-  }
-
-  @Delete('/study-sets')
-  @HttpCode(HttpStatus.OK)
-  async removeStudySetsFromFolder(
-    @Body() removeStudySetsFromFolderDto: RemoveStudySetsFromFolderDto,
-  ): Promise<GetFolderResponseInterface> {
-    return this.folderService.removeStudySetsFromFolder(
-      removeStudySetsFromFolderDto,
-    );
   }
 
   @Delete('/:id')

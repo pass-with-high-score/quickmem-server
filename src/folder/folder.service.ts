@@ -5,12 +5,12 @@ import { FolderResponseInterface } from './interfaces/folder-response.interface'
 import { GetFoldersByOwnerIdDto } from './dto/params/get-folders-by-owner-id.dto';
 import { GetFolderResponseInterface } from './interfaces/get-folder-response.interface';
 import { GetFoldersByIdDto } from './dto/params/get-folders-by-id.dto';
-import { AddStudySetsToFolderDto } from './dto/bodies/add-study-sets-to-folder.dto';
+import { UpdateStudySetsInFolderDto } from './dto/bodies/update-study-sets-in-folder.dto';
 import { UpdateFolderByIdDto } from './dto/params/update-folder-by-id.dto';
 import { UpdateFolderDto } from './dto/bodies/update-folder.dto';
-import { RemoveStudySetsFromFolderDto } from './dto/bodies/remove-study-sets-from-folder.dto';
 import { DeleteFolderByIdDto } from './dto/params/delete-folder-by-id.dto';
 import { SearchFolderByTitleDto } from './dto/queries/search-folder-by-title';
+import { UpdateStudySetsInFolderResponseInterface } from './interfaces/update-study-sets-in-folder-response.interface';
 
 @Injectable()
 export class FolderService {
@@ -34,12 +34,6 @@ export class FolderService {
     return this.folderRepository.getFolderById(getFoldersByIdDto);
   }
 
-  async addStudySetsToFolder(
-    addStudySetsToFolderDto: AddStudySetsToFolderDto,
-  ): Promise<GetFolderResponseInterface> {
-    return this.folderRepository.addStudySetsToFolder(addStudySetsToFolderDto);
-  }
-
   async updateFolder(
     updateFoldersByIdDto: UpdateFolderByIdDto,
     updateFolderDto: UpdateFolderDto,
@@ -47,14 +41,6 @@ export class FolderService {
     return this.folderRepository.updateFolder(
       updateFoldersByIdDto,
       updateFolderDto,
-    );
-  }
-
-  async removeStudySetsFromFolder(
-    removeStudySetsFromFolderDto: RemoveStudySetsFromFolderDto,
-  ): Promise<GetFolderResponseInterface> {
-    return this.folderRepository.removeStudySetsFromFolder(
-      removeStudySetsFromFolderDto,
     );
   }
 
@@ -66,5 +52,13 @@ export class FolderService {
     searchFolderByTitleDto: SearchFolderByTitleDto,
   ): Promise<GetFolderResponseInterface[]> {
     return this.folderRepository.searchFolderByTitle(searchFolderByTitleDto);
+  }
+
+  async updateStudySetsInFolder(
+    updateStudySetsInFolderDto: UpdateStudySetsInFolderDto,
+  ): Promise<UpdateStudySetsInFolderResponseInterface> {
+    return this.folderRepository.updateStudySetsInFolder(
+      updateStudySetsInFolderDto,
+    );
   }
 }

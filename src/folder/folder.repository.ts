@@ -12,13 +12,13 @@ import { UserEntity } from '../auth/entities/user.entity';
 import { GetFoldersByOwnerIdDto } from './dto/params/get-folders-by-owner-id.dto';
 import { GetFolderResponseInterface } from './interfaces/get-folder-response.interface';
 import { GetFoldersByIdDto } from './dto/params/get-folders-by-id.dto';
-import { AddStudySetsToFolderDto } from './dto/bodies/add-study-sets-to-folder.dto';
+import { UpdateStudySetsInFolderDto } from './dto/bodies/update-study-sets-in-folder.dto';
 import { StudySetEntity } from '../study-set/entities/study-set.entity';
 import { UpdateFolderDto } from './dto/bodies/update-folder.dto';
 import { UpdateFolderByIdDto } from './dto/params/update-folder-by-id.dto';
-import { RemoveStudySetsFromFolderDto } from './dto/bodies/remove-study-sets-from-folder.dto';
 import { DeleteFolderByIdDto } from './dto/params/delete-folder-by-id.dto';
 import { SearchFolderByTitleDto } from './dto/queries/search-folder-by-title';
+import { UpdateStudySetsInFolderResponseInterface } from './interfaces/update-study-sets-in-folder-response.interface';
 
 @Injectable()
 export class FolderRepository extends Repository<FolderEntity> {
@@ -146,11 +146,10 @@ export class FolderRepository extends Repository<FolderEntity> {
     }
   }
 
-  async addStudySetsToFolder(
-    addStudySetsToFolderDto: AddStudySetsToFolderDto,
-  ): Promise<GetFolderResponseInterface> {
-    const { folderId, studySetIds } = addStudySetsToFolderDto;
-
+  async updateStudySetsInFolder(
+    updateStudySetsInFolderDto: UpdateStudySetsInFolderDto,
+  ): Promise<UpdateStudySetsInFolderResponseInterface> {
+    const { folderId, studySetIds } = updateStudySetsInFolderDto;
     const folder = await this.findOne({
       where: { id: folderId },
       relations: ['studySets', 'studySets.owner', 'owner'],
@@ -160,11 +159,11 @@ export class FolderRepository extends Repository<FolderEntity> {
       throw new NotFoundException('Folder not found');
     }
 
+    // Fetch all the study sets corresponding to the provided IDs.
     const studySets = await this.dataSource.getRepository(StudySetEntity).find({
       where: { id: In(studySetIds) },
-      relations: ['owner', 'flashcards', 'folders'],
+      relations: ['owner'],
     });
-
     if (studySets.length !== studySetIds.length) {
       throw new NotFoundException('One or more study sets not found');
     }
@@ -175,63 +174,20 @@ export class FolderRepository extends Repository<FolderEntity> {
       );
     }
 
-    if (
-      studySets.some((studySet) =>
-        studySet.folders.some((f) => f.id === folder.id),
-      )
-    ) {
-      throw new ConflictException('One or more study sets already in folder');
+    // Update folder's study sets based on the provided IDs
+    folder.studySets = studySets;
+
+    try {
+      await this.save(folder);
+      return {
+        success: true,
+        length: studySets.length,
+        message: 'Study sets updated in folder',
+      };
+    } catch (error) {
+      console.error('Error updating folder:', error);
+      throw new InternalServerErrorException('Error updating folder');
     }
-
-    folder.studySets = [
-      ...folder.studySets,
-      ...studySets.filter(
-        (studySet) =>
-          !folder.studySets.some(
-            (existingSet) => existingSet.id === studySet.id,
-          ),
-      ),
-    ];
-
-    await this.save(folder);
-
-    return this.mapFolderToGetFolderResponseInterface(folder, false, false);
-  }
-
-  async removeStudySetsFromFolder(
-    removeStudySetsFromFolderDto: RemoveStudySetsFromFolderDto,
-  ): Promise<GetFolderResponseInterface> {
-    const { folderId, studySetIds } = removeStudySetsFromFolderDto;
-
-    const folder = await this.findOne({
-      where: { id: folderId },
-      relations: [
-        'studySets',
-        'studySets.owner',
-        'owner',
-        'studySets.flashcards',
-      ],
-    });
-
-    if (!folder) {
-      throw new NotFoundException('Folder not found');
-    }
-
-    const studySetsToRemove = folder.studySets.filter((set) =>
-      studySetIds.includes(set.id),
-    );
-
-    if (studySetsToRemove.length !== studySetIds.length) {
-      throw new NotFoundException('One or more study sets not found in folder');
-    }
-
-    folder.studySets = folder.studySets.filter(
-      (set) => !studySetIds.includes(set.id),
-    );
-
-    await this.save(folder);
-
-    return this.mapFolderToGetFolderResponseInterface(folder, false, false);
   }
 
   async deleteFolder(deleteFolderByIdDto: DeleteFolderByIdDto): Promise<void> {
