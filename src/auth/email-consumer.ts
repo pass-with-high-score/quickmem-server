@@ -188,6 +188,7 @@ export class EmailConsumer {
       console.error('Error sending email:', error);
     }
   }
+
   @Process('update-password-success')
   async sendUpdatePasswordSuccessEmail(
     job: Job<MailUpdatePasswordSuccessInterface>,
@@ -217,6 +218,108 @@ export class EmailConsumer {
       console.log('Email sent successfully');
     } catch (error) {
       console.error('Error sending email:', error);
+    }
+  }
+
+  @Process('send-verification-email')
+  async sendVerificationEmail(job: Job<any>) {
+    const { data } = job;
+    console.log('Sending verification email to', data);
+    try {
+      await this.mailService.sendMail({
+        to: data.email,
+        from: data.from,
+        subject: 'Email Verification',
+        html: `
+      <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+        <div 
+          style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+          <h2 style="color: #333;">Hello there,</h2>
+          <p style="font-size: 16px; color: #555;">
+            You recently changed the email address associated with your Quizlet account to ${data.email}. Select the button below to confirm your account and you'll be on your way!
+          </p>
+          <div style="text-align: center; margin: 20px 0;">
+            <a 
+              href="${process.env.HOST}/auth/verify-email?token=${data.tokenTempEmail}&userId=${data.userId}" 
+              style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">
+              Confirm new email
+            </a>
+          </div>
+          <p style="font-size: 16px; color: #555;">
+            If you did not change your email address, please contact Quizlet support.
+          </p>
+          <p style="font-size: 16px; color: #555;">
+            Learn on!
+          </p>
+          <p style="font-size: 16px; color: #555;">
+            The Quizlet Team
+          </p>
+        </div>
+      </div>
+      `,
+      });
+      console.log('Verification email sent successfully');
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+    }
+  }
+
+  @Process('update-email-success')
+  async sendVerificationEmailAfterUpdate(job: Job<any>) {
+    const { data } = job;
+    console.log('Sending verification emails to', data);
+
+    try {
+      // Send email to old address
+      await this.mailService.sendMail({
+        to: data.oldEmail,
+        from: data.from,
+        subject: 'Email Address Changed for Your Account',
+        html: `
+      <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+          <h2 style="color: #333;">Hello ${data.userName},</h2>
+          <p style="font-size: 16px; color: #555;">
+            We wanted to let you know that the email address for your account has recently been changed. 
+            Your account is no longer associated with this email (${data.oldEmail}).
+          </p>
+          <p style="font-size: 16px; color: #555;">
+            If you did not authorize this change, please contact us immediately.
+          </p>
+          <p style="font-size: 16px; color: #555;">
+            Regards, <br>The Quizlet Team
+          </p>
+        </div>
+      </div>
+      `,
+      });
+
+      // Send email to new address
+      await this.mailService.sendMail({
+        to: data.newEmail,
+        from: data.from,
+        subject: 'Welcome! Your Email Address Has Been Updated',
+        html: `
+      <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+          <h2 style="color: #333;">Hello ${data.userName},</h2>
+          <p style="font-size: 16px; color: #555;">
+            Congratulations! Your account email has successfully been updated to ${data.newEmail}.
+          </p>
+          <p style="font-size: 16px; color: #555;">
+            If this update was unintentional, please contact us as soon as possible for assistance.
+          </p>
+          <p style="font-size: 16px; color: #555;">
+            Best regards, <br>The Quizlet Team
+          </p>
+        </div>
+      </div>
+      `,
+      });
+
+      console.log('Verification emails for email change sent successfully');
+    } catch (error) {
+      console.error('Error sending verification emails:', error);
     }
   }
 }

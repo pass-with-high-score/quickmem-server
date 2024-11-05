@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   Res,
   Session,
@@ -44,6 +45,9 @@ import { GetUserDetailParamDto } from './dto/params/get-user-detail-param.dto';
 import { UserDetailResponseInterface } from './interfaces/user-detail-response.interface';
 import { VerifyPasswordBodyDto } from './dto/bodies/verify-password-body.dto';
 import { VerifyPasswordResponseInterface } from './interfaces/verify-password-response.interface';
+import { UpdateEmailDto } from './dto/bodies/update-email.dto';
+import { UpdateEmailResponseInterfaceDto } from './interfaces/update-email-response.interface.dto';
+import { VerifyEmailQueryDto } from './dto/queries/verify-email-query.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -119,6 +123,77 @@ export class AuthController {
     );
   }
 
+  // https://http//localhost:3009/verify-email?token=6fd1ca338b3c39944ff1f2d378dca433&userId=879757f9-a67c-406c-8a00-aef73daf57d9
+  @Get('/verify-email')
+  async verifyEmail(
+    @Query() verifyEmailDto: VerifyEmailQueryDto,
+    @Res() response: Response,
+  ): Promise<void> {
+    const result = await this.authService.verifyEmail(verifyEmailDto);
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Email Verification</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f4f4f4;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+        }
+        .container {
+          background-color: #fff;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          max-width: 400px;
+          text-align: center;
+        }
+        h1 {
+          font-size: 24px;
+          color: #333;
+        }
+        p {
+          font-size: 16px;
+          color: #555;
+          margin-bottom: 20px;
+        }
+        .footer {
+          margin-top: 30px;
+          font-size: 12px;
+          color: #888;
+        }
+      </style>
+    </head>
+    <body>
+
+      <div class="container">
+        <h1>Email Verified!</h1>
+        <p>Your email has been successfully verified and updated to:</p>
+        <p><strong>${result.email}</strong></p>
+
+        <div class="footer">
+          <p>Thank you for verifying your email!</p>
+        </div>
+      </div>
+
+    </body>
+    </html>
+  `;
+
+    response
+      .status(result.success ? HttpStatus.OK : HttpStatus.BAD_REQUEST)
+      .send(htmlContent);
+  }
+
   @SkipThrottle()
   @HttpCode(HttpStatus.CREATED)
   @Post('/signup')
@@ -135,6 +210,15 @@ export class AuthController {
     @Body() updateFullnameDto: UpdateFullnameDto,
   ): Promise<UpdateFullnameResponseInterfaceDto> {
     return await this.authService.updateFullname(updateFullnameDto);
+  }
+
+  @UseGuards(OwnershipGuard)
+  @HttpCode(HttpStatus.OK)
+  @Patch('/user/email')
+  async updateEmail(
+    @Body() updateEmailDto: UpdateEmailDto,
+  ): Promise<UpdateEmailResponseInterfaceDto> {
+    return await this.authService.updateEmail(updateEmailDto);
   }
 
   @SkipThrottle()

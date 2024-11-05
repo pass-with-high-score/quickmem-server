@@ -45,6 +45,9 @@ import { FolderEntity } from '../folder/entities/folder.entity';
 import { StudySetEntity } from '../study-set/entities/study-set.entity';
 import { VerifyPasswordBodyDto } from './dto/bodies/verify-password-body.dto';
 import { VerifyPasswordResponseInterface } from './interfaces/verify-password-response.interface';
+import { UpdateEmailDto } from './dto/bodies/update-email.dto';
+import { UpdateEmailResponseInterfaceDto } from './interfaces/update-email-response.interface.dto';
+import { VerifyEmailQueryDto } from './dto/queries/verify-email-query.dto';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -769,6 +772,92 @@ export class AuthRepository extends Repository<UserEntity> {
     return {
       success: true,
       message: 'Password verified successfully',
+    };
+  }
+
+  async updateEmail(
+    updateEmailDto: UpdateEmailDto,
+  ): Promise<UpdateEmailResponseInterfaceDto> {
+    console.log(updateEmailDto);
+    const { userId, email } = updateEmailDto;
+
+    const user = await this.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    const existingUser = await this.findOne({ where: { email } });
+    if (existingUser) {
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        message: 'Email is already in use',
+      });
+    }
+
+    // Generate a temporary token for email verification
+    const tokenTempEmail = crypto.randomBytes(16).toString('hex');
+
+    user.tempEmail = email;
+    user.tokenTempEmail = tokenTempEmail;
+    await this.save(user);
+
+    // Send verification email
+    await this.sendEmailQueue.add('send-verification-email', {
+      email,
+      from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+      tokenTempEmail,
+      fullName: user.fullName,
+      userId: user.id,
+    });
+
+    return {
+      message: 'Email updated successfully. Check your email for verification',
+      success: true,
+      email,
+    };
+  }
+
+  async verifyEmail(
+    verifyEmailDto: VerifyEmailQueryDto,
+  ): Promise<UpdateEmailResponseInterfaceDto> {
+    const { userId, token } = verifyEmailDto;
+
+    const user = await this.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    if (user.tokenTempEmail !== token) {
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Invalid or expired token',
+      });
+    }
+
+    const oldEmail = user.email;
+    const newEmail = user.tempEmail;
+
+    user.tempEmail = null;
+    user.email = newEmail;
+    user.tokenTempEmail = null;
+    await this.save(user);
+    await this.sendEmailQueue.add('update-email-success', {
+      fullName: user.fullName,
+      oldEmail: oldEmail,
+      newEmail: newEmail,
+      userName: user.username,
+      from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+    });
+    return {
+      message: 'Email verified successfully',
+      success: true,
+      email: user.email,
     };
   }
 

@@ -27,6 +27,9 @@ import { GetUserDetailParamDto } from './dto/params/get-user-detail-param.dto';
 import { UserDetailResponseInterface } from './interfaces/user-detail-response.interface';
 import { VerifyPasswordBodyDto } from './dto/bodies/verify-password-body.dto';
 import { VerifyPasswordResponseInterface } from './interfaces/verify-password-response.interface';
+import { UpdateEmailDto } from './dto/bodies/update-email.dto';
+import { UpdateEmailResponseInterfaceDto } from './interfaces/update-email-response.interface.dto';
+import { VerifyEmailQueryDto } from './dto/queries/verify-email-query.dto';
 
 @Injectable()
 export class AuthService {
@@ -162,5 +165,17 @@ export class AuthService {
     verifyPasswordDto: VerifyPasswordBodyDto,
   ): Promise<VerifyPasswordResponseInterface> {
     return this.usersRepository.verifyPassword(verifyPasswordDto);
+  }
+
+  async updateEmail(
+    updateEmailDto: UpdateEmailDto,
+  ): Promise<UpdateEmailResponseInterfaceDto> {
+    return this.usersRepository.updateEmail(updateEmailDto);
+  }
+
+  async verifyEmail(
+    verifyEmailDto: VerifyEmailQueryDto,
+  ): Promise<UpdateEmailResponseInterfaceDto> {
+    return this.usersRepository.verifyEmail(verifyEmailDto);
   }
 }
