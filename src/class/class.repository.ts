@@ -304,7 +304,7 @@ export class ClassRepository extends Repository<ClassEntity> {
 
   async joinClassByJoinToken(
     joinClassByTokenDto: JoinClassByTokenDto,
-  ): Promise<GetClassResponseInterface> {
+  ): Promise<UpdateItemInClassResponseInterface> {
     const { joinToken, userId, classId } = joinClassByTokenDto;
 
     const classEntity = await this.findClassAndValidatePermissions(
@@ -341,7 +341,11 @@ export class ClassRepository extends Repository<ClassEntity> {
 
     try {
       await this.save(classEntity);
-      return this.mapClassEntityToResponse(classEntity);
+      return {
+        message: 'User joined class',
+        length: classEntity.members.length,
+        success: true,
+      };
     } catch (error) {
       logger.error('Error joining class:', error);
       throw new InternalServerErrorException('Error joining class');

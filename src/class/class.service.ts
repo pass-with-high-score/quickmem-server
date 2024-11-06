@@ -62,7 +62,7 @@ export class ClassService {
 
   async joinClassByJoinToken(
     joinClassByTokenDto: JoinClassByTokenDto,
-  ): Promise<GetClassResponseInterface> {
+  ): Promise<UpdateItemInClassResponseInterface> {
     return this.classRepository.joinClassByJoinToken(joinClassByTokenDto);
   }
 

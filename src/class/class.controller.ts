@@ -85,7 +85,7 @@ export class ClassController {
   @HttpCode(HttpStatus.OK)
   async joinClassByJoinToken(
     @Body() joinClassByTokenDto: JoinClassByTokenDto,
-  ): Promise<GetClassResponseInterface> {
+  ): Promise<UpdateItemInClassResponseInterface> {
     return this.classService.joinClassByJoinToken(joinClassByTokenDto);
   }
 
@@ -98,7 +98,7 @@ export class ClassController {
   @Post('/folders')
   @HttpCode(HttpStatus.CREATED)
   async updateClassFolders(
-   @Body() updateFoldersInClassDto: UpdateFoldersInClassDto,
+    @Body() updateFoldersInClassDto: UpdateFoldersInClassDto,
   ): Promise<UpdateItemInClassResponseInterface> {
     return this.classService.updateClassFolders(updateFoldersInClassDto);
   }
