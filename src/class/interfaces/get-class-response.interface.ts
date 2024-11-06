@@ -18,6 +18,8 @@ export interface GetClassResponseInterface {
     id: string;
     username: string;
     avatarUrl: string;
+    isOwner: boolean;
+    role: string;
   }[];
   studySets?: {
     id: string;
@@ -27,6 +29,7 @@ export interface GetClassResponseInterface {
       id: string;
       username: string;
       avatarUrl: string;
+      role: string;
     };
     createdAt: Date;
     updatedAt: Date;
@@ -37,8 +40,7 @@ export interface GetClassResponseInterface {
     description?: string;
     isPublic: boolean;
     studySetCount: number;
-    ownerId: string;
-    user: {
+    owner: {
       id: string;
       username: string;
       avatarUrl: string;

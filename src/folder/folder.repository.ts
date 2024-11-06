@@ -246,7 +246,7 @@ export class FolderRepository extends Repository<FolderEntity> {
       description: folder.description,
       isPublic: folder.isPublic,
       studySetCount: folder.studySets.length,
-      user: showUser
+      owner: showUser
         ? {
             id: folder.owner.id,
             username: folder.owner.username,
@@ -272,7 +272,7 @@ export class FolderRepository extends Repository<FolderEntity> {
                   name: studySet.subject.name,
                 }
               : undefined,
-            user: {
+            owner: {
               id: studySet.owner.id,
               username: studySet.owner.username,
               avatarUrl: `${process.env.HOST}/public/images/avatar/${studySet.owner.avatarUrl}.jpg`,

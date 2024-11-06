@@ -6,7 +6,7 @@ export interface GetFolderResponseInterface {
   description?: string;
   isPublic?: boolean;
   studySetCount: number;
-  user: {
+  owner: {
     id: string;
     username: string;
     avatarUrl: string;

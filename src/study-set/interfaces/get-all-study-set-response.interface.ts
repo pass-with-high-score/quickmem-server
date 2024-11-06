@@ -12,7 +12,7 @@ export interface GetAllStudySetResponseInterface {
     id: number;
     name: string;
   };
-  user: {
+  owner: {
     id: string;
     username: string;
     avatarUrl: string;

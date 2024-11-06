@@ -676,7 +676,7 @@ export class AuthRepository extends Repository<UserEntity> {
       id: studySet.id,
       title: studySet.title,
       flashcardCount: studySet.flashcards.length,
-      user: {
+      owner: {
         id: studySet.owner.id,
         username: studySet.owner.username,
         avatarUrl: `${process.env.HOST}/public/images/avatar/${studySet.owner.avatarUrl}.jpg`,
@@ -707,7 +707,7 @@ export class AuthRepository extends Repository<UserEntity> {
       description: folder.description,
       isPublic: folder.isPublic,
       studySetCount: folder.studySets.length,
-      user: {
+      owner: {
         id: folder.owner.id,
         username: folder.owner.username,
         avatarUrl: `${process.env.HOST}/public/images/avatar/${folder.owner.avatarUrl}.jpg`,

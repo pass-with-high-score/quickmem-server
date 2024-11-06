@@ -579,6 +579,8 @@ export class ClassRepository extends Repository<ClassEntity> {
             id: member.id,
             username: member.username,
             avatarUrl: `${process.env.HOST}/public/images/avatar/${member.avatarUrl}.jpg`,
+            isOwner: member.id === classEntity.owner.id,
+            role: member.role,
           }))
         : undefined,
       studySets: showStudySets
@@ -593,6 +595,7 @@ export class ClassRepository extends Repository<ClassEntity> {
               id: studySet.owner.id,
               username: studySet.owner.username,
               avatarUrl: `${process.env.HOST}/public/images/avatar/${studySet.owner.avatarUrl}.jpg`,
+              role: studySet.owner.role,
             },
             createdAt: studySet.createdAt,
             updatedAt: studySet.updatedAt,
@@ -605,8 +608,7 @@ export class ClassRepository extends Repository<ClassEntity> {
             description: folder.description,
             isPublic: folder.isPublic,
             studySetCount: folder.studySets ? folder.studySets.length : 0,
-            ownerId: folder.owner.id,
-            user: {
+            owner: {
               id: folder.owner.id,
               username: folder.owner.username,
               avatarUrl: `${process.env.HOST}/public/images/avatar/${folder.owner.avatarUrl}.jpg`,
