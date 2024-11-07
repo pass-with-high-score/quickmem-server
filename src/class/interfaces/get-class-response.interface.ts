@@ -1,3 +1,6 @@
+import { GetAllStudySetResponseInterface } from '../../study-set/interfaces/get-all-study-set-response.interface';
+import { GetFolderResponseInterface } from '../../folder/interfaces/get-folder-response.interface';
+
 export interface GetClassResponseInterface {
   id: string;
   title: string;
@@ -21,34 +24,8 @@ export interface GetClassResponseInterface {
     isOwner: boolean;
     role: string;
   }[];
-  studySets?: {
-    id: string;
-    title: string;
-    flashcardCount: number;
-    owner: {
-      id: string;
-      username: string;
-      avatarUrl: string;
-      role: string;
-    };
-    createdAt: Date;
-    updatedAt: Date;
-  }[];
-  folders?: {
-    id: string;
-    title: string;
-    description?: string;
-    isPublic: boolean;
-    studySetCount: number;
-    owner: {
-      id: string;
-      username: string;
-      avatarUrl: string;
-      role: string;
-    };
-    createdAt: Date;
-    updatedAt: Date;
-  }[];
+  studySets?: GetAllStudySetResponseInterface[];
+  folders?: GetFolderResponseInterface[];
   createdAt: Date;
   updatedAt: Date;
 }

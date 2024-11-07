@@ -75,6 +75,8 @@ export class ClassRepository extends Repository<ClassEntity> {
         'folders.owner',
         'studySets.owner',
         'studySets.flashcards',
+        'studySets.subject',
+        'studySets.color',
       ],
     });
     if (!classEntity) {
@@ -588,7 +590,20 @@ export class ClassRepository extends Repository<ClassEntity> {
             id: studySet.id,
             title: studySet.title,
             description: studySet.description,
-            flashcardCount: studySet.flashcards
+            color: studySet.color
+              ? {
+                  id: studySet.color.id,
+                  name: studySet.color.name,
+                  hexValue: studySet.color.hexValue,
+                }
+              : undefined,
+            subject: studySet.subject
+              ? {
+                  id: studySet.subject.id,
+                  name: studySet.subject.name,
+                }
+              : undefined,
+            flashCardCount: studySet.flashcards
               ? studySet.flashcards.length
               : 0,
             owner: {
