@@ -64,24 +64,40 @@ export class ClassRepository extends Repository<ClassEntity> {
   ): Promise<GetClassResponseInterface> {
     const { id } = getClassByIdParamDto;
 
+    // Fetch class entity
     const classEntity = await this.findOne({
       where: { id },
-      relations: [
-        'owner',
-        'members',
-        'folders',
-        'studySets',
-        'folders.studySets',
-        'folders.owner',
-        'studySets.owner',
-        'studySets.flashcards',
-        'studySets.subject',
-        'studySets.color',
-      ],
+      relations: ['owner'],
     });
     if (!classEntity) {
       throw new NotFoundException('Class not found');
     }
+
+    // Fetch study sets
+    classEntity.studySets = await this.dataSource
+      .getRepository(StudySetEntity)
+      .find({
+        where: { classes: { id } },
+        relations: ['owner', 'flashcards', 'subject', 'color'],
+      });
+
+    // Fetch folders
+    classEntity.folders = await this.dataSource
+      .getRepository(FolderEntity)
+      .find({
+        where: { classes: { id } },
+        relations: ['studySets', 'owner'],
+      });
+
+    // add owner to members
+    classEntity.members = [classEntity.owner];
+    // Fetch members
+    classEntity.members = [
+      ...classEntity.members,
+      ...(await this.dataSource
+        .getRepository(UserEntity)
+        .find({ where: { classes: { id } } })),
+    ];
 
     return this.mapClassEntityToResponse(classEntity);
   }
