@@ -1,9 +1,10 @@
 import {
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { StudySetEntity } from './entities/study-set.entity';
 import { UserEntity } from '../auth/entities/user.entity';
 import { CreateStudySetDto } from './dto/bodies/create-study-set.dto';
@@ -34,6 +35,12 @@ import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.d
 import client from 'src/cohere-client';
 import { ResetFlashcardProgressParamsDto } from './dto/queries/reset-flashcard-progress-params.dto';
 import { GetStudySetsByOwnerIdQueryDto } from './dto/queries/get-study-sets-by-owner-Id-query.dto';
+import { UpdateFoldersInStudySetResponseInterface } from './interfaces/update-folders-in-study-set-response.interface';
+import { UpdateFoldersInStudySetDto } from './dto/bodies/update-folders-in-study-set.dto';
+import { FolderEntity } from '../folder/entities/folder.entity';
+import { UpdateClassesInStudySetDto } from './dto/bodies/update-classes-in-study-set.dto';
+import { UpdateClassesInStudySetResponseInterface } from './interfaces/update-classes-in-study-set-response.interface';
+import { ClassEntity } from '../class/entities/class.entity';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -727,6 +734,96 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     } catch (error) {
       console.error('Error while creating study set from AI:', error.message);
       throw new Error('Failed to create study set from AI');
+    }
+  }
+
+  async updateFoldersInStudySet(
+    updateFoldersInStudySetDto: UpdateFoldersInStudySetDto,
+  ): Promise<UpdateFoldersInStudySetResponseInterface> {
+    const { folderIds, studySetId } = updateFoldersInStudySetDto;
+    const studySet = await this.findOne({
+      where: { id: studySetId },
+      relations: ['folders', 'owner'],
+    });
+
+    if (!studySet) {
+      throw new NotFoundException('Study set not found');
+    }
+
+    // Fetch all the folders corresponding to the provided IDs.
+    const folders = await this.dataSource.getRepository(FolderEntity).find({
+      where: { id: In(folderIds) },
+      relations: ['owner'],
+    });
+    if (folders.length !== folderIds.length) {
+      throw new NotFoundException('One or more folders not found');
+    }
+
+    if (folders.some((folder) => folder.owner.id !== studySet.owner.id)) {
+      throw new ConflictException('One or more folders do not belong to user');
+    }
+
+    // Update study set's folders based on the provided IDs
+    studySet.folders = folders;
+
+    try {
+      await this.save(studySet);
+      return {
+        success: true,
+        length: folders.length,
+        message: 'Folders updated in study set',
+      };
+    } catch (error) {
+      console.error('Error updating study set:', error);
+      throw new InternalServerErrorException('Error updating study set');
+    }
+  }
+
+  async updateClassesInStudySet(
+    updateClassesInStudySetDto: UpdateClassesInStudySetDto,
+  ): Promise<UpdateClassesInStudySetResponseInterface> {
+    const { classIds, studySetId } = updateClassesInStudySetDto;
+    const studySet = await this.findOne({
+      where: { id: studySetId },
+      relations: ['classes', 'owner'],
+    });
+
+    if (!studySet) {
+      throw new NotFoundException('Study set not found');
+    }
+
+    // Fetch all the folders corresponding to the provided IDs.
+    const classEntities = await this.dataSource
+      .getRepository(ClassEntity)
+      .find({
+        where: { id: In(classIds) },
+        relations: ['owner'],
+      });
+    if (classEntities.length !== classIds.length) {
+      throw new NotFoundException('One or more classes not found');
+    }
+
+    if (
+      classEntities.some(
+        (classItem) => classItem.owner.id !== studySet.owner.id,
+      )
+    ) {
+      throw new ConflictException('One or more classes do not belong to user');
+    }
+
+    // Update study set's classes based on the provided IDs
+    studySet.classes = classEntities;
+
+    try {
+      await this.save(studySet);
+      return {
+        success: true,
+        length: classEntities.length,
+        message: 'Classes updated in study set',
+      };
+    } catch (error) {
+      console.error('Error updating study set:', error);
+      throw new InternalServerErrorException('Error updating study set');
     }
   }
 

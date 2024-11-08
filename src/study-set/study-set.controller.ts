@@ -32,6 +32,10 @@ import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcar
 import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.dto';
 import { ResetFlashcardProgressParamsDto } from './dto/queries/reset-flashcard-progress-params.dto';
 import { GetStudySetsByOwnerIdQueryDto } from './dto/queries/get-study-sets-by-owner-Id-query.dto';
+import { UpdateFoldersInStudySetDto } from './dto/bodies/update-folders-in-study-set.dto';
+import { UpdateFoldersInStudySetResponseInterface } from './interfaces/update-folders-in-study-set-response.interface';
+import { UpdateClassesInStudySetDto } from './dto/bodies/update-classes-in-study-set.dto';
+import { UpdateClassesInStudySetResponseInterface } from './interfaces/update-classes-in-study-set-response.interface';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -146,5 +150,25 @@ export class StudySetController {
     @Body() createStudySetFromAiDto: CreateStudySetFromAiDto,
   ): Promise<GetAllStudySetResponseInterface> {
     return this.studySetService.createStudySetFromAI(createStudySetFromAiDto);
+  }
+
+  @Post('/folders')
+  @HttpCode(HttpStatus.CREATED)
+  async updateFoldersInStudySet(
+    @Body() updateFoldersInStudySetDto: UpdateFoldersInStudySetDto,
+  ): Promise<UpdateFoldersInStudySetResponseInterface> {
+    return this.studySetService.updateFoldersInStudySet(
+      updateFoldersInStudySetDto,
+    );
+  }
+
+  @Post('/classes')
+  @HttpCode(HttpStatus.CREATED)
+  async updateClassesInStudySet(
+    @Body() updateClassesInStudySetDto: UpdateClassesInStudySetDto,
+  ): Promise<UpdateClassesInStudySetResponseInterface> {
+    return this.studySetService.updateClassesInStudySet(
+      updateClassesInStudySetDto,
+    );
   }
 }

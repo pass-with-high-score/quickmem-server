@@ -18,6 +18,10 @@ import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcar
 import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.dto';
 import { ResetFlashcardProgressParamsDto } from './dto/queries/reset-flashcard-progress-params.dto';
 import { GetStudySetsByOwnerIdQueryDto } from './dto/queries/get-study-sets-by-owner-Id-query.dto';
+import { UpdateFoldersInStudySetDto } from './dto/bodies/update-folders-in-study-set.dto';
+import { UpdateFoldersInStudySetResponseInterface } from './interfaces/update-folders-in-study-set-response.interface';
+import { UpdateClassesInStudySetDto } from './dto/bodies/update-classes-in-study-set.dto';
+import { UpdateClassesInStudySetResponseInterface } from './interfaces/update-classes-in-study-set-response.interface';
 
 @Injectable()
 export class StudySetService {
@@ -106,6 +110,22 @@ export class StudySetService {
   ): Promise<GetAllStudySetResponseInterface> {
     return this.studySetRepository.createStudySetFromAI(
       createStudySetFromAiDto,
+    );
+  }
+
+  async updateFoldersInStudySet(
+    updateFoldersInStudySetDto: UpdateFoldersInStudySetDto,
+  ): Promise<UpdateFoldersInStudySetResponseInterface> {
+    return this.studySetRepository.updateFoldersInStudySet(
+      updateFoldersInStudySetDto,
+    );
+  }
+
+  async updateClassesInStudySet(
+    updateClassesInStudySetDto: UpdateClassesInStudySetDto,
+  ): Promise<UpdateClassesInStudySetResponseInterface> {
+    return this.studySetRepository.updateClassesInStudySet(
+      updateClassesInStudySetDto,
     );
   }
 }
