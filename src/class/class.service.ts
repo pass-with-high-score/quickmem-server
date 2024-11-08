@@ -15,6 +15,7 @@ import { UpdateStudySetsInClassDto } from './dto/bodies/update-study-sets-in-cla
 import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-class.dto';
 import { UpdateItemInClassResponseInterface } from './interfaces/update-item-in-class-response.interface';
 import { UpdateFoldersInClassDto } from './dto/bodies/update-folders-in-class.dto';
+import { GetClassByUserIdQueryDto } from './dto/queries/get-class-by-user-Id-query.dto';
 
 @Injectable()
 export class ClassService {
@@ -34,8 +35,12 @@ export class ClassService {
 
   async getClassesByUserId(
     getClassesByUserIdDto: GetClassesByUserIdDto,
+    getClassByUserIdQueryDto: GetClassByUserIdQueryDto,
   ): Promise<GetClassResponseInterface[]> {
-    return this.classRepository.getClassesByUserId(getClassesByUserIdDto);
+    return this.classRepository.getClassesByUserId(
+      getClassesByUserIdDto,
+      getClassByUserIdQueryDto,
+    );
   }
 
   async updateClass(

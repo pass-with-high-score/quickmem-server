@@ -29,6 +29,7 @@ import { UpdateFoldersInClassDto } from './dto/bodies/update-folders-in-class.dt
 import { UpdateStudySetsInClassDto } from './dto/bodies/update-study-sets-in-class.dto';
 import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-class.dto';
 import { UpdateItemInClassResponseInterface } from './interfaces/update-item-in-class-response.interface';
+import { GetClassByUserIdQueryDto } from './dto/queries/get-class-by-user-Id-query.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -56,8 +57,12 @@ export class ClassController {
   @HttpCode(HttpStatus.OK)
   async getClassesByUserId(
     @Param() getClassesByUserIdDto: GetClassesByUserIdDto,
+    @Query() getClassByUserIdQueryDto: GetClassByUserIdQueryDto,
   ): Promise<GetClassResponseInterface[]> {
-    return this.classService.getClassesByUserId(getClassesByUserIdDto);
+    return this.classService.getClassesByUserId(
+      getClassesByUserIdDto,
+      getClassByUserIdQueryDto,
+    );
   }
 
   @Put('/:id')

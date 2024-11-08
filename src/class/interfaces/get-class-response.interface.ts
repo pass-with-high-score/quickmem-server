@@ -7,6 +7,7 @@ export interface GetClassResponseInterface {
   joinToken?: string;
   allowSetManagement?: boolean;
   allowMemberManagement?: boolean;
+  isImported?: boolean;
   description?: string;
   owner: {
     id: string;

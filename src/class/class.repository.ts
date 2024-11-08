@@ -27,6 +27,7 @@ import { UpdateStudySetsInClassDto } from './dto/bodies/update-study-sets-in-cla
 import { StudySetEntity } from '../study-set/entities/study-set.entity';
 import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-class.dto';
 import { UpdateItemInClassResponseInterface } from './interfaces/update-item-in-class-response.interface';
+import { GetClassByUserIdQueryDto } from './dto/queries/get-class-by-user-Id-query.dto';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -105,8 +106,10 @@ export class ClassRepository extends Repository<ClassEntity> {
   // Get classes by user id (if they are member or owner of class)
   async getClassesByUserId(
     getClassesByUserIdDto: GetClassesByUserIdDto,
+    getClassByUserIdQueryDto: GetClassByUserIdQueryDto,
   ): Promise<GetClassResponseInterface[]> {
     const { userId } = getClassesByUserIdDto;
+    const { studySetId, folderId } = getClassByUserIdQueryDto;
     const classes = await this.find({
       where: [
         { owner: { id: userId } },
@@ -127,13 +130,36 @@ export class ClassRepository extends Repository<ClassEntity> {
     });
 
     if (!classes) {
-      return [];
+      throw new NotFoundException('No classes found for the user');
     }
 
     return Promise.all(
-      classes.map((classEntity) =>
-        this.mapClassEntityToResponse(classEntity, false, false, false),
-      ),
+      classes.map(async (classEntity) => {
+        let isImported = false;
+        if (studySetId) {
+          classEntity.studySets = classEntity.studySets.filter(
+            (studySet) => studySet.id === studySetId,
+          );
+          if (classEntity.studySets.length > 0) {
+            isImported = true;
+          }
+        }
+        if (folderId) {
+          classEntity.folders = classEntity.folders.filter(
+            (folder) => folder.id === folderId,
+          );
+          if (classEntity.folders.length > 0) {
+            isImported = true;
+          }
+        }
+        const response = await this.mapClassEntityToResponse(
+          classEntity,
+          false,
+          false,
+          false,
+        );
+        return { ...response, isImported };
+      }),
     );
   }
 
@@ -577,9 +603,6 @@ export class ClassRepository extends Repository<ClassEntity> {
     showFolders = true,
   ): Promise<GetClassResponseInterface> {
     return {
-      allowMemberManagement: classEntity.allowMemberManagement,
-      allowSetManagement: classEntity.allowSetManagement,
-      joinToken: classEntity.joinToken,
       id: classEntity.id,
       title: classEntity.title,
       description: classEntity.description,
@@ -589,6 +612,9 @@ export class ClassRepository extends Repository<ClassEntity> {
         username: classEntity.owner.username,
         avatarUrl: `${process.env.HOST}/public/images/avatar/${classEntity.owner.avatarUrl}.jpg`,
       },
+      allowMemberManagement: classEntity.allowMemberManagement,
+      allowSetManagement: classEntity.allowSetManagement,
+      joinToken: classEntity.joinToken,
       memberCount: classEntity.members.length,
       studySetCount: classEntity.studySets.length,
       folderCount: classEntity.folders.length,
