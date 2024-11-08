@@ -1,4 +1,4 @@
-import { ArrayNotEmpty, IsArray, IsNotEmpty, IsUUID } from 'class-validator';
+import { IsArray, IsNotEmpty, IsUUID } from 'class-validator';
 
 export class UpdateStudySetsInClassDto {
   @IsUUID()
@@ -10,7 +10,6 @@ export class UpdateStudySetsInClassDto {
   userId: string;
 
   @IsArray()
-  @ArrayNotEmpty()
   @IsUUID('4', { each: true })
   studySetIds: string[];
 }

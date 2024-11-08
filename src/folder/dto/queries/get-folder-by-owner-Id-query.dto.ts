@@ -1,9 +1,9 @@
 import { IsOptional, IsUUID } from 'class-validator';
 
-export class GetStudySetsByOwnerIdParamDto {
+export class GetFolderByOwnerIdQueryDto {
   @IsOptional()
   @IsUUID()
-  folderId: string;
+  studySetId: string;
 
   @IsOptional()
   @IsUUID()

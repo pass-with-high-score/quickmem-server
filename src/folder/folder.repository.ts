@@ -19,6 +19,7 @@ import { UpdateFolderByIdDto } from './dto/params/update-folder-by-id.dto';
 import { DeleteFolderByIdDto } from './dto/params/delete-folder-by-id.dto';
 import { SearchFolderByTitleDto } from './dto/queries/search-folder-by-title';
 import { UpdateStudySetsInFolderResponseInterface } from './interfaces/update-study-sets-in-folder-response.interface';
+import { GetFolderByOwnerIdQueryDto } from './dto/queries/get-folder-by-owner-Id-query.dto';
 
 @Injectable()
 export class FolderRepository extends Repository<FolderEntity> {
@@ -89,12 +90,14 @@ export class FolderRepository extends Repository<FolderEntity> {
 
   async getFolderByOwnerId(
     getFoldersByOwnerIdDto: GetFoldersByOwnerIdDto,
+    getFolderByOwnerIdQueryDto: GetFolderByOwnerIdQueryDto,
   ): Promise<GetFolderResponseInterface[]> {
     const { ownerId } = getFoldersByOwnerIdDto;
+    const { studySetId, classId } = getFolderByOwnerIdQueryDto;
     try {
       const folders = await this.find({
         where: { owner: { id: ownerId } },
-        relations: ['owner', 'studySets'],
+        relations: ['owner', 'studySets', 'classes'],
       });
 
       if (!folders.length) {
@@ -102,9 +105,30 @@ export class FolderRepository extends Repository<FolderEntity> {
       }
 
       return Promise.all(
-        folders.map((folder) =>
-          this.mapFolderToGetFolderResponseInterface(folder, false),
-        ),
+        folders.map(async (folder) => {
+          let isImported = false;
+          if (studySetId) {
+            folder.studySets = folder.studySets.filter(
+              (studySet) => studySet.id === studySetId,
+            );
+            if (folder.studySets.length > 0) {
+              isImported = true;
+            }
+          }
+          if (classId) {
+            folder.classes = folder.classes.filter(
+              (classEntity) => classEntity.id === classId,
+            );
+            if (folder.classes.length > 0) {
+              isImported = true;
+            }
+          }
+          const response = await this.mapFolderToGetFolderResponseInterface(
+            folder,
+            false,
+          );
+          return { ...response, isImported };
+        }),
       );
     } catch (error) {
       console.error('Error fetching folders by user ID:', error);

@@ -33,7 +33,7 @@ import { ConfigService } from '@nestjs/config';
 import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.dto';
 import client from 'src/cohere-client';
 import { ResetFlashcardProgressParamsDto } from './dto/queries/reset-flashcard-progress-params.dto';
-import { GetStudySetsByOwnerIdParamDto } from './dto/queries/get-study-sets-by-owner-Id-param.dto';
+import { GetStudySetsByOwnerIdQueryDto } from './dto/queries/get-study-sets-by-owner-Id-query.dto';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -123,10 +123,10 @@ export class StudySetRepository extends Repository<StudySetEntity> {
   // get all by owner id
   async getStudySetsByOwnerId(
     getStudySetsByOwnerIdDto: GetStudySetsByOwnerIdDto,
-    getStudySetsByOwnerIdParamDto: GetStudySetsByOwnerIdParamDto,
+    getStudySetsByOwnerIdQueryDto: GetStudySetsByOwnerIdQueryDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
     const { ownerId } = getStudySetsByOwnerIdDto;
-    const { folderId, classId } = getStudySetsByOwnerIdParamDto;
+    const { folderId, classId } = getStudySetsByOwnerIdQueryDto;
     try {
       const studySets = await this.dataSource
         .getRepository(StudySetEntity)

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsUUID, IsArray, ArrayNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsUUID, IsArray } from 'class-validator';
 
 export class UpdateStudySetsInFolderDto {
   @IsNotEmpty()
@@ -6,7 +6,6 @@ export class UpdateStudySetsInFolderDto {
   folderId: string;
 
   @IsArray()
-  @ArrayNotEmpty()
   @IsUUID('4', { each: true })
   studySetIds: string[];
 }

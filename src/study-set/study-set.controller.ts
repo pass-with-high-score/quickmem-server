@@ -31,7 +31,7 @@ import { ImportFlashcardDto } from './dto/bodies/import-flashcard.dto';
 import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcard-from-quizlet.param.dto';
 import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.dto';
 import { ResetFlashcardProgressParamsDto } from './dto/queries/reset-flashcard-progress-params.dto';
-import { GetStudySetsByOwnerIdParamDto } from './dto/queries/get-study-sets-by-owner-Id-param.dto';
+import { GetStudySetsByOwnerIdQueryDto } from './dto/queries/get-study-sets-by-owner-Id-query.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -69,7 +69,7 @@ export class StudySetController {
   @HttpCode(HttpStatus.OK)
   async getStudySetsByOwnerId(
     @Param() getStudySetsByOwnerIdDto: GetStudySetsByOwnerIdDto,
-    @Query() getStudySetsByOwnerIdParamDto: GetStudySetsByOwnerIdParamDto,
+    @Query() getStudySetsByOwnerIdParamDto: GetStudySetsByOwnerIdQueryDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
     return await this.studySetService.getStudySetsByOwnerId(
       getStudySetsByOwnerIdDto,

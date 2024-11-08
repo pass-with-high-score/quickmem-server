@@ -11,15 +11,20 @@ import { UpdateFolderDto } from './dto/bodies/update-folder.dto';
 import { DeleteFolderByIdDto } from './dto/params/delete-folder-by-id.dto';
 import { SearchFolderByTitleDto } from './dto/queries/search-folder-by-title';
 import { UpdateStudySetsInFolderResponseInterface } from './interfaces/update-study-sets-in-folder-response.interface';
+import { GetFolderByOwnerIdQueryDto } from './dto/queries/get-folder-by-owner-Id-query.dto';
 
 @Injectable()
 export class FolderService {
   constructor(private readonly folderRepository: FolderRepository) {}
 
-  async getFolderByUserId(
-    getFoldersByUserIdDto: GetFoldersByOwnerIdDto,
+  async getFolderByOwnerId(
+    getFoldersByOwnerIdDto: GetFoldersByOwnerIdDto,
+    getFolderByOwnerIdQueryDto: GetFolderByOwnerIdQueryDto,
   ): Promise<GetFolderResponseInterface[]> {
-    return this.folderRepository.getFolderByOwnerId(getFoldersByUserIdDto);
+    return this.folderRepository.getFolderByOwnerId(
+      getFoldersByOwnerIdDto,
+      getFolderByOwnerIdQueryDto,
+    );
   }
 
   async createFolder(
