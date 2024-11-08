@@ -40,7 +40,7 @@ import { UpdateAvatarParamDto } from './dto/params/update-avatar-param.dto';
 import { UpdateAvatarDto } from './dto/bodies/update-avatar.dto';
 import { UpdateAvatarInterface } from './interfaces/update-avatar.interface';
 import { AuthGuard } from '@nestjs/passport';
-import { GetUserDetailBodyDto } from './dto/bodies/get-user-detail-body.dto';
+import { GetUserDetailQueryDto } from './dto/queries/get-user-detail-query.dto';
 import { GetUserDetailParamDto } from './dto/params/get-user-detail-param.dto';
 import { UserDetailResponseInterface } from './interfaces/user-detail-response.interface';
 import { VerifyPasswordBodyDto } from './dto/bodies/verify-password-body.dto';
@@ -116,11 +116,11 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.OK)
   async getUserProfileDetail(
-    @Body() getUserDetailBodyDto: GetUserDetailBodyDto,
+    @Query() getUserDetailQueryDto: GetUserDetailQueryDto,
     @Param() getUserDetailParamDto: GetUserDetailParamDto,
   ): Promise<UserDetailResponseInterface> {
     return this.authService.getUserProfileDetail(
-      getUserDetailBodyDto,
+      getUserDetailQueryDto,
       getUserDetailParamDto,
     );
   }

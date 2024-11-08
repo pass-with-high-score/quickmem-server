@@ -38,7 +38,7 @@ import { UpdateAvatarDto } from './dto/bodies/update-avatar.dto';
 import { UpdateAvatarInterface } from './interfaces/update-avatar.interface';
 import { UserDetailResponseInterface } from './interfaces/user-detail-response.interface';
 import { GetUserDetailParamDto } from './dto/params/get-user-detail-param.dto';
-import { GetUserDetailBodyDto } from './dto/bodies/get-user-detail-body.dto';
+import { GetUserDetailQueryDto } from './dto/queries/get-user-detail-query.dto';
 import { ClassEntity } from '../class/entities/class.entity';
 import { FolderEntity } from '../folder/entities/folder.entity';
 import { StudySetEntity } from '../study-set/entities/study-set.entity';
@@ -645,11 +645,11 @@ export class AuthRepository extends Repository<UserEntity> {
   }
 
   async getUserProfileDetail(
-    getUserDetailBodyDto: GetUserDetailBodyDto,
+    getUserDetailQueryDto: GetUserDetailQueryDto,
     getUserDetailParamDto: GetUserDetailParamDto,
   ): Promise<UserDetailResponseInterface> {
     const { id } = getUserDetailParamDto;
-    const { isOwner } = getUserDetailBodyDto;
+    const { isOwner } = getUserDetailQueryDto;
 
     logger.info(`Getting user profile detail for user ID ${id}`);
 
