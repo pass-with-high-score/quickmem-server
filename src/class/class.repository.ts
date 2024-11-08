@@ -280,10 +280,7 @@ export class ClassRepository extends Repository<ClassEntity> {
 
   private async findClassAndValidatePermissions(
     classId: string,
-    userId: string,
     relations: string[],
-    checkOwnership: boolean = false,
-    allowSetManagement: boolean = false,
   ): Promise<ClassEntity> {
     // Find class with specified relations
     const classEntity = await this.findOne({
@@ -293,20 +290,6 @@ export class ClassRepository extends Repository<ClassEntity> {
 
     if (!classEntity) {
       throw new NotFoundException('Class not found');
-    }
-
-    // Check ownership if necessary
-    if (checkOwnership && classEntity.owner.id !== userId) {
-      throw new UnauthorizedException('User is not the owner of the class');
-    }
-
-    // Check if class allows set management or if the user is the owner
-    if (
-      !checkOwnership &&
-      allowSetManagement &&
-      !classEntity.allowSetManagement
-    ) {
-      throw new UnauthorizedException('Class does not allow set management');
     }
 
     return classEntity;
@@ -351,11 +334,12 @@ export class ClassRepository extends Repository<ClassEntity> {
   ): Promise<UpdateItemInClassResponseInterface> {
     const { joinToken, userId, classId } = joinClassByTokenDto;
 
-    const classEntity = await this.findClassAndValidatePermissions(
-      classId,
-      userId,
-      ['owner', 'members', 'studySets', 'folders'],
-    );
+    const classEntity = await this.findClassAndValidatePermissions(classId, [
+      'owner',
+      'members',
+      'studySets',
+      'folders',
+    ]);
 
     // Check if join token is correct
     if (classEntity.joinToken !== joinToken) {
@@ -399,11 +383,9 @@ export class ClassRepository extends Repository<ClassEntity> {
   async exitClass(exitClassDto: ExitClassDto): Promise<void> {
     const { userId, classId } = exitClassDto;
 
-    const classEntity = await this.findClassAndValidatePermissions(
-      classId,
-      userId,
-      ['members'],
-    );
+    const classEntity = await this.findClassAndValidatePermissions(classId, [
+      'members',
+    ]);
 
     const userIndex = classEntity.members.findIndex(
       (member) => member.id === userId,
@@ -427,20 +409,14 @@ export class ClassRepository extends Repository<ClassEntity> {
   ): Promise<UpdateItemInClassResponseInterface> {
     const { classId, userId, folderIds } = updateFoldersInClassDto;
 
-    const classEntity = await this.findClassAndValidatePermissions(
-      classId,
-      userId,
-      [
-        'owner',
-        'members',
-        'folders',
-        'studySets',
-        'folders.studySets',
-        'folders.owner',
-      ],
-      false,
-      true,
-    );
+    const classEntity = await this.findClassAndValidatePermissions(classId, [
+      'owner',
+      'members',
+      'folders',
+      'studySets',
+      'folders.studySets',
+      'folders.owner',
+    ]);
 
     // Find folders with their owners
     const folders = await this.findItemsByIds(
@@ -450,6 +426,30 @@ export class ClassRepository extends Repository<ClassEntity> {
       'folder',
     );
 
+    const userEntity = await this.dataSource
+      .getRepository(UserEntity)
+      .findOneBy({ id: userId });
+
+    if (!userEntity) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!userEntity.isVerified) {
+      throw new UnauthorizedException('User not verified');
+    }
+
+    if (
+      classEntity.owner.id !== userId &&
+      !classEntity.members.some((member) => member.id === userId)
+    ) {
+      throw new UnauthorizedException('User not a member of the class');
+    }
+
+    if (!classEntity.allowSetManagement && classEntity.owner.id !== userId) {
+      throw new UnauthorizedException('Class does not allow set management');
+    }
+
+    // Check if all folders are found
     if (folders.length !== folderIds.length) {
       throw new NotFoundException('One or more folders not found');
     }
@@ -477,20 +477,37 @@ export class ClassRepository extends Repository<ClassEntity> {
   ): Promise<UpdateItemInClassResponseInterface> {
     const { classId, userId, studySetIds } = updateStudySetsInClassDto;
 
-    const classEntity = await this.findClassAndValidatePermissions(
-      classId,
-      userId,
-      [
-        'owner',
-        'members',
-        'folders',
-        'studySets',
-        'folders.studySets',
-        'folders.owner',
-      ],
-      false,
-      true,
-    );
+    const classEntity = await this.findClassAndValidatePermissions(classId, [
+      'owner',
+      'members',
+      'folders',
+      'studySets',
+      'folders.studySets',
+      'folders.owner',
+    ]);
+
+    const userEntity = await this.dataSource
+      .getRepository(UserEntity)
+      .findOneBy({ id: userId });
+
+    if (!userEntity) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!userEntity.isVerified) {
+      throw new UnauthorizedException('User not verified');
+    }
+
+    if (
+      classEntity.owner.id !== userId &&
+      !classEntity.members.some((member) => member.id === userId)
+    ) {
+      throw new UnauthorizedException('User not a member of the class');
+    }
+
+    if (!classEntity.allowSetManagement && classEntity.owner.id !== userId) {
+      throw new UnauthorizedException('Class does not allow set management');
+    }
 
     // Find study sets
     const studySets = await this.findItemsByIds(
@@ -529,25 +546,16 @@ export class ClassRepository extends Repository<ClassEntity> {
     removeMembersFromClassDto: RemoveMembersFromClassDto,
   ): Promise<GetClassResponseInterface> {
     const { classId, userId, memberIds } = removeMembersFromClassDto;
-    logger.info(
-      `classId: ${classId}, userId: ${userId}, memberIds: ${memberIds}`,
-    );
 
     // Find class
-    const classEntity = await this.findClassAndValidatePermissions(
-      classId,
-      userId,
-      [
-        'owner',
-        'members',
-        'folders',
-        'studySets',
-        'folders.studySets',
-        'folders.owner',
-      ],
-      false,
-      true,
-    );
+    const classEntity = await this.findClassAndValidatePermissions(classId, [
+      'owner',
+      'members',
+      'folders',
+      'studySets',
+      'folders.studySets',
+      'folders.owner',
+    ]);
 
     if (!classEntity.allowMemberManagement) {
       throw new UnauthorizedException('Class does not allow member management');
