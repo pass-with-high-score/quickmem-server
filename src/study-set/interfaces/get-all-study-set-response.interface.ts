@@ -7,6 +7,7 @@ export interface GetAllStudySetResponseInterface {
   isPublic?: boolean;
   flashCardCount?: number;
   linkShareCode?: string;
+  isImported?: boolean;
   flashcards?: FlashcardResponseInterface[];
   subject?: {
     id: number;

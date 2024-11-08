@@ -33,6 +33,7 @@ import { ConfigService } from '@nestjs/config';
 import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.dto';
 import client from 'src/cohere-client';
 import { ResetFlashcardProgressParamsDto } from './dto/queries/reset-flashcard-progress-params.dto';
+import { GetStudySetsByOwnerIdParamDto } from './dto/queries/get-study-sets-by-owner-Id-param.dto';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -122,17 +123,34 @@ export class StudySetRepository extends Repository<StudySetEntity> {
   // get all by owner id
   async getStudySetsByOwnerId(
     getStudySetsByOwnerIdDto: GetStudySetsByOwnerIdDto,
+    getStudySetsByOwnerIdParamDto: GetStudySetsByOwnerIdParamDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
     const { ownerId } = getStudySetsByOwnerIdDto;
+    const { folderId, classId } = getStudySetsByOwnerIdParamDto;
     try {
       const studySets = await this.dataSource
         .getRepository(StudySetEntity)
         .find({
           where: { owner: { id: ownerId } },
-          relations: ['owner', 'subject', 'color', 'flashcards'],
+          relations: [
+            'owner',
+            'subject',
+            'color',
+            'flashcards',
+            'folders',
+            'classes',
+          ],
         });
 
-      return studySets.map((studySet) => this.mapStudySetToResponse(studySet));
+      return studySets.map((studySet) => {
+        const isImported =
+          studySet.folders.some((folder) => folder.id === folderId) ||
+          studySet.classes.some((classItem) => classItem.id === classId);
+        return {
+          ...this.mapStudySetToResponse(studySet),
+          isImported,
+        };
+      });
     } catch (error) {
       console.log('Error getting study sets', error);
       throw new InternalServerErrorException('Error getting study sets');

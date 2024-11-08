@@ -17,6 +17,7 @@ import { ImportFlashcardDto } from './dto/bodies/import-flashcard.dto';
 import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcard-from-quizlet.param.dto';
 import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.dto';
 import { ResetFlashcardProgressParamsDto } from './dto/queries/reset-flashcard-progress-params.dto';
+import { GetStudySetsByOwnerIdParamDto } from './dto/queries/get-study-sets-by-owner-Id-param.dto';
 
 @Injectable()
 export class StudySetService {
@@ -34,9 +35,11 @@ export class StudySetService {
 
   async getStudySetsByOwnerId(
     getStudySetsByOwnerIdDto: GetStudySetsByOwnerIdDto,
+    getStudySetsByOwnerIdParamDto: GetStudySetsByOwnerIdParamDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
     return await this.studySetRepository.getStudySetsByOwnerId(
       getStudySetsByOwnerIdDto,
+      getStudySetsByOwnerIdParamDto,
     );
   }
 
