@@ -1,4 +1,10 @@
-import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
+} from '@nestjs/common';
 import { MessagingProvider } from './messaging.provider';
 import * as admin from 'firebase-admin';
 import {
@@ -9,7 +15,8 @@ import {
 } from './imessaging.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeviceEntity } from './entities/device.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { UserEntity } from '../auth/entities/user.entity';
 
 @Injectable()
 export class MessagingService implements IMessaging {
@@ -18,6 +25,7 @@ export class MessagingService implements IMessaging {
     private readonly messaging: admin.messaging.Messaging,
     @InjectRepository(DeviceEntity)
     private readonly deviceRepository: Repository<DeviceEntity>,
+    private readonly dataSource: DataSource,
   ) {}
 
   private android: admin.messaging.AndroidConfig = {
@@ -34,6 +42,31 @@ export class MessagingService implements IMessaging {
       'apns-priority': '5',
     },
   };
+
+  async registerDeviceToken(
+    userId: string,
+    deviceToken: string,
+  ): Promise<void> {
+    const userEntity = await this.dataSource
+      .getRepository(UserEntity)
+      .findOne({ where: { id: userId } });
+    if (!userEntity) {
+      throw new NotFoundException('User not found');
+    }
+
+    const existingDevice = await this.deviceRepository.findOne({
+      where: { user: { id: userId }, deviceToken: deviceToken },
+    });
+
+    if (existingDevice) {
+      return;
+    }
+
+    const device = new DeviceEntity();
+    device.user = userEntity;
+    device.deviceToken = deviceToken;
+    await this.deviceRepository.save(device);
+  }
 
   async sendMessageToTokens(
     params: IMessaginToTokensParams,
