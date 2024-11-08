@@ -23,7 +23,6 @@ import { ResetPasswordDto } from './dto/bodies/reset-password.dto';
 import { ResetPasswordResponseInterface } from './interfaces/reset-password-response.interface';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { MailerService } from '@nestjs-modules/mailer';
 import { SetNewPasswordDto } from './dto/bodies/set-new-password.dto';
 import { SetNewPasswordResponseInterface } from './interfaces/set-new-password-response.interface';
 import { ResendVerificationEmailResponseInterface } from './interfaces/resend-verification-email-response.interface';
@@ -48,13 +47,14 @@ import { VerifyPasswordResponseInterface } from './interfaces/verify-password-re
 import { UpdateEmailDto } from './dto/bodies/update-email.dto';
 import { UpdateEmailResponseInterfaceDto } from './interfaces/update-email-response.interface.dto';
 import { VerifyEmailQueryDto } from './dto/queries/verify-email-query.dto';
+import { ChangeUsernameBodyDto } from './dto/bodies/change-username-body.dto';
+import { ChangePasswordResponseInterface } from './interfaces/change-password-response.interface';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
   constructor(
     private dataSource: DataSource,
     private jwtService: JwtService,
-    private readonly mailService: MailerService,
     @InjectQueue('send-email') private readonly sendEmailQueue: Queue,
     private configService: ConfigService,
   ) {
@@ -858,6 +858,44 @@ export class AuthRepository extends Repository<UserEntity> {
       message: 'Email verified successfully',
       success: true,
       email: user.email,
+    };
+  }
+
+  async changeUsername(
+    changeUsernameBodyDto: ChangeUsernameBodyDto,
+  ): Promise<ChangePasswordResponseInterface> {
+    const { userId, newUsername } = changeUsernameBodyDto;
+    const user = await this.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    const existingUser = await this.findOne({
+      where: { username: newUsername },
+    });
+    if (existingUser) {
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        message: 'Username is already in use',
+      });
+    }
+
+    if (user.username === newUsername) {
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        message: 'New username is the same as the old username',
+      });
+    }
+
+    user.username = newUsername;
+    await this.save(user);
+
+    return {
+      message: 'Username updated successfully',
+      newUsername: newUsername,
     };
   }
 

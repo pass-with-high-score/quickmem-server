@@ -30,6 +30,8 @@ import { VerifyPasswordResponseInterface } from './interfaces/verify-password-re
 import { UpdateEmailDto } from './dto/bodies/update-email.dto';
 import { UpdateEmailResponseInterfaceDto } from './interfaces/update-email-response.interface.dto';
 import { VerifyEmailQueryDto } from './dto/queries/verify-email-query.dto';
+import { ChangeUsernameBodyDto } from './dto/bodies/change-username-body.dto';
+import { ChangePasswordResponseInterface } from './interfaces/change-password-response.interface';
 
 @Injectable()
 export class AuthService {
@@ -177,5 +179,11 @@ export class AuthService {
     verifyEmailDto: VerifyEmailQueryDto,
   ): Promise<UpdateEmailResponseInterfaceDto> {
     return this.usersRepository.verifyEmail(verifyEmailDto);
+  }
+
+  async changeUsername(
+    changeUsernameBodyDto: ChangeUsernameBodyDto,
+  ): Promise<ChangePasswordResponseInterface> {
+    return this.usersRepository.changeUsername(changeUsernameBodyDto);
   }
 }

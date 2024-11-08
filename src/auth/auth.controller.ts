@@ -48,6 +48,8 @@ import { VerifyPasswordResponseInterface } from './interfaces/verify-password-re
 import { UpdateEmailDto } from './dto/bodies/update-email.dto';
 import { UpdateEmailResponseInterfaceDto } from './interfaces/update-email-response.interface.dto';
 import { VerifyEmailQueryDto } from './dto/queries/verify-email-query.dto';
+import { ChangeUsernameBodyDto } from './dto/bodies/change-username-body.dto';
+import { ChangePasswordResponseInterface } from './interfaces/change-password-response.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -123,7 +125,6 @@ export class AuthController {
     );
   }
 
-  // https://http//localhost:3009/verify-email?token=6fd1ca338b3c39944ff1f2d378dca433&userId=879757f9-a67c-406c-8a00-aef73daf57d9
   @Get('/verify-email')
   async verifyEmail(
     @Query() verifyEmailDto: VerifyEmailQueryDto,
@@ -221,6 +222,25 @@ export class AuthController {
     return await this.authService.updateEmail(updateEmailDto);
   }
 
+  @UseGuards(OwnershipGuard)
+  @HttpCode(HttpStatus.OK)
+  @Patch('/user/username')
+  async changeUsername(
+    @Body() changeUsernameBodyDto: ChangeUsernameBodyDto,
+  ): Promise<ChangePasswordResponseInterface> {
+    return this.authService.changeUsername(changeUsernameBodyDto);
+  }
+
+  @UseGuards(OwnershipGuard)
+  @SkipThrottle()
+  @HttpCode(HttpStatus.OK)
+  @Patch('/user/password')
+  async setNewPassword(
+    @Body() setNewPasswordDto: SetNewPasswordDto,
+  ): Promise<SetNewPasswordResponseInterface> {
+    return this.authService.setNewPassword(setNewPasswordDto);
+  }
+
   @SkipThrottle()
   @HttpCode(HttpStatus.OK)
   @Post('/login')
@@ -270,16 +290,6 @@ export class AuthController {
     @Body() resetPasswordDto: ResetPasswordDto,
   ): Promise<ResetPasswordResponseInterface> {
     return this.authService.resetPassword(resetPasswordDto);
-  }
-
-  @UseGuards(OwnershipGuard)
-  @SkipThrottle()
-  @HttpCode(HttpStatus.OK)
-  @Patch('/user/password')
-  async setNewPassword(
-    @Body() setNewPasswordDto: SetNewPasswordDto,
-  ): Promise<SetNewPasswordResponseInterface> {
-    return this.authService.setNewPassword(setNewPasswordDto);
   }
 
   @UseGuards(AuthGuard('jwt'))
