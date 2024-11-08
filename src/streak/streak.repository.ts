@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { StreakEntity } from './entities/streak.entity';
@@ -36,6 +37,11 @@ export class StreakRepository extends Repository<StreakEntity> {
 
       if (!user) {
         throw new NotFoundException({ message: 'User not found' });
+      }
+      if (!user.isVerified) {
+        throw new UnauthorizedException({
+          message: 'User is not verified',
+        });
       }
 
       // Find all streaks for the user
@@ -104,6 +110,19 @@ export class StreakRepository extends Repository<StreakEntity> {
     incrementStreakDto: IncrementStreakDto,
   ): Promise<StreakInterface> {
     const { userId } = incrementStreakDto;
+    const user = await this.dataSource
+      .getRepository(UserEntity)
+      .findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException({ message: 'User not found' });
+    }
+
+    if (!user.isVerified) {
+      throw new UnauthorizedException({
+        message: 'User is not verified',
+      });
+    }
     const date = new Date();
     const streaks = await this.find({
       where: { user: { id: userId } },
@@ -112,43 +131,60 @@ export class StreakRepository extends Repository<StreakEntity> {
     });
 
     if (streaks.length === 0) {
-      throw new NotFoundException('Streak not found');
-    }
-
-    const lastStreak = streaks[0];
-    logger.info(`Last streak count: ${lastStreak.streakCount}`); // Log last streak count
-
-    // Check if streak is already updated today
-    const today = new Date();
-    if (
-      lastStreak.updatedAt.toDateString() === today.toDateString() &&
-      lastStreak.streakCount > 0
-    ) {
-      logger.info(`Streak already updated today`); // Log streak already updated today
-      return {
-        id: lastStreak.id,
-        date,
-        streakCount: lastStreak.streakCount,
-      };
-    }
-
-    // If streak is not updated today, increment the streak
-    lastStreak.streakCount += 1;
-    lastStreak.updatedAt = date;
-
-    try {
-      await this.save(lastStreak);
-      logger.info(`Streak incremented to ${lastStreak.streakCount}`); // Log streak incremented
-      return {
-        id: lastStreak.id,
-        date,
-        streakCount: lastStreak.streakCount,
-      };
-    } catch (e) {
-      logger.error(e);
-      throw new InternalServerErrorException({
-        message: 'Error incrementing streak',
+      // create a new streak if none exists
+      const newStreak = this.create({
+        user: { id: userId },
+        streakCount: 1,
+        createdAt: date,
+        updatedAt: date,
       });
+
+      try {
+        await this.save(newStreak);
+        return {
+          id: newStreak.id,
+          date,
+          streakCount: newStreak.streakCount,
+        };
+      } catch (e) {
+        logger.error(e);
+        throw new InternalServerErrorException({
+          message: 'Error creating streak',
+        });
+      }
+    } else {
+      const lastStreak = streaks[0];
+
+      // Check if streak is already updated today
+      const today = new Date();
+      if (
+        lastStreak.updatedAt.toDateString() === today.toDateString() &&
+        lastStreak.streakCount > 0
+      ) {
+        return {
+          id: lastStreak.id,
+          date,
+          streakCount: lastStreak.streakCount,
+        };
+      }
+
+      // If streak is not updated today, increment the streak
+      lastStreak.streakCount += 1;
+      lastStreak.updatedAt = date;
+
+      try {
+        await this.save(lastStreak);
+        return {
+          id: lastStreak.id,
+          date,
+          streakCount: lastStreak.streakCount,
+        };
+      } catch (e) {
+        logger.error(e);
+        throw new InternalServerErrorException({
+          message: 'Error incrementing streak',
+        });
+      }
     }
   }
 }
