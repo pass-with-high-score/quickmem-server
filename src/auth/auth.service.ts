@@ -32,6 +32,8 @@ import { UpdateEmailResponseInterfaceDto } from './interfaces/update-email-respo
 import { VerifyEmailQueryDto } from './dto/queries/verify-email-query.dto';
 import { ChangeUsernameBodyDto } from './dto/bodies/change-username-body.dto';
 import { ChangePasswordResponseInterface } from './interfaces/change-password-response.interface';
+import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-username-query.dto';
+import { UserResponseInterface } from './interfaces/user-response.interface';
 
 @Injectable()
 export class AuthService {
@@ -185,5 +187,13 @@ export class AuthService {
     changeUsernameBodyDto: ChangeUsernameBodyDto,
   ): Promise<ChangePasswordResponseInterface> {
     return this.usersRepository.changeUsername(changeUsernameBodyDto);
+  }
+
+  async searchUserByUsername(
+    searchUserByUsernameQueryDto: SearchUserByUsernameQueryDto,
+  ): Promise<UserResponseInterface[]> {
+    return this.usersRepository.searchUserByUsername(
+      searchUserByUsernameQueryDto,
+    );
   }
 }

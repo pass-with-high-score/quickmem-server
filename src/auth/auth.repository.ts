@@ -1,4 +1,4 @@
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, ILike, Repository } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -49,6 +49,8 @@ import { UpdateEmailResponseInterfaceDto } from './interfaces/update-email-respo
 import { VerifyEmailQueryDto } from './dto/queries/verify-email-query.dto';
 import { ChangeUsernameBodyDto } from './dto/bodies/change-username-body.dto';
 import { ChangePasswordResponseInterface } from './interfaces/change-password-response.interface';
+import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-username-query.dto';
+import { UserResponseInterface } from './interfaces/user-response.interface';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -897,6 +899,31 @@ export class AuthRepository extends Repository<UserEntity> {
       message: 'Username updated successfully',
       newUsername: newUsername,
     };
+  }
+
+  async searchUserByUsername(
+    searchUserByUsernameQueryDto: SearchUserByUsernameQueryDto,
+  ): Promise<UserResponseInterface[]> {
+    const { username, size = 40, page = 0 } = searchUserByUsernameQueryDto;
+
+    const [users, total] = await this.findAndCount({
+      where: { username: ILike(`%${username}%`) },
+      relations: ['subscriptions'],
+      take: size,
+      skip: page * size,
+    });
+    console.log(total);
+
+    if (!users.length) {
+      throw new NotFoundException('No users found with the given username');
+    }
+
+    return users.map((user) => ({
+      id: user.id,
+      username: user.username,
+      avatarUrl: `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.jpg`,
+      role: user.role,
+    }));
   }
 
   async isUserPremium(userId: string): Promise<boolean> {

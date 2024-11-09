@@ -50,6 +50,8 @@ import { UpdateEmailResponseInterfaceDto } from './interfaces/update-email-respo
 import { VerifyEmailQueryDto } from './dto/queries/verify-email-query.dto';
 import { ChangeUsernameBodyDto } from './dto/bodies/change-username-body.dto';
 import { ChangePasswordResponseInterface } from './interfaces/change-password-response.interface';
+import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-username-query.dto';
+import { UserResponseInterface } from './interfaces/user-response.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -110,6 +112,15 @@ export class AuthController {
     });
     const deepLinkUrl = `quickmem://oauth/facebook/callback?${params.toString()}`;
     return response.redirect(deepLinkUrl);
+  }
+
+  @Get('/user/search')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  async searchUserByUsername(
+    @Query() searchUserByUsernameQueryDto: SearchUserByUsernameQueryDto,
+  ): Promise<UserResponseInterface[]> {
+    return this.authService.searchUserByUsername(searchUserByUsernameQueryDto);
   }
 
   @Get('/me/:id')
