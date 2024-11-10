@@ -20,6 +20,7 @@ import { DeleteFolderByIdDto } from './dto/params/delete-folder-by-id.dto';
 import { SearchFolderByTitleDto } from './dto/queries/search-folder-by-title';
 import { UpdateStudySetsInFolderResponseInterface } from './interfaces/update-study-sets-in-folder-response.interface';
 import { GetFolderByOwnerIdQueryDto } from './dto/queries/get-folder-by-owner-Id-query.dto';
+import { logger } from '../winston-logger.service';
 
 @Injectable()
 export class FolderRepository extends Repository<FolderEntity> {
@@ -100,10 +101,6 @@ export class FolderRepository extends Repository<FolderEntity> {
         relations: ['owner', 'studySets', 'classes'],
       });
 
-      if (!folders.length) {
-        throw new NotFoundException('No folders found for the user');
-      }
-
       return Promise.all(
         folders.map(async (folder) => {
           let isImported = false;
@@ -131,8 +128,10 @@ export class FolderRepository extends Repository<FolderEntity> {
         }),
       );
     } catch (error) {
-      console.error('Error fetching folders by user ID:', error);
-      throw new NotFoundException('Error fetching folders by user ID');
+      logger.error('Error fetching folders by user ID', { ownerId, error });
+      throw new InternalServerErrorException(
+        'Error fetching folders by user ID',
+      );
     }
   }
 
