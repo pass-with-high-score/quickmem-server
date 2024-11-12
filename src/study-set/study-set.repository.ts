@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, ILike, In, Repository } from 'typeorm';
 import { StudySetEntity } from './entities/study-set.entity';
 import { UserEntity } from '../auth/entities/user.entity';
 import { CreateStudySetDto } from './dto/bodies/create-study-set.dto';
@@ -363,65 +363,69 @@ export class StudySetRepository extends Repository<StudySetEntity> {
   async searchStudySetByTitle(
     searchStudySetsQueryDto: SearchStudySetsQueryDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
-    const { title, creatorType, size, page, subjectId, colorId } =
-      searchStudySetsQueryDto;
+    const {
+      title = '',
+      creatorType = 'all',
+      size = 'all',
+      page = 1,
+      subjectId = null,
+      colorId = null,
+    } = searchStudySetsQueryDto;
     if (page < 1) {
       throw new NotFoundException('Invalid page number');
     }
 
     try {
-      const queryBuilder = this.dataSource
-        .getRepository(StudySetEntity)
-        .createQueryBuilder('studySet')
-        .leftJoinAndSelect('studySet.owner', 'owner')
-        .leftJoinAndSelect('studySet.flashcards', 'flashcards')
-        .leftJoinAndSelect('studySet.subject', 'subject')
-        .leftJoinAndSelect('studySet.color', 'color')
-        .where('studySet.title ILIKE :title', { title: `%${title}%` })
-        .andWhere('studySet.isPublic = true');
+      const options: any = {
+        where: {
+          title: title ? ILike(`%${title}%`) : undefined,
+          isPublic: true,
+          subject: subjectId ? { id: subjectId } : undefined,
+          color: colorId ? { id: colorId } : undefined,
+        },
+        relations: ['owner', 'flashcards', 'subject', 'color'],
+        skip: (page - 1) * 40,
+        take: 40,
+      };
 
-      if (size) {
-        switch (size) {
-          case 'lessThan20':
-            queryBuilder.andWhere('flashcards.length < 20');
-            break;
-          case 'between20And49':
-            queryBuilder.andWhere('flashcards.length BETWEEN 20 AND 49');
-            break;
-          case 'moreThan50':
-            queryBuilder.andWhere('flashcards.length > 50');
-            break;
-        }
-      }
-
+      // Filter by creatorType if provided
       if (creatorType) {
+        options.where.owner = options.where.owner || {};
         switch (creatorType) {
           case 'teacher':
-            queryBuilder.andWhere('owner.role = :role', { role: 'TEACHER' });
+            options.where.owner.role = 'TEACHER';
             break;
           case 'student':
-            queryBuilder.andWhere('owner.role = :role', { role: 'USER' });
+            options.where.owner.role = 'USER';
             break;
-          case 'premium':
-            queryBuilder.andWhere('owner.isPremium = true');
+          default: // 'all'
             break;
         }
       }
 
-      if (subjectId) {
-        queryBuilder.andWhere('studySet.subjectId = :subjectId', {
-          subjectId,
+      // Apply flashcard count filter
+      const studySets = await this.find(options);
+      let filteredStudySets = studySets;
+
+      if (size) {
+        filteredStudySets = studySets.filter((studySet) => {
+          const flashcardCount = studySet.flashcards.length;
+          switch (size) {
+            case 'lessThan20':
+              return flashcardCount < 20;
+            case 'between20And49':
+              return flashcardCount >= 20 && flashcardCount <= 49;
+            case 'moreThan50':
+              return flashcardCount > 50;
+            default: // 'all'
+              return true;
+          }
         });
       }
 
-      if (colorId) {
-        queryBuilder.andWhere('studySet.colorId = :colorId', { colorId });
-      }
-      const studySets = await queryBuilder
-        .skip((page - 1) * 40)
-        .take(40)
-        .getMany();
-      return studySets.map((studySet) => this.mapStudySetToResponse(studySet));
+      return filteredStudySets.map((studySet) =>
+        this.mapStudySetToResponse(studySet),
+      );
     } catch (error) {
       console.log('Error searching study set', error);
       throw new InternalServerErrorException('Error searching study set');
