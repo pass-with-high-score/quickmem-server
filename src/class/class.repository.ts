@@ -16,7 +16,7 @@ import { UpdateClassByIdDto } from './dto/bodies/update-class-by-id.dto';
 import { UpdateClassByIdParamDto } from './dto/params/update-class-by-id-param.dto';
 import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.dto';
 import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
-import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
+import { SearchClassesByTitleQueryDto } from './dto/queries/search-classes-by-title-query.dto';
 import { randomBytes } from 'crypto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
@@ -37,9 +37,9 @@ export class ClassRepository extends Repository<ClassEntity> {
 
   // Search class by title
   async searchClassByTitle(
-    searchClassByTitleDto: SearchClassByTitleDto,
+    searchClassesByTitleQueryDto: SearchClassesByTitleQueryDto,
   ): Promise<GetClassResponseInterface[]> {
-    const { title, size = 40, page = 0 } = searchClassByTitleDto;
+    const { title, size = 40, page = 0 } = searchClassesByTitleQueryDto;
 
     const [classes, total] = await this.findAndCount({
       where: { title: ILike(`%${title}%`) },

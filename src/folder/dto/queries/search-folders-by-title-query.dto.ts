@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
 
-export class SearchFolderByTitleDto {
+export class SearchFoldersByTitleQueryDto {
   @IsNotEmpty()
   @IsString()
   title: string;

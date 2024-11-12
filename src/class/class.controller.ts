@@ -22,7 +22,7 @@ import { UpdateClassByIdParamDto } from './dto/params/update-class-by-id-param.d
 import { UpdateClassByIdDto } from './dto/bodies/update-class-by-id.dto';
 import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.dto';
 import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
-import { SearchClassByTitleDto } from './dto/queries/search-class-by-title.dto';
+import { SearchClassesByTitleQueryDto } from './dto/queries/search-classes-by-title-query.dto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
 import { UpdateFoldersInClassDto } from './dto/bodies/update-folders-in-class.dto';
@@ -40,9 +40,9 @@ export class ClassController {
   @Get('/search')
   @HttpCode(HttpStatus.OK)
   async searchClassByTitle(
-    @Query() searchClassByTitleDto: SearchClassByTitleDto,
+    @Query() searchClassesByTitleQueryDto: SearchClassesByTitleQueryDto,
   ): Promise<GetClassResponseInterface[]> {
-    return this.classService.searchClassByTitle(searchClassByTitleDto);
+    return this.classService.searchClassByTitle(searchClassesByTitleQueryDto);
   }
 
   @Get('/:id')

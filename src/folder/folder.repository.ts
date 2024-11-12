@@ -17,7 +17,7 @@ import { StudySetEntity } from '../study-set/entities/study-set.entity';
 import { UpdateFolderDto } from './dto/bodies/update-folder.dto';
 import { UpdateFolderByIdDto } from './dto/params/update-folder-by-id.dto';
 import { DeleteFolderByIdDto } from './dto/params/delete-folder-by-id.dto';
-import { SearchFolderByTitleDto } from './dto/queries/search-folder-by-title';
+import { SearchFoldersByTitleQueryDto } from './dto/queries/search-folders-by-title-query.dto';
 import { UpdateStudySetsInFolderResponseInterface } from './interfaces/update-study-sets-in-folder-response.interface';
 import { GetFolderByOwnerIdQueryDto } from './dto/queries/get-folder-by-owner-Id-query.dto';
 import { logger } from '../winston-logger.service';
@@ -230,9 +230,9 @@ export class FolderRepository extends Repository<FolderEntity> {
   }
 
   async searchFolderByTitle(
-    searchFolderByTitleDto: SearchFolderByTitleDto,
+    searchFoldersByTitleQueryDto: SearchFoldersByTitleQueryDto,
   ): Promise<GetFolderResponseInterface[]> {
-    const { title, size = 40, page = 0 } = searchFolderByTitleDto;
+    const { title, size = 40, page = 0 } = searchFoldersByTitleQueryDto;
 
     const [folders, total] = await this.findAndCount({
       where: { title: ILike(`%${title}%`), isPublic: true },

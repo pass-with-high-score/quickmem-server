@@ -377,7 +377,8 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         .leftJoinAndSelect('studySet.flashcards', 'flashcards')
         .leftJoinAndSelect('studySet.subject', 'subject')
         .leftJoinAndSelect('studySet.color', 'color')
-        .where('studySet.title ILIKE :title', { title: `%${title}%` });
+        .where('studySet.title ILIKE :title', { title: `%${title}%` })
+        .andWhere('studySet.isPublic = true');
 
       if (size) {
         switch (size) {

@@ -9,7 +9,7 @@ import { UpdateStudySetsInFolderDto } from './dto/bodies/update-study-sets-in-fo
 import { UpdateFolderByIdDto } from './dto/params/update-folder-by-id.dto';
 import { UpdateFolderDto } from './dto/bodies/update-folder.dto';
 import { DeleteFolderByIdDto } from './dto/params/delete-folder-by-id.dto';
-import { SearchFolderByTitleDto } from './dto/queries/search-folder-by-title';
+import { SearchFoldersByTitleQueryDto } from './dto/queries/search-folders-by-title-query.dto';
 import { UpdateStudySetsInFolderResponseInterface } from './interfaces/update-study-sets-in-folder-response.interface';
 import { GetFolderByOwnerIdQueryDto } from './dto/queries/get-folder-by-owner-Id-query.dto';
 
@@ -54,9 +54,9 @@ export class FolderService {
   }
 
   async searchFolderByTitle(
-    searchFolderByTitleDto: SearchFolderByTitleDto,
+    searchFoldersByTitleQueryDto: SearchFoldersByTitleQueryDto,
   ): Promise<GetFolderResponseInterface[]> {
-    return this.folderRepository.searchFolderByTitle(searchFolderByTitleDto);
+    return this.folderRepository.searchFolderByTitle(searchFoldersByTitleQueryDto);
   }
 
   async updateStudySetsInFolder(
