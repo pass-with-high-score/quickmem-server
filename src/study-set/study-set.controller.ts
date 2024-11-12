@@ -24,7 +24,7 @@ import { UpdateStudySetByIdBodyDto } from './dto/bodies/update-study-set-by-id-b
 import { DeleteStudySetByIdParamDto } from './dto/params/delete-study-set-by-id-param.dto';
 import { DeleteStudySetResponseInterface } from './interfaces/delete-study-set-response.interface';
 import { DuplicateStudySetDto } from './dto/bodies/duplicate-study-set.dto';
-import { SearchStudySetParamsDto } from './dto/queries/search-study-set-params.dto';
+import { SearchStudySetsQueryDto } from './dto/queries/search-study-sets-query.dto';
 import { ResetFlashcardProgressParamDto } from './dto/params/reset-flashcard-progress-param.dto';
 import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flashcard-progress-response.interface';
 import { ImportFlashcardDto } from './dto/bodies/import-flashcard.dto';
@@ -43,23 +43,13 @@ import { UpdateClassesInStudySetResponseInterface } from './interfaces/update-cl
 export class StudySetController {
   constructor(private readonly studySetService: StudySetService) {}
 
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
-  async createStudySet(
-    @Body() createStudySetDto: CreateStudySetDto,
-  ): Promise<CreateStudySetResponseInterface> {
-    console.log('createStudySetDto', createStudySetDto);
-    return await this.studySetService.createStudySet(createStudySetDto);
-  }
-
   @Get('/search')
   @HttpCode(HttpStatus.OK)
   async searchStudySetByTitle(
-    @Query() searchStudySeParamsDto: SearchStudySetParamsDto,
+    @Query() searchStudySetsQueryDto: SearchStudySetsQueryDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
-    console.log('searchStudySeParamsDto', searchStudySeParamsDto);
     return await this.studySetService.searchStudySetByTitle(
-      searchStudySeParamsDto,
+      searchStudySetsQueryDto,
     );
   }
 
@@ -114,14 +104,13 @@ export class StudySetController {
     );
   }
 
-  @Delete('/:id')
-  @HttpCode(HttpStatus.OK) // can change to 204 (No Content) but it will not return any response
-  async deleteStudySetById(
-    @Param() deleteStudySetByIdParamDto: DeleteStudySetByIdParamDto,
-  ): Promise<DeleteStudySetResponseInterface> {
-    return await this.studySetService.deleteStudySetById(
-      deleteStudySetByIdParamDto,
-    );
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async createStudySet(
+    @Body() createStudySetDto: CreateStudySetDto,
+  ): Promise<CreateStudySetResponseInterface> {
+    console.log('createStudySetDto', createStudySetDto);
+    return await this.studySetService.createStudySet(createStudySetDto);
   }
 
   @Post('/duplicate')
@@ -169,6 +158,16 @@ export class StudySetController {
   ): Promise<UpdateClassesInStudySetResponseInterface> {
     return this.studySetService.updateClassesInStudySet(
       updateClassesInStudySetDto,
+    );
+  }
+
+  @Delete('/:id')
+  @HttpCode(HttpStatus.OK) // can change to 204 (No Content) but it will not return any response
+  async deleteStudySetById(
+    @Param() deleteStudySetByIdParamDto: DeleteStudySetByIdParamDto,
+  ): Promise<DeleteStudySetResponseInterface> {
+    return await this.studySetService.deleteStudySetById(
+      deleteStudySetByIdParamDto,
     );
   }
 }

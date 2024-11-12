@@ -19,7 +19,7 @@ import { UpdateStudySetByIdParamDto } from './dto/params/update-study-set-by-id-
 import { DeleteStudySetByIdParamDto } from './dto/params/delete-study-set-by-id-param.dto';
 import { DeleteStudySetResponseInterface } from './interfaces/delete-study-set-response.interface';
 import { DuplicateStudySetDto } from './dto/bodies/duplicate-study-set.dto';
-import { SearchStudySetParamsDto } from './dto/queries/search-study-set-params.dto';
+import { SearchStudySetsQueryDto } from './dto/queries/search-study-sets-query.dto';
 import { FlashcardEntity } from 'src/flashcard/entities/flashcard.entity';
 import * as process from 'node:process';
 import { randomBytes } from 'crypto';
@@ -361,9 +361,10 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
   // search study set by title
   async searchStudySetByTitle(
-    searchStudySeParamsDto: SearchStudySetParamsDto,
+    searchStudySetsQueryDto: SearchStudySetsQueryDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
-    const { title, creatorType, size, page } = searchStudySeParamsDto;
+    const { title, creatorType, size, page, subjectId, colorId } =
+      searchStudySetsQueryDto;
     if (page < 1) {
       throw new NotFoundException('Invalid page number');
     }
@@ -374,6 +375,8 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         .createQueryBuilder('studySet')
         .leftJoinAndSelect('studySet.owner', 'owner')
         .leftJoinAndSelect('studySet.flashcards', 'flashcards')
+        .leftJoinAndSelect('studySet.subject', 'subject')
+        .leftJoinAndSelect('studySet.color', 'color')
         .where('studySet.title ILIKE :title', { title: `%${title}%` });
 
       if (size) {
@@ -402,6 +405,16 @@ export class StudySetRepository extends Repository<StudySetEntity> {
             queryBuilder.andWhere('owner.isPremium = true');
             break;
         }
+      }
+
+      if (subjectId) {
+        queryBuilder.andWhere('studySet.subjectId = :subjectId', {
+          subjectId,
+        });
+      }
+
+      if (colorId) {
+        queryBuilder.andWhere('studySet.colorId = :colorId', { colorId });
       }
       const studySets = await queryBuilder
         .skip((page - 1) * 40)

@@ -10,7 +10,7 @@ import { UpdateStudySetByIdBodyDto } from './dto/bodies/update-study-set-by-id-b
 import { DeleteStudySetByIdParamDto } from './dto/params/delete-study-set-by-id-param.dto';
 import { DeleteStudySetResponseInterface } from './interfaces/delete-study-set-response.interface';
 import { DuplicateStudySetDto } from './dto/bodies/duplicate-study-set.dto';
-import { SearchStudySetParamsDto } from './dto/queries/search-study-set-params.dto';
+import { SearchStudySetsQueryDto } from './dto/queries/search-study-sets-query.dto';
 import { ResetFlashcardProgressParamDto } from './dto/params/reset-flashcard-progress-param.dto';
 import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flashcard-progress-response.interface';
 import { ImportFlashcardDto } from './dto/bodies/import-flashcard.dto';
@@ -78,10 +78,10 @@ export class StudySetService {
   }
 
   async searchStudySetByTitle(
-    searchStudySeParamsDto: SearchStudySetParamsDto,
+    searchStudySetsQueryDto: SearchStudySetsQueryDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
     return await this.studySetRepository.searchStudySetByTitle(
-      searchStudySeParamsDto,
+      searchStudySetsQueryDto,
     );
   }
 
