@@ -39,19 +39,17 @@ export class ClassRepository extends Repository<ClassEntity> {
   async searchClassByTitle(
     searchClassesByTitleQueryDto: SearchClassesByTitleQueryDto,
   ): Promise<GetClassResponseInterface[]> {
-    const { title, size = 40, page = 0 } = searchClassesByTitleQueryDto;
+    const { title, size = 40, page = 1 } = searchClassesByTitleQueryDto;
+    if (page < 1) {
+      throw new ConflictException('Invalid page number');
+    }
 
     const [classes, total] = await this.findAndCount({
       where: { title: ILike(`%${title}%`) },
       relations: ['owner', 'members', 'folders', 'studySets'],
       take: size,
-      skip: page * size,
+      skip: (page - 1) * size,
     });
-    console.log(total);
-    if (!classes.length) {
-      throw new NotFoundException('No classes found with the given title');
-    }
-
     return Promise.all(
       classes.map((classEntity) =>
         this.mapClassEntityToResponse(classEntity, false, false, false),

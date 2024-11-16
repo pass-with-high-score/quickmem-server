@@ -232,7 +232,10 @@ export class FolderRepository extends Repository<FolderEntity> {
   async searchFolderByTitle(
     searchFoldersByTitleQueryDto: SearchFoldersByTitleQueryDto,
   ): Promise<GetFolderResponseInterface[]> {
-    const { title, size = 40, page = 0 } = searchFoldersByTitleQueryDto;
+    const { title, size = 40, page = 1 } = searchFoldersByTitleQueryDto;
+    if (page < 1) {
+      throw new ConflictException('Invalid page number');
+    }
 
     const [folders, total] = await this.findAndCount({
       where: { title: ILike(`%${title}%`), isPublic: true },
@@ -243,14 +246,8 @@ export class FolderRepository extends Repository<FolderEntity> {
         'studySets.flashcards',
       ],
       take: size,
-      skip: page * size,
+      skip: (page - 1) * size,
     });
-    console.log(total);
-
-    if (!folders.length) {
-      throw new NotFoundException('No folders found with the given title');
-    }
-
     return Promise.all(
       folders.map((folder) =>
         this.mapFolderToGetFolderResponseInterface(folder, false),

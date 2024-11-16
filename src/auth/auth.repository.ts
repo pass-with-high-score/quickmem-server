@@ -904,19 +904,17 @@ export class AuthRepository extends Repository<UserEntity> {
   async searchUserByUsername(
     searchUserByUsernameQueryDto: SearchUserByUsernameQueryDto,
   ): Promise<UserResponseInterface[]> {
-    const { username, size = 40, page = 0 } = searchUserByUsernameQueryDto;
+    const { username, size = 40, page = 1 } = searchUserByUsernameQueryDto;
+    if (page < 1) {
+      throw new ConflictException('Invalid page number');
+    }
 
     const [users, total] = await this.findAndCount({
       where: { username: ILike(`%${username}%`) },
       relations: ['subscriptions'],
       take: size,
-      skip: page * size,
+      skip: (page - 1) * size,
     });
-    console.log(total);
-
-    if (!users.length) {
-      throw new NotFoundException('No users found with the given username');
-    }
 
     return users.map((user) => ({
       id: user.id,
