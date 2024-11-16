@@ -187,4 +187,16 @@ export class StreakRepository extends Repository<StreakEntity> {
       }
     }
   }
+
+  async getAllUsers(): Promise<UserEntity[]> {
+    return this.dataSource.getRepository(UserEntity).find();
+  }
+
+  async resetStreak(userId: string): Promise<void> {
+    const streaks = await this.find({ where: { user: { id: userId } } });
+    for (const streak of streaks) {
+      streak.streakCount = 0;
+      await this.save(streak);
+    }
+  }
 }
