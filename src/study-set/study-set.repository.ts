@@ -368,8 +368,8 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       creatorType = 'all',
       size = 'all',
       page = 1,
-      subjectId = null,
-      colorId = null,
+      subjectId = 1, // all
+      colorId = 1, // all
     } = searchStudySetsQueryDto;
     if (page < 1) {
       throw new NotFoundException('Invalid page number');
@@ -380,13 +380,23 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         where: {
           title: title ? ILike(`%${title}%`) : undefined,
           isPublic: true,
-          subject: subjectId ? { id: subjectId } : undefined,
-          color: colorId ? { id: colorId } : undefined,
         },
         relations: ['owner', 'flashcards', 'subject', 'color'],
         skip: (page - 1) * 40,
         take: 40,
       };
+
+      // Conditionally add subjectId and colorId filters
+      if (subjectId == 1) {
+        console.log('subjectId', subjectId);
+      } else {
+        options.where.subject = { id: subjectId };
+      }
+      if (colorId == 1) {
+        console.log('colorId', colorId);
+      } else {
+        options.where.color = { id: colorId };
+      }
 
       // Filter by creatorType if provided
       if (creatorType) {
