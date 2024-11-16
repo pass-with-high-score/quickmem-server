@@ -6,6 +6,8 @@ import { IncrementStreakDto } from './dto/bodies/increment-streak.dto';
 import { StreakInterface } from './interfaces/streak.interface';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { logger } from '../winston-logger.service';
+import { GetTopStreakQueryDto } from './dto/queries/get-top-streak-query.dto';
+import { GetTopStreakResponseInterface } from './interfaces/get-top-streak-response.interface';
 
 @Injectable()
 export class StreakService {
@@ -21,6 +23,12 @@ export class StreakService {
     incrementStreakDto: IncrementStreakDto,
   ): Promise<StreakInterface> {
     return this.streakRepository.incrementStreak(incrementStreakDto);
+  }
+
+  async getTopUsers(
+    getTopStreakQueryDto: GetTopStreakQueryDto,
+  ): Promise<GetTopStreakResponseInterface[]> {
+    return this.streakRepository.getTopUsers(getTopStreakQueryDto);
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)

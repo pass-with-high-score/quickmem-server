@@ -12,6 +12,8 @@ import { logger } from '../winston-logger.service';
 import { UserEntity } from '../auth/entities/user.entity';
 import { IncrementStreakDto } from './dto/bodies/increment-streak.dto';
 import { StreakInterface } from './interfaces/streak.interface';
+import { GetTopStreakQueryDto } from './dto/queries/get-top-streak-query.dto';
+import { GetTopStreakResponseInterface } from './interfaces/get-top-streak-response.interface';
 
 @Injectable()
 export class StreakRepository extends Repository<StreakEntity> {
@@ -197,6 +199,39 @@ export class StreakRepository extends Repository<StreakEntity> {
     for (const streak of streaks) {
       streak.streakCount = 0;
       await this.save(streak);
+    }
+  }
+
+  // Get top streaks
+  async getTopUsers(
+    getTopStreakQueryDto: GetTopStreakQueryDto,
+  ): Promise<GetTopStreakResponseInterface[]> {
+    const { limit = 10 } = getTopStreakQueryDto;
+    const query = this.createQueryBuilder('streak')
+      .select('streak.userId', 'userId')
+      .addSelect('user.username', 'username')
+      .addSelect('MAX(streak.streakCount)', 'streakCount')
+      .addSelect('user.role', 'role')
+      .innerJoin(UserEntity, 'user', 'user.id = streak.userId')
+      .groupBy('streak.userId')
+      .addGroupBy('user.username')
+      .addGroupBy('user.role')
+      .orderBy('"streakCount"', 'DESC')
+      .limit(limit);
+
+    try {
+      const topStreaks = await query.getRawMany();
+      return topStreaks.map((streak) => ({
+        userId: streak.userId,
+        username: streak.username,
+        streakCount: parseInt(streak.streakCount, 10),
+        role: streak.role,
+      }));
+    } catch (e) {
+      logger.error(e);
+      throw new InternalServerErrorException({
+        message: 'Error getting top streaks',
+      });
     }
   }
 }

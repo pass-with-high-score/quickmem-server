@@ -569,7 +569,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       const studySet = new StudySetEntity();
       studySet.title = aiGeneratedName;
       studySet.description = aiGeneratedDescription;
-      studySet.isPublic = false;
+      studySet.isPublic = true;
       studySet.link = randomBytes(7).toString('base64').substring(0, 7);
 
       const owner = await this.dataSource
