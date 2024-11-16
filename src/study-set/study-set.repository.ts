@@ -494,6 +494,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
           api_key: apiKey,
           url: quizletUrl,
         },
+        timeout: 10000,
       });
 
       console.log(response.data);
@@ -888,7 +889,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
             hexValue: studySet.color.hexValue,
           }
         : undefined,
-      flashCardCount: studySet.flashcards ? studySet.flashcards.length : 0,
+      flashcardCount: studySet.flashcards ? studySet.flashcards.length : 0,
       flashcards: getFlashcards ? studySet.flashcards : [],
     };
   }

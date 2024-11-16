@@ -5,7 +5,7 @@ export interface GetAllStudySetResponseInterface {
   title: string;
   description?: string;
   isPublic?: boolean;
-  flashCardCount?: number;
+  flashcardCount?: number;
   linkShareCode?: string;
   isImported?: boolean;
   flashcards?: FlashcardResponseInterface[];

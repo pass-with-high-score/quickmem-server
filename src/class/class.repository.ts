@@ -651,7 +651,7 @@ export class ClassRepository extends Repository<ClassEntity> {
                   name: studySet.subject.name,
                 }
               : undefined,
-            flashCardCount: studySet.flashcards
+            flashcardCount: studySet.flashcards
               ? studySet.flashcards.length
               : 0,
             owner: {
