@@ -17,6 +17,7 @@ import { StreakEntity } from '../../streak/entities/streak.entity';
 import { NotificationEntity } from '../../notification/entities/notification.entity';
 import { SubscriptionEntity } from '../../subscription/entities/subscription.entity';
 import { DeviceEntity } from '../../firebase/entities/device.entity';
+import { StudyTimeEntity } from '../../study-time/entities/study-time.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -88,8 +89,8 @@ export class UserEntity {
   @Column({ nullable: true })
   resetPasswordExpires: Date;
 
-  @Column({ nullable: true })
-  studyTimes: number;
+  @OneToMany(() => StudyTimeEntity, (studyTime) => studyTime.user)
+  studyTimes: StudyTimeEntity[];
 
   @OneToMany(() => StudySetEntity, (studySet) => studySet.owner)
   studySets: StudySetEntity[];

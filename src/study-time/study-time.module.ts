@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from 'src/auth/entities/user.entity';
 import { StudyTimeEntity } from './entities/study-time.entity';
 import { StudyTimeController } from './study-time.controller';
 import { StudyTimeService } from './study-time.service';
+import { StudyTimeRepository } from './study-time.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([StudyTimeEntity, UserEntity])],
-  providers: [StudyTimeService],
+  imports: [TypeOrmModule.forFeature([StudyTimeEntity])],
+  providers: [StudyTimeService, StudyTimeRepository],
   controllers: [StudyTimeController],
 })
 export class StudyTimeModule {}

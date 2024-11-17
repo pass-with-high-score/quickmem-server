@@ -80,7 +80,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
             flashcard.flipStatus === FlipFlashcardStatus.NONE ||
             flashcard.flipStatus === FlipFlashcardStatus.STILL_LEARNING,
         );
-      } else if (learnMode == LearnModeEnum.NORMAL) {
+      } else if (learnMode == LearnModeEnum.QUIZ) {
         filteredFlashcards = flashcards.filter(
           (flashcard) =>
             flashcard.rating === FlashcardStatusEnum.NOT_STUDIED ||
