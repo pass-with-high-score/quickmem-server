@@ -337,7 +337,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
       await this.dataSource.getRepository(FlashcardEntity).save(flashcards);
 
-      return this.mapStudySetToResponse(savedStudySet, true);
+      return this.mapStudySetToResponse(savedStudySet, false);
     } catch (error) {
       console.log('Error duplicating study set', error);
       throw new InternalServerErrorException('Error duplicating study set');
