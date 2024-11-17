@@ -21,6 +21,7 @@ import { StreakModule } from './streak/streak.module';
 import { NotificationModule } from './notification/notification.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { MessagingModule } from './firebase/messaging.module';
+import { StudyTimeModule } from './study-time/study-time.module';
 
 dotenv.config();
 
@@ -98,6 +99,7 @@ dotenv.config();
     NotificationModule,
     SubscriptionModule,
     MessagingModule,
+    StudyTimeModule
   ],
   providers: [
     {

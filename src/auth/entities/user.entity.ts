@@ -88,6 +88,9 @@ export class UserEntity {
   @Column({ nullable: true })
   resetPasswordExpires: Date;
 
+  @Column({ nullable: true })
+  studyTimes: number;
+
   @OneToMany(() => StudySetEntity, (studySet) => studySet.owner)
   studySets: StudySetEntity[];
 
