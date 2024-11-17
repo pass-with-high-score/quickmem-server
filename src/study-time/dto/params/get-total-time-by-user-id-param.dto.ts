@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsUUID } from 'class-validator';
 
-export class GetTotalTimeParamDto {
+export class GetTotalTimeByUserIdParamDto {
   @IsUUID()
   @IsNotEmpty()
   userId: string;

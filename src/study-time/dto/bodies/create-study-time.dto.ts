@@ -6,6 +6,10 @@ export class CreateStudyTimeDto {
   @IsNotEmpty()
   userId: string;
 
+  @IsUUID()
+  @IsNotEmpty()
+  studySetId: string;
+
   @IsInt()
   @IsNotEmpty()
   timeSpent: number;

@@ -53,12 +53,6 @@ export class StudySetController {
     );
   }
 
-  @Get()
-  @HttpCode(HttpStatus.OK)
-  async getStudySets(): Promise<GetAllStudySetResponseInterface[]> {
-    return await this.studySetService.getStudySets();
-  }
-
   @Get('/owner/:ownerId')
   @HttpCode(HttpStatus.OK)
   async getStudySetsByOwnerId(

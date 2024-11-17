@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { LearnModeEnum } from '../../flashcard/enums/learn-mode.enum';
+import { StudySetEntity } from '../../study-set/entities/study-set.entity';
 
 @Entity('study_time')
 export class StudyTimeEntity {
@@ -16,6 +17,9 @@ export class StudyTimeEntity {
 
   @ManyToOne(() => UserEntity, (user) => user.studyTimes)
   user: UserEntity;
+
+  @ManyToOne(() => StudySetEntity, (studySet) => studySet.studyTimes)
+  studySet: StudySetEntity;
 
   @Column('int')
   timeSpent: number;

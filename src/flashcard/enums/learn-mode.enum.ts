@@ -1,6 +1,6 @@
 export enum LearnModeEnum {
   FLIP = 'flip',
   QUIZ = 'quiz',
-  TRUEFALSE = 'truefalse',
+  TRUE_FALSE = 'trueFalse',
   WRITE = 'write',
 }

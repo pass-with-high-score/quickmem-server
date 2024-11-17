@@ -33,10 +33,6 @@ export class StudySetService {
     return await this.studySetRepository.createStudySet(createStudySetDto);
   }
 
-  async getStudySets(): Promise<GetAllStudySetResponseInterface[]> {
-    return await this.studySetRepository.getStudySets();
-  }
-
   async getStudySetsByOwnerId(
     getStudySetsByOwnerIdDto: GetStudySetsByOwnerIdDto,
     getStudySetsByOwnerIdParamDto: GetStudySetsByOwnerIdQueryDto,

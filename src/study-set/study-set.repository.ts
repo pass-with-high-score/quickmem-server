@@ -112,21 +112,6 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     }
   }
 
-  async getStudySets(): Promise<GetAllStudySetResponseInterface[]> {
-    try {
-      const studySets = await this.dataSource
-        .getRepository(StudySetEntity)
-        .find({
-          relations: ['owner', 'subject', 'color', 'flashcards'], // Load related entities
-        });
-
-      return studySets.map((studySet) => this.mapStudySetToResponse(studySet));
-    } catch (error) {
-      console.log('Error getting study sets', error);
-      throw new InternalServerErrorException('Error getting study sets');
-    }
-  }
-
   // get all by owner id
   async getStudySetsByOwnerId(
     getStudySetsByOwnerIdDto: GetStudySetsByOwnerIdDto,
