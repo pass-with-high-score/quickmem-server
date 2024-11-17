@@ -1,5 +1,13 @@
 import { UserEntity } from 'src/auth/entities/user.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { LearnModeEnum } from '../../flashcard/enums/learn-mode.enum';
 
 @Entity('study_time')
 export class StudyTimeEntity {
@@ -12,6 +20,16 @@ export class StudyTimeEntity {
   @Column('int')
   timeSpent: number;
 
-  @Column('timestamp')
-  date: Date;
+  @Column({
+    type: 'enum',
+    enum: LearnModeEnum,
+    nullable: true,
+  })
+  learnMode: LearnModeEnum;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
