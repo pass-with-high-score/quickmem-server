@@ -655,11 +655,35 @@ export class AuthRepository extends Repository<UserEntity> {
 
     logger.info(`Getting user profile detail for user ID ${id}`);
 
-    // Step 1: Fetch basic user information
-    const user = await this.findOne({
+    const userPromise = this.findOne({
       where: { id },
       select: ['id', 'username', 'fullName', 'role', 'avatarUrl'],
     });
+
+    const studySetsPromise = this.dataSource
+      .getRepository(StudySetEntity)
+      .find({
+        where: { owner: { id }, isPublic: isOwner ? undefined : true },
+        relations: ['color', 'subject', 'flashcards', 'owner'],
+      });
+
+    const foldersPromise = this.dataSource.getRepository(FolderEntity).find({
+      where: { owner: { id }, isPublic: isOwner ? undefined : true },
+      relations: ['studySets', 'owner'],
+    });
+
+    const classesPromise = this.dataSource.getRepository(ClassEntity).find({
+      where: { owner: { id } },
+      relations: ['studySets', 'owner'],
+    });
+
+    // Wait for all promises to resolve
+    const [user, studySets, folders, classes] = await Promise.all([
+      userPromise,
+      studySetsPromise,
+      foldersPromise,
+      classesPromise,
+    ]);
 
     if (!user) {
       throw new NotFoundException({
@@ -667,12 +691,6 @@ export class AuthRepository extends Repository<UserEntity> {
         message: 'User not found',
       });
     }
-
-    // Step 2: Fetch study sets separately
-    const studySets = await this.dataSource.getRepository(StudySetEntity).find({
-      where: { owner: { id }, isPublic: isOwner ? undefined : true },
-      relations: ['color', 'subject', 'flashcards', 'owner'],
-    });
 
     const formattedStudySets = studySets.map((studySet) => ({
       id: studySet.id,
@@ -697,12 +715,6 @@ export class AuthRepository extends Repository<UserEntity> {
       updatedAt: studySet.updatedAt,
     }));
 
-    // Step 3: Fetch folders separately
-    const folders = await this.dataSource.getRepository(FolderEntity).find({
-      where: { owner: { id }, isPublic: isOwner ? undefined : true },
-      relations: ['studySets', 'owner'],
-    });
-
     const formattedFolders = folders.map((folder) => ({
       id: folder.id,
       title: folder.title,
@@ -719,12 +731,6 @@ export class AuthRepository extends Repository<UserEntity> {
       updatedAt: folder.updatedAt,
     }));
 
-    // Step 4: Fetch classes separately
-    const classes = await this.dataSource.getRepository(ClassEntity).find({
-      where: { owner: { id } },
-      relations: ['studySets', 'owner'],
-    });
-
     const formattedClasses = classes.map((classItem) => ({
       id: classItem.id,
       title: classItem.title,
@@ -740,7 +746,6 @@ export class AuthRepository extends Repository<UserEntity> {
       updatedAt: classItem.updatedAt,
     }));
 
-    // Step 5: Construct response
     const avatar = `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.jpg`;
 
     return {
