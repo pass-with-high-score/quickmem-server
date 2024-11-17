@@ -46,5 +46,4 @@ export class StudyTimeRepository extends Repository<StudyTimeEntity> {
       throw new InternalServerErrorException(e);
     }
   }
-
 }
