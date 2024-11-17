@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { LearnModeEnum } from '../../flashcard/enums/learn-mode.enum';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('study_time')
 export class StudyTimeEntity {
