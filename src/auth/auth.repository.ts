@@ -915,7 +915,11 @@ export class AuthRepository extends Repository<UserEntity> {
     }
 
     const [users, total] = await this.findAndCount({
-      where: { username: ILike(`%${username}%`) },
+      where: {
+        username: ILike(`%${username}%`),
+        isVerified: true,
+      },
+      select: ['id', 'username', 'avatarUrl', 'role'],
       relations: ['subscriptions'],
       take: size,
       skip: (page - 1) * size,
