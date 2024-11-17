@@ -3,7 +3,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, LessThan, Repository } from 'typeorm';
 import { NotificationEntity } from './entities/notification.entity';
 import { CreateNotificationBodyDto } from './dto/bodies/create-notification-body.dto';
 import { UserEntity } from '../auth/entities/user.entity';
@@ -222,5 +222,28 @@ export class NotificationRepository extends Repository<NotificationEntity> {
     return {
       message: 'Notification sent successfully!',
     };
+  }
+
+  async deleteOldNotifications(): Promise<void> {
+    const dateThreshold = new Date();
+    dateThreshold.setDate(dateThreshold.getDate() - 21);
+
+    try {
+      const oldNotifications = await this.find({
+        where: { createdAt: LessThan(dateThreshold) },
+      });
+
+      if (oldNotifications.length > 0) {
+        await this.remove(oldNotifications);
+        logger.info('Old notifications deleted');
+      } else {
+        logger.info('No old notifications');
+      }
+    } catch (error) {
+      logger.error(error);
+      throw new InternalServerErrorException(
+        'Failed to delete old notifications',
+      );
+    }
   }
 }
