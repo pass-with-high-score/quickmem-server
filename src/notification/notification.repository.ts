@@ -3,7 +3,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { DataSource, LessThan, Repository } from 'typeorm';
+import { DataSource, In, LessThan, Repository } from 'typeorm';
 import { NotificationEntity } from './entities/notification.entity';
 import { CreateNotificationBodyDto } from './dto/bodies/create-notification-body.dto';
 import { UserEntity } from '../auth/entities/user.entity';
@@ -206,6 +206,12 @@ export class NotificationRepository extends Repository<NotificationEntity> {
         }
       } catch (error) {
         console.log(error);
+        if (
+          error.errorInfo.code === 'messaging/registration-token-not-registered'
+        ) {
+          // Remove invalid tokens
+          await this.removeInvalidTokens(deviceTokens);
+        }
         return {
           message: 'Failed to send notification.',
           error: error.message,
@@ -245,6 +251,18 @@ export class NotificationRepository extends Repository<NotificationEntity> {
       throw new InternalServerErrorException(
         'Failed to delete old notifications',
       );
+    }
+  }
+
+  async removeInvalidTokens(tokens: string[]): Promise<void> {
+    try {
+      await this.dataSource
+        .getRepository(DeviceEntity)
+        .delete({ deviceToken: In(tokens) });
+      logger.info('Invalid tokens removed');
+    } catch (error) {
+      logger.error('Failed to remove invalid tokens', error);
+      throw new InternalServerErrorException('Failed to remove invalid tokens');
     }
   }
 }
