@@ -28,6 +28,8 @@ import { StudySetEntity } from '../study-set/entities/study-set.entity';
 import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-class.dto';
 import { UpdateItemInClassResponseInterface } from './interfaces/update-item-in-class-response.interface';
 import { GetClassByUserIdQueryDto } from './dto/queries/get-class-by-user-Id-query.dto';
+import { GetClassByJoinTokenParamDto } from './dto/params/get-class-by-join-token.param.dto';
+import { GetClassByJoinTokenQueryDto } from './dto/queries/get-class-by-join-token.query.dto';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -600,6 +602,50 @@ export class ClassRepository extends Repository<ClassEntity> {
         'Error removing members from class',
       );
     }
+  }
+
+  async getClassByJoinToken(
+    getClassByJoinTokenParamDto: GetClassByJoinTokenParamDto,
+    getClassByJoinTokenQueryDto: GetClassByJoinTokenQueryDto,
+  ): Promise<GetClassResponseInterface> {
+    console.log(getClassByJoinTokenParamDto);
+    console.log(getClassByJoinTokenQueryDto);
+    const { joinToken } = getClassByJoinTokenParamDto;
+    const { userId } = getClassByJoinTokenQueryDto;
+    const classEntity = await this.findOne({
+      where: { joinToken },
+      relations: ['owner', 'members'],
+    });
+
+    if (!classEntity) {
+      throw new NotFoundException('Class not found');
+    }
+
+    const user = await this.dataSource.getRepository(UserEntity).findOneBy({
+      id: userId,
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      id: classEntity.id,
+      title: classEntity.title,
+      description: classEntity.description,
+      owner: {
+        id: classEntity.owner.id,
+        role: classEntity.owner.role,
+        username: classEntity.owner.username,
+        avatarUrl: `${process.env.HOST}/public/images/avatar/${classEntity.owner.avatarUrl}.jpg`,
+      },
+      isJoined: classEntity.members.some((member) => member.id === userId),
+      allowMemberManagement: classEntity.allowMemberManagement,
+      allowSetManagement: classEntity.allowSetManagement,
+      joinToken: classEntity.joinToken,
+      createdAt: classEntity.createdAt,
+      updatedAt: classEntity.updatedAt,
+    };
   }
 
   async mapClassEntityToResponse(

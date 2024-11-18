@@ -16,6 +16,8 @@ import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-clas
 import { UpdateItemInClassResponseInterface } from './interfaces/update-item-in-class-response.interface';
 import { UpdateFoldersInClassDto } from './dto/bodies/update-folders-in-class.dto';
 import { GetClassByUserIdQueryDto } from './dto/queries/get-class-by-user-Id-query.dto';
+import { GetClassByJoinTokenParamDto } from './dto/params/get-class-by-join-token.param.dto';
+import { GetClassByJoinTokenQueryDto } from './dto/queries/get-class-by-join-token.query.dto';
 
 @Injectable()
 export class ClassService {
@@ -96,6 +98,16 @@ export class ClassService {
   ): Promise<GetClassResponseInterface> {
     return this.classRepository.removeMembersFromClass(
       removeMembersFromClassDto,
+    );
+  }
+
+  async getClassByJoinToken(
+    getClassByJoinTokenParamDto: GetClassByJoinTokenParamDto,
+    getClassByJoinTokenQueryDto: GetClassByJoinTokenQueryDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classRepository.getClassByJoinToken(
+      getClassByJoinTokenParamDto,
+      getClassByJoinTokenQueryDto,
     );
   }
 }

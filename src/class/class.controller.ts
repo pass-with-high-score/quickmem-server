@@ -30,12 +30,26 @@ import { UpdateStudySetsInClassDto } from './dto/bodies/update-study-sets-in-cla
 import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-class.dto';
 import { UpdateItemInClassResponseInterface } from './interfaces/update-item-in-class-response.interface';
 import { GetClassByUserIdQueryDto } from './dto/queries/get-class-by-user-Id-query.dto';
+import { GetClassByJoinTokenParamDto } from './dto/params/get-class-by-join-token.param.dto';
+import { GetClassByJoinTokenQueryDto } from './dto/queries/get-class-by-join-token.query.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
 @Controller('class')
 export class ClassController {
   constructor(private readonly classService: ClassService) {}
+
+  @Get('/token/:joinToken')
+  @HttpCode(HttpStatus.OK)
+  async getClassByJoinToken(
+    @Param() getClassByJoinTokenParamDto: GetClassByJoinTokenParamDto,
+    @Query() getClassByJoinTokenQueryDto: GetClassByJoinTokenQueryDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classService.getClassByJoinToken(
+      getClassByJoinTokenParamDto,
+      getClassByJoinTokenQueryDto,
+    );
+  }
 
   @Get('/search')
   @HttpCode(HttpStatus.OK)

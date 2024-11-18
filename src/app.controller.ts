@@ -216,7 +216,7 @@ export class AppController {
   @Header('Content-Type', 'text/html')
   getLandingPage(): string {
     return `
-     <html>
+     <html lang="en">
   <head>
     <title>QuickMem App</title>
     <meta name="description" content="QuickMem is a flashcard-based learning application designed to help students improve their memorization skills through spaced repetition techniques.">

@@ -9,6 +9,7 @@ export interface GetClassResponseInterface {
   allowMemberManagement?: boolean;
   isImported?: boolean;
   description?: string;
+  isJoined?: boolean;
   owner: {
     id: string;
     role: string;
