@@ -21,6 +21,7 @@ import { SearchFoldersByTitleQueryDto } from './dto/queries/search-folders-by-ti
 import { UpdateStudySetsInFolderResponseInterface } from './interfaces/update-study-sets-in-folder-response.interface';
 import { GetFolderByOwnerIdQueryDto } from './dto/queries/get-folder-by-owner-Id-query.dto';
 import { logger } from '../winston-logger.service';
+import { GetFolderByCodeParamDto } from './dto/params/get-folder-by-code.param.dto';
 
 @Injectable()
 export class FolderRepository extends Repository<FolderEntity> {
@@ -45,6 +46,7 @@ export class FolderRepository extends Repository<FolderEntity> {
     folder.description = description;
     folder.isPublic = isPublic;
     folder.owner = owner;
+    folder.link = this.generateRandomString(7);
 
     try {
       await this.save(folder);
@@ -53,6 +55,7 @@ export class FolderRepository extends Repository<FolderEntity> {
         title: folder.title,
         description: folder.description,
         isPublic: folder.isPublic,
+        linkShareCode: folder.link,
         createdAt: folder.createdAt,
         updatedAt: folder.updatedAt,
       };
@@ -263,9 +266,10 @@ export class FolderRepository extends Repository<FolderEntity> {
     return {
       id: folder.id,
       title: folder.title,
+      linkShareCode: folder.link,
       description: folder.description,
       isPublic: folder.isPublic,
-      studySetCount: folder.studySets.length,
+      studySetCount: folder.studySets ? folder.studySets.length : 0,
       owner: showUser
         ? {
             id: folder.owner.id,
@@ -313,5 +317,38 @@ export class FolderRepository extends Repository<FolderEntity> {
       createdAt: folder.createdAt,
       updatedAt: folder.updatedAt,
     };
+  }
+
+  async getFolderByCode(
+    getFolderByCodeParamDto: GetFolderByCodeParamDto,
+  ): Promise<GetFolderResponseInterface> {
+    const { code } = getFolderByCodeParamDto;
+    try {
+      const folder = await this.findOne({
+        where: { link: code },
+      });
+
+      if (!folder) {
+        throw new NotFoundException('Folder not found');
+      }
+
+      return this.mapFolderToGetFolderResponseInterface(folder, false, false);
+    } catch (error) {
+      console.error('Error fetching folder by code:', error);
+      throw new NotFoundException('Error fetching folder by code');
+    }
+  }
+
+  private generateRandomString(length: number): string {
+    const characters =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+
+    return result;
   }
 }

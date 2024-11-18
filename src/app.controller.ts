@@ -11,6 +11,7 @@ import { JoinClassByTokenParamDto } from './class/dto/params/join-class-by-token
 import { Response } from 'express';
 import { logger } from './winston-logger.service';
 import { JoinClassByLinkParamDto } from './study-set/dto/params/join-class-by-link-param.dto';
+import { JoinFolderByLinkParamDto } from './folder/dto/params/join-folder-by-link-param.dto';
 
 @Controller()
 export class AppController {
@@ -207,6 +208,102 @@ export class AppController {
     </body>
     </html>
     `;
+
+    // Send HTML as response
+    response.status(HttpStatus.OK).send(htmlContent);
+  }
+
+  @Get('/folder/share/:folderLinkCode')
+  @HttpCode(HttpStatus.OK)
+  async shareFolder(
+    @Param() folderLinkCode: JoinFolderByLinkParamDto,
+    @Res() response: Response,
+  ): Promise<void> {
+    // Create deep link for the folder
+    logger.info(`Sharing folder with code: ${folderLinkCode.folderLinkCode}`);
+    const deepLinkUrl = `quickmem://share/folder?code=${folderLinkCode.folderLinkCode}`;
+    logger.info(`Deep link URL: ${deepLinkUrl}`);
+
+    // Create HTML content
+    const htmlContent = `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Folder</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        text-align: center;
+      }
+      h1 {
+        font-size: 24px;
+        color: #333;
+      }
+      p {
+        font-size: 16px;
+        color: #555;
+        margin-bottom: 20px;
+      }
+      .folder-name {
+        font-size: 18px;
+        color: #007bff;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+      .btn {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+      }
+      .btn:hover {
+        background-color: #0056b3;
+      }
+      .footer {
+        margin-top: 30px;
+        font-size: 12px;
+        color: #888;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Share Folder Invitation</h1>
+      <p>You are invited to access the folder:</p>
+      <div class="folder-name">QuickMem - Study Folder</div>
+
+      <p>Click the button below to view and explore the contents of this folder.</p>
+      
+      <a href="${deepLinkUrl}" class="btn">Access Folder</a>
+
+      <div class="footer">
+        <p>Need help? Contact support for assistance.</p>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
 
     // Send HTML as response
     response.status(HttpStatus.OK).send(htmlContent);

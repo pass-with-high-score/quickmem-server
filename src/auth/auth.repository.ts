@@ -719,6 +719,7 @@ export class AuthRepository extends Repository<UserEntity> {
     const formattedFolders = folders.map((folder) => ({
       id: folder.id,
       title: folder.title,
+      linkShareCode: folder.link,
       description: folder.description,
       isPublic: folder.isPublic,
       studySetCount: folder.studySets.length,

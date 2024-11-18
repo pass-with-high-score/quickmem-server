@@ -5,6 +5,7 @@ export interface GetFolderResponseInterface {
   title: string;
   description?: string;
   isPublic?: boolean;
+  linkShareCode: string;
   studySetCount: number;
   isImported?: boolean;
   owner: {

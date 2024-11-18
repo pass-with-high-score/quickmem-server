@@ -29,6 +29,9 @@ export class FolderEntity {
   @ManyToOne(() => UserEntity, (user) => user.folders)
   owner: UserEntity;
 
+  @Column({ nullable: true })
+  link: string;
+
   @ManyToMany(() => ClassEntity, (classEntity) => classEntity.folders)
   @JoinTable({
     name: 'class_folders',

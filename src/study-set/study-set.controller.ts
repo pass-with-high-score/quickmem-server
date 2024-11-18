@@ -36,7 +36,7 @@ import { UpdateFoldersInStudySetDto } from './dto/bodies/update-folders-in-study
 import { UpdateFoldersInStudySetResponseInterface } from './interfaces/update-folders-in-study-set-response.interface';
 import { UpdateClassesInStudySetDto } from './dto/bodies/update-classes-in-study-set.dto';
 import { UpdateClassesInStudySetResponseInterface } from './interfaces/update-classes-in-study-set-response.interface';
-import { GetClassByCodeParamDto } from './dto/params/get-class-by-code.param.dto';
+import { GetStudySetByCodeParamDto } from './dto/params/get-study-set-by-code.param.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -57,7 +57,7 @@ export class StudySetController {
   @Get('/link/:code')
   @HttpCode(HttpStatus.OK)
   async getStudySetByCode(
-    @Param() getClassByCodeParamDto: GetClassByCodeParamDto,
+    @Param() getClassByCodeParamDto: GetStudySetByCodeParamDto,
   ): Promise<GetAllStudySetResponseInterface> {
     return await this.studySetService.getStudySetByCode(getClassByCodeParamDto);
   }

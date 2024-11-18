@@ -26,6 +26,7 @@ import { DeleteFolderByIdDto } from './dto/params/delete-folder-by-id.dto';
 import { SearchFoldersByTitleQueryDto } from './dto/queries/search-folders-by-title-query.dto';
 import { UpdateStudySetsInFolderResponseInterface } from './interfaces/update-study-sets-in-folder-response.interface';
 import { GetFolderByOwnerIdQueryDto } from './dto/queries/get-folder-by-owner-Id-query.dto';
+import { GetFolderByCodeParamDto } from './dto/params/get-folder-by-code.param.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -39,6 +40,13 @@ export class FolderController {
     @Query() searchFoldersByTitleQueryDto: SearchFoldersByTitleQueryDto,
   ): Promise<GetFolderResponseInterface[]> {
     return this.folderService.searchFolderByTitle(searchFoldersByTitleQueryDto);
+  }
+
+  @Get('/link/:code')
+  async getFolderByCode(
+    @Param() getFolderByCodeParamDto: GetFolderByCodeParamDto,
+  ): Promise<GetFolderResponseInterface> {
+    return this.folderService.getFolderByCode(getFolderByCodeParamDto);
   }
 
   @Get('/owner/:ownerId')

@@ -22,7 +22,6 @@ import { DuplicateStudySetDto } from './dto/bodies/duplicate-study-set.dto';
 import { SearchStudySetsQueryDto } from './dto/queries/search-study-sets-query.dto';
 import { FlashcardEntity } from 'src/flashcard/entities/flashcard.entity';
 import * as process from 'node:process';
-import { randomBytes } from 'crypto';
 import { FlashcardStatusEnum } from 'src/flashcard/enums/flashcard-status.enum';
 import { ResetFlashcardProgressParamDto } from './dto/params/reset-flashcard-progress-param.dto';
 import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flashcard-progress-response.interface';
@@ -45,7 +44,7 @@ import {
   ResponseSchema,
   SchemaType,
 } from '@google/generative-ai';
-import { GetClassByCodeParamDto } from './dto/params/get-class-by-code.param.dto';
+import { GetStudySetByCodeParamDto } from './dto/params/get-study-set-by-code.param.dto';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -94,10 +93,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       }
 
       studySet.owner = owner;
-      studySet.link = randomBytes(7)
-        .toString('base64')
-        .substring(0, 7)
-        .replace('/', '');
+      studySet.link = this.generateRandomString(7);
 
       await this.dataSource.getRepository(StudySetEntity).save(studySet);
 
@@ -106,6 +102,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         title: studySet.title,
         subjectId: studySet.subject?.id,
         colorId: studySet.color?.id,
+        linkShareCode: studySet.link,
         isPublic: studySet.isPublic,
         isAIGenerated: studySet.isAIGenerated,
         description: studySet.description,
@@ -553,10 +550,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       studySet.title = aiGeneratedName;
       studySet.description = aiGeneratedDescription;
       studySet.isPublic = true;
-      studySet.link = randomBytes(7)
-        .toString('base64')
-        .substring(0, 7)
-        .replace('/', '');
+      studySet.link = this.generateRandomString(7);
 
       const owner = await this.dataSource
         .getRepository(UserEntity)
@@ -896,10 +890,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     studySetEntity.description = aiGeneratedDescription;
     studySetEntity.isPublic = true;
     studySetEntity.isAIGenerated = true;
-    studySetEntity.link = randomBytes(7)
-      .toString('base64')
-      .substring(0, 7)
-      .replace('/', '');
+    studySetEntity.link = this.generateRandomString(7);
 
     const owner = await this.getUserById(userId);
     studySetEntity.owner = owner;
@@ -979,7 +970,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
   }
 
   async getStudySetByCode(
-    getClassByCodeParamDto: GetClassByCodeParamDto,
+    getClassByCodeParamDto: GetStudySetByCodeParamDto,
   ): Promise<GetAllStudySetResponseInterface> {
     const { code } = getClassByCodeParamDto;
 
@@ -1003,5 +994,18 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       }
       throw new InternalServerErrorException('Error getting study set');
     }
+  }
+
+  private generateRandomString(length: number): string {
+    const characters =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+
+    return result;
   }
 }

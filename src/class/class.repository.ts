@@ -17,7 +17,6 @@ import { UpdateClassByIdParamDto } from './dto/params/update-class-by-id-param.d
 import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.dto';
 import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassesByTitleQueryDto } from './dto/queries/search-classes-by-title-query.dto';
-import { randomBytes } from 'crypto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
 import { logger } from '../winston-logger.service';
@@ -184,10 +183,7 @@ export class ClassRepository extends Repository<ClassEntity> {
     classEntity.owner = owner;
     classEntity.allowMemberManagement = createClassDto.allowMemberManagement;
     classEntity.allowSetManagement = createClassDto.allowSetManagement;
-    classEntity.joinToken = randomBytes(7)
-      .toString('base64')
-      .substring(0, 7)
-      .replace('/', '');
+    classEntity.joinToken = this.generateRandomString(7);
 
     try {
       await this.save(classEntity);
@@ -718,6 +714,7 @@ export class ClassRepository extends Repository<ClassEntity> {
         ? classEntity.folders.map((folder) => ({
             id: folder.id,
             title: folder.title,
+            linkShareCode: folder.link,
             description: folder.description,
             isPublic: folder.isPublic,
             studySetCount: folder.studySets ? folder.studySets.length : 0,
@@ -734,5 +731,18 @@ export class ClassRepository extends Repository<ClassEntity> {
       createdAt: classEntity.createdAt,
       updatedAt: classEntity.updatedAt,
     };
+  }
+
+  private generateRandomString(length: number): string {
+    const characters =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+
+    return result;
   }
 }
