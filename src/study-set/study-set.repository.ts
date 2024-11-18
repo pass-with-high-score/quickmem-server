@@ -45,6 +45,7 @@ import {
   ResponseSchema,
   SchemaType,
 } from '@google/generative-ai';
+import { GetClassByCodeParamDto } from './dto/params/get-class-by-code.param.dto';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -93,7 +94,10 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       }
 
       studySet.owner = owner;
-      studySet.link = randomBytes(7).toString('base64').substring(0, 7);
+      studySet.link = randomBytes(7)
+        .toString('base64')
+        .substring(0, 7)
+        .replace('/', '');
 
       await this.dataSource.getRepository(StudySetEntity).save(studySet);
 
@@ -549,7 +553,10 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       studySet.title = aiGeneratedName;
       studySet.description = aiGeneratedDescription;
       studySet.isPublic = true;
-      studySet.link = randomBytes(7).toString('base64').substring(0, 7);
+      studySet.link = randomBytes(7)
+        .toString('base64')
+        .substring(0, 7)
+        .replace('/', '');
 
       const owner = await this.dataSource
         .getRepository(UserEntity)
@@ -889,7 +896,10 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     studySetEntity.description = aiGeneratedDescription;
     studySetEntity.isPublic = true;
     studySetEntity.isAIGenerated = true;
-    studySetEntity.link = randomBytes(7).toString('base64').substring(0, 7);
+    studySetEntity.link = randomBytes(7)
+      .toString('base64')
+      .substring(0, 7)
+      .replace('/', '');
 
     const owner = await this.getUserById(userId);
     studySetEntity.owner = owner;
@@ -965,6 +975,33 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     await this.dataSource.getRepository(StudySetEntity).save(studySet);
     if (flashcards.length > 0) {
       await this.dataSource.getRepository(FlashcardEntity).save(flashcards);
+    }
+  }
+
+  async getStudySetByCode(
+    getClassByCodeParamDto: GetClassByCodeParamDto,
+  ): Promise<GetAllStudySetResponseInterface> {
+    const { code } = getClassByCodeParamDto;
+
+    try {
+      const studySet = await this.dataSource
+        .getRepository(StudySetEntity)
+        .findOne({
+          where: { link: code },
+          relations: ['owner', 'subject', 'color', 'flashcards'],
+        });
+
+      if (!studySet) {
+        throw new NotFoundException('Study set not found');
+      }
+
+      return this.mapStudySetToResponse(studySet, true);
+    } catch (error) {
+      console.log('Error getting study set', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error getting study set');
     }
   }
 }

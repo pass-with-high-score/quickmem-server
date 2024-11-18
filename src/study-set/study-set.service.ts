@@ -22,6 +22,7 @@ import { UpdateFoldersInStudySetDto } from './dto/bodies/update-folders-in-study
 import { UpdateFoldersInStudySetResponseInterface } from './interfaces/update-folders-in-study-set-response.interface';
 import { UpdateClassesInStudySetDto } from './dto/bodies/update-classes-in-study-set.dto';
 import { UpdateClassesInStudySetResponseInterface } from './interfaces/update-classes-in-study-set-response.interface';
+import { GetClassByCodeParamDto } from './dto/params/get-class-by-code.param.dto';
 
 @Injectable()
 export class StudySetService {
@@ -123,5 +124,11 @@ export class StudySetService {
     return this.studySetRepository.updateClassesInStudySet(
       updateClassesInStudySetDto,
     );
+  }
+
+  async getStudySetByCode(
+    getClassByCodeParamDto: GetClassByCodeParamDto,
+  ): Promise<GetAllStudySetResponseInterface> {
+    return this.studySetRepository.getStudySetByCode(getClassByCodeParamDto);
   }
 }

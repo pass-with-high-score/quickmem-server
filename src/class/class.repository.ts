@@ -184,7 +184,10 @@ export class ClassRepository extends Repository<ClassEntity> {
     classEntity.owner = owner;
     classEntity.allowMemberManagement = createClassDto.allowMemberManagement;
     classEntity.allowSetManagement = createClassDto.allowSetManagement;
-    classEntity.joinToken = randomBytes(7).toString('base64').substring(0, 7);
+    classEntity.joinToken = randomBytes(7)
+      .toString('base64')
+      .substring(0, 7)
+      .replace('/', '');
 
     try {
       await this.save(classEntity);
