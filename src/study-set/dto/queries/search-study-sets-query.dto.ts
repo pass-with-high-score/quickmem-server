@@ -22,5 +22,8 @@ export class SearchStudySetsQueryDto {
   colorId?: string;
 
   @IsOptional()
+  isAIGenerated?: boolean;
+
+  @IsOptional()
   page?: number;
 }

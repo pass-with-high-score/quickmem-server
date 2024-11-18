@@ -360,6 +360,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       page = 1,
       subjectId = 1, // all
       colorId = 1, // all
+      isAIGenerated = false,
     } = searchStudySetsQueryDto;
     if (page < 1) {
       throw new NotFoundException('Invalid page number');
@@ -370,6 +371,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         where: {
           title: title ? ILike(`%${title}%`) : undefined,
           isPublic: true,
+          isAIGenerated,
         },
         relations: ['owner', 'flashcards', 'subject', 'color'],
         skip: (page - 1) * 40,
