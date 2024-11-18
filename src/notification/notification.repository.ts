@@ -144,6 +144,7 @@ export class NotificationRepository extends Repository<NotificationEntity> {
     const notifications = await this.find({
       where: { user: { id: id } },
       relations: ['user'],
+      order: { createdAt: 'DESC' },
     });
     return notifications.map((notification) => ({
       id: notification.id,
