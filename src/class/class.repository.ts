@@ -637,6 +637,7 @@ export class ClassRepository extends Repository<ClassEntity> {
         ? classEntity.studySets.map((studySet) => ({
             id: studySet.id,
             title: studySet.title,
+            isAIGenerated: studySet.isAIGenerated,
             description: studySet.description,
             color: studySet.color
               ? {

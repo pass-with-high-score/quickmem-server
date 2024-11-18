@@ -16,4 +16,5 @@ export const configValidationSchema = Joi.object({
   REDIS_PASSWORD: Joi.string().required(),
   GOOGLE_CLIENT_ID: Joi.string().required(),
   SCRAPER_API_KEY: Joi.string().required(),
+  GEMINI_API_KEY: Joi.string().required(),
 });

@@ -1,6 +1,7 @@
 export class FlashcardResponseInterface {
   id: string;
   studySetId?: string;
+  isAIGenerated: boolean;
   term: string;
   definition: string;
   definitionImageURL?: string;

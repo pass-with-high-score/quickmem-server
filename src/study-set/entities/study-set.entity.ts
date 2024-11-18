@@ -65,6 +65,9 @@ export class StudySetEntity {
   @Column({ nullable: true })
   link: string;
 
+  @Column({ nullable: true, default: false })
+  isAIGenerated: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

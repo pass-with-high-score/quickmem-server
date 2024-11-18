@@ -279,6 +279,7 @@ export class FolderRepository extends Repository<FolderEntity> {
             id: studySet.id,
             title: studySet.title,
             description: studySet.description,
+            isAIGenerated: studySet.isAIGenerated,
             isPublic: studySet.isPublic,
             ownerId: studySet.owner.id,
             flashcardCount: studySet.flashcards

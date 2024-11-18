@@ -60,6 +60,9 @@ export class FlashcardEntity {
   })
   image: ImageEntity;
 
+  @Column({ nullable: true, default: false })
+  isAIGenerated: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

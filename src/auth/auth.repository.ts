@@ -695,6 +695,7 @@ export class AuthRepository extends Repository<UserEntity> {
     const formattedStudySets = studySets.map((studySet) => ({
       id: studySet.id,
       title: studySet.title,
+      isAIGenerated: studySet.isAIGenerated,
       flashcardCount: studySet.flashcards.length,
       owner: {
         id: studySet.owner.id,

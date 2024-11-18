@@ -317,6 +317,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       definition: flashcard.definition,
       definitionImageURL: flashcard.definitionImageURL,
       hint: flashcard.hint,
+      isAIGenerated: flashcard.isAIGenerated,
       explanation: flashcard.explanation,
       isStarred: flashcard.isStarred,
       rating: flashcard.rating,
