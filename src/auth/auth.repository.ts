@@ -673,8 +673,22 @@ export class AuthRepository extends Repository<UserEntity> {
     });
 
     const classesPromise = this.dataSource.getRepository(ClassEntity).find({
-      where: { owner: { id } },
-      relations: ['studySets', 'owner'],
+      where: [
+        { owner: { id: id } },
+        { members: { id: id } },
+        { folders: { owner: { id: id } } },
+        { studySets: { owner: { id: id } } },
+      ],
+      relations: [
+        'owner',
+        'members',
+        'folders',
+        'studySets',
+        'folders.studySets',
+        'folders.owner',
+        'studySets.owner',
+        'studySets.flashcards',
+      ],
     });
 
     // Wait for all promises to resolve
@@ -736,6 +750,7 @@ export class AuthRepository extends Repository<UserEntity> {
     const formattedClasses = classes.map((classItem) => ({
       id: classItem.id,
       title: classItem.title,
+      memberCount: classItem.members.length,
       description: classItem.description,
       owner: {
         id: classItem.owner.id,
