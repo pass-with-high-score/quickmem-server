@@ -130,7 +130,7 @@ export class ClassController {
     return this.classService.updateStudySetsInClass(updateStudySetsInClassDto);
   }
 
-  @Delete('/members')
+  @Post('/members')
   async removeMembersFromClass(
     @Body() removeMembersFromClassDto: RemoveMembersFromClassDto,
   ): Promise<GetClassResponseInterface> {
