@@ -556,7 +556,7 @@ export class ClassRepository extends Repository<ClassEntity> {
       'folders.owner',
     ]);
 
-    if (!classEntity.allowMemberManagement) {
+    if (!classEntity.allowMemberManagement && classEntity.owner.id !== userId) {
       throw new UnauthorizedException('Class does not allow member management');
     }
 
@@ -594,7 +594,7 @@ export class ClassRepository extends Repository<ClassEntity> {
 
     try {
       await this.save(classEntity);
-      return this.mapClassEntityToResponse(classEntity);
+      return this.mapClassEntityToResponse(classEntity, false, false, false);
     } catch (error) {
       logger.error('Error removing members from class:', error);
       throw new InternalServerErrorException(
