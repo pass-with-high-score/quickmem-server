@@ -10,6 +10,7 @@ export class FlashcardResponseInterface {
   isStarred: boolean;
   rating?: string;
   flipStatus?: string;
+  quizStatus?: string;
   createdAt: Date;
   updatedAt: Date;
 }

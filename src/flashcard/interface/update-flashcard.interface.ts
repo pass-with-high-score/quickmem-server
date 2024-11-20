@@ -4,4 +4,5 @@ export interface UpdateFlashcardInterface {
   flipStatus?: string;
   rating?: string;
   isStarred?: boolean;
+  quizStatus?: string;
 }

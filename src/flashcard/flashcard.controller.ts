@@ -27,6 +27,8 @@ import { StarredFlashcardDto } from './dto/bodies/starred-flashcard.dto';
 import { UpdateFlashcardInterface } from './interface/update-flashcard.interface';
 import { UpdateFlashcardFlipStatusDto } from './dto/bodies/update-flashcard-flip-status.dto';
 import { GetFlashcardByIdParam } from './dto/queries/get-flashcard-by-id.param';
+import { UpdateQuizStatusParamDto } from './dto/params/update-quiz-status-param.dto';
+import { UpdateFlashcardQuizStatusDto } from './dto/bodies/update-flashcard-quiz-status.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -104,6 +106,18 @@ export class FlashcardController {
     return this.flashcardService.updateFlashcardFlipStatus(
       updateFlashcardParamDto,
       updateFlashcardFlipStatusDto,
+    );
+  }
+
+  @Patch('/:id/quiz-status')
+  @HttpCode(HttpStatus.OK)
+  async updateFlashcardQuizStatus(
+    @Param() updateQuizStatusParamDto: UpdateQuizStatusParamDto,
+    @Body() updateFlashcardQuizStatusDto: UpdateFlashcardQuizStatusDto,
+  ): Promise<UpdateFlashcardInterface> {
+    return this.flashcardService.updateFlashcardQuizStatus(
+      updateQuizStatusParamDto,
+      updateFlashcardQuizStatusDto,
     );
   }
 

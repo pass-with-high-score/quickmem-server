@@ -22,7 +22,9 @@ import { UpdateFlashcardInterface } from './interface/update-flashcard.interface
 import { GetFlashcardByIdParam } from './dto/queries/get-flashcard-by-id.param';
 import { LearnModeEnum } from './enums/learn-mode.enum';
 import { FlipFlashcardStatus } from './enums/flip-flashcard-status';
-import { FlashcardStatusEnum } from './enums/flashcard-status.enum';
+import { QuizFlashcardStatusEnum } from './enums/quiz-flashcard-status.enum';
+import { UpdateFlashcardQuizStatusDto } from './dto/bodies/update-flashcard-quiz-status.dto';
+import { UpdateQuizStatusParamDto } from './dto/params/update-quiz-status-param.dto';
 
 @Injectable()
 export class FlashcardRepository extends Repository<FlashcardEntity> {
@@ -83,8 +85,9 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       } else if (learnMode == LearnModeEnum.QUIZ) {
         filteredFlashcards = flashcards.filter(
           (flashcard) =>
-            flashcard.rating === FlashcardStatusEnum.NOT_STUDIED ||
-            flashcard.rating === FlashcardStatusEnum.STILL_LEARNING,
+            flashcard.quizStatus === QuizFlashcardStatusEnum.NONE ||
+            flashcard.quizStatus === QuizFlashcardStatusEnum.SKIPPED ||
+            flashcard.quizStatus === QuizFlashcardStatusEnum.WRONG,
         );
       }
 
@@ -134,7 +137,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
 
       const savedFlashcard = await this.save(flashcard);
 
-      // find image in image entity by url, if have update flashcard id for image
       if (definitionImageURL) {
         const image = await this.dataSource.getRepository(ImageEntity).findOne({
           where: { url: definitionImageURL },
@@ -275,6 +277,38 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     }
   }
 
+  async updateFlashcardQuizStatus(
+    updateQuizStatusParamDto: UpdateQuizStatusParamDto,
+    updateFlashcardQuizStatusDto: UpdateFlashcardQuizStatusDto,
+  ): Promise<UpdateFlashcardInterface> {
+    const { id } = updateQuizStatusParamDto;
+    try {
+      const flashcard = await this.findOne({
+        where: { id },
+        relations: ['studySet'],
+      });
+      if (!flashcard) {
+        throw new NotFoundException(`Flashcard with ID ${id} not found`);
+      }
+
+      flashcard.quizStatus = updateFlashcardQuizStatusDto.quizStatus;
+      await this.save(flashcard);
+      return {
+        id: flashcard.id,
+        quizStatus: flashcard.quizStatus,
+        message: 'Flashcard quiz status updated successfully',
+      };
+    } catch (error) {
+      logger.error('Error updating flashcard quiz status:', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Error updating flashcard quiz status',
+      );
+    }
+  }
+
   async updateFlashcardStarred(
     updateFlashcardParamDto: UpdateFlashcardParamDto,
     updateFlashcardStarredDto: StarredFlashcardDto,
@@ -321,6 +355,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       explanation: flashcard.explanation,
       isStarred: flashcard.isStarred,
       rating: flashcard.rating,
+      quizStatus: flashcard.quizStatus,
       flipStatus: flashcard.flipStatus,
       createdAt: flashcard.createdAt,
       updatedAt: flashcard.updatedAt,

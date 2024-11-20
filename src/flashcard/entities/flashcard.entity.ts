@@ -11,6 +11,7 @@ import { FlashcardStatusEnum } from '../enums/flashcard-status.enum';
 import { StudySetEntity } from '../../study-set/entities/study-set.entity';
 import { ImageEntity } from '../../cloudinary/entities/image.entity';
 import { FlipFlashcardStatus } from '../enums/flip-flashcard-status';
+import { QuizFlashcardStatusEnum } from '../enums/quiz-flashcard-status.enum';
 
 @Entity('flashcards')
 export class FlashcardEntity {
@@ -54,6 +55,14 @@ export class FlashcardEntity {
     default: FlipFlashcardStatus.NONE,
   })
   flipStatus: FlipFlashcardStatus;
+
+  @Column({
+    type: 'enum',
+    enumName: 'quiz_flashcard_status_enum',
+    enum: QuizFlashcardStatusEnum,
+    default: QuizFlashcardStatusEnum.NONE,
+  })
+  quizStatus: QuizFlashcardStatusEnum;
 
   @OneToOne(() => ImageEntity, (image) => image.flashcard, {
     onDelete: 'SET NULL',

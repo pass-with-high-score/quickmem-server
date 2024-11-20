@@ -12,6 +12,8 @@ import { StarredFlashcardDto } from './dto/bodies/starred-flashcard.dto';
 import { UpdateFlashcardInterface } from './interface/update-flashcard.interface';
 import { UpdateFlashcardFlipStatusDto } from './dto/bodies/update-flashcard-flip-status.dto';
 import { GetFlashcardByIdParam } from './dto/queries/get-flashcard-by-id.param';
+import { UpdateQuizStatusParamDto } from './dto/params/update-quiz-status-param.dto';
+import { UpdateFlashcardQuizStatusDto } from './dto/bodies/update-flashcard-quiz-status.dto';
 
 @Injectable()
 export class FlashcardService {
@@ -84,6 +86,16 @@ export class FlashcardService {
     return this.flashcardRepository.updateFlashcardFlipStatus(
       updateFlashcardParamDto,
       updateFlashcardFlipStatusDto,
+    );
+  }
+
+  async updateFlashcardQuizStatus(
+    updateQuizStatusParamDto: UpdateQuizStatusParamDto,
+    updateFlashcardQuizStatusDto: UpdateFlashcardQuizStatusDto,
+  ): Promise<UpdateFlashcardInterface> {
+    return this.flashcardRepository.updateFlashcardQuizStatus(
+      updateQuizStatusParamDto,
+      updateFlashcardQuizStatusDto,
     );
   }
 }
