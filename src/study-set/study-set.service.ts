@@ -23,6 +23,9 @@ import { UpdateFoldersInStudySetResponseInterface } from './interfaces/update-fo
 import { UpdateClassesInStudySetDto } from './dto/bodies/update-classes-in-study-set.dto';
 import { UpdateClassesInStudySetResponseInterface } from './interfaces/update-classes-in-study-set-response.interface';
 import { GetStudySetByCodeParamDto } from './dto/params/get-study-set-by-code.param.dto';
+import { GetStudySetsBySubjectIdParamDto } from './dto/params/get-study-sets-by-subject-id-param.dto';
+import { GetStudySetsBySubjectIdQueryDto } from './dto/queries/get-study-sets-by-subject-id-query.dto';
+import { TopSubjectResponseInterface } from './interfaces/top-subject-response.interface';
 
 @Injectable()
 export class StudySetService {
@@ -130,5 +133,21 @@ export class StudySetService {
     getClassByCodeParamDto: GetStudySetByCodeParamDto,
   ): Promise<GetAllStudySetResponseInterface> {
     return this.studySetRepository.getStudySetByCode(getClassByCodeParamDto);
+  }
+
+  async getStudySetsBySubjectId(
+    getStudySetsBySubjectIdParamDto: GetStudySetsBySubjectIdParamDto,
+    getStudySetsBySubjectIdQueryDto: GetStudySetsBySubjectIdQueryDto,
+  ): Promise<GetAllStudySetResponseInterface[]> {
+    return this.studySetRepository.getStudySetsBySubjectId(
+      getStudySetsBySubjectIdParamDto,
+      getStudySetsBySubjectIdQueryDto,
+    );
+  }
+
+  async getTop5SubjectByStudySetCount(): Promise<
+    TopSubjectResponseInterface[]
+  > {
+    return this.studySetRepository.getTop5SubjectByStudySetCount();
   }
 }

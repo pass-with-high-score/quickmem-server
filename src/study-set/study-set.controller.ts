@@ -37,6 +37,9 @@ import { UpdateFoldersInStudySetResponseInterface } from './interfaces/update-fo
 import { UpdateClassesInStudySetDto } from './dto/bodies/update-classes-in-study-set.dto';
 import { UpdateClassesInStudySetResponseInterface } from './interfaces/update-classes-in-study-set-response.interface';
 import { GetStudySetByCodeParamDto } from './dto/params/get-study-set-by-code.param.dto';
+import { GetStudySetsBySubjectIdParamDto } from './dto/params/get-study-sets-by-subject-id-param.dto';
+import { GetStudySetsBySubjectIdQueryDto } from './dto/queries/get-study-sets-by-subject-id-query.dto';
+import { TopSubjectResponseInterface } from './interfaces/top-subject-response.interface';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -72,6 +75,26 @@ export class StudySetController {
       getStudySetsByOwnerIdDto,
       getStudySetsByOwnerIdParamDto,
     );
+  }
+
+  @Get('/subject/:subjectId')
+  @HttpCode(HttpStatus.OK)
+  async getStudySetsBySubjectId(
+    @Param() getStudySetsBySubjectIdParamDto: GetStudySetsBySubjectIdParamDto,
+    @Query() getStudySetsBySubjectIdQueryDto: GetStudySetsBySubjectIdQueryDto,
+  ): Promise<GetAllStudySetResponseInterface[]> {
+    return await this.studySetService.getStudySetsBySubjectId(
+      getStudySetsBySubjectIdParamDto,
+      getStudySetsBySubjectIdQueryDto,
+    );
+  }
+
+  @Get('/top-subject')
+  @HttpCode(HttpStatus.OK)
+  async getTop5SubjectByStudySetCount(): Promise<
+    TopSubjectResponseInterface[]
+  > {
+    return await this.studySetService.getTop5SubjectByStudySetCount();
   }
 
   @Get('/:id')

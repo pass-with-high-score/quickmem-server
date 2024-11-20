@@ -45,6 +45,9 @@ import {
   SchemaType,
 } from '@google/generative-ai';
 import { GetStudySetByCodeParamDto } from './dto/params/get-study-set-by-code.param.dto';
+import { GetStudySetsBySubjectIdParamDto } from './dto/params/get-study-sets-by-subject-id-param.dto';
+import { GetStudySetsBySubjectIdQueryDto } from './dto/queries/get-study-sets-by-subject-id-query.dto';
+import { TopSubjectResponseInterface } from './interfaces/top-subject-response.interface';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -1007,5 +1010,72 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     }
 
     return result;
+  }
+
+  async getStudySetsBySubjectId(
+    getStudySetsBySubjectIdParamDto: GetStudySetsBySubjectIdParamDto,
+    getStudySetsBySubjectIdQueryDto: GetStudySetsBySubjectIdQueryDto,
+  ): Promise<GetAllStudySetResponseInterface[]> {
+    const { subjectId } = getStudySetsBySubjectIdParamDto;
+    const { size = 40, page = 1 } = getStudySetsBySubjectIdQueryDto;
+
+    if (page < 1) {
+      throw new NotFoundException('Invalid page number');
+    }
+
+    if (size < 1 || size > 40) {
+      throw new NotFoundException('Invalid size');
+    }
+
+    try {
+      const studySets = await this.dataSource
+        .getRepository(StudySetEntity)
+        .find({
+          where: { subject: { id: subjectId } },
+          relations: ['owner', 'subject', 'color', 'flashcards'],
+          skip: (page - 1) * size,
+          take: size,
+        });
+
+      return studySets.map((studySet) => this.mapStudySetToResponse(studySet));
+    } catch (error) {
+      console.log('Error getting study sets', error);
+      throw new InternalServerErrorException('Error getting study sets');
+    }
+  }
+
+  async getTop5SubjectByStudySetCount(): Promise<
+    TopSubjectResponseInterface[]
+  > {
+    try {
+      const subjects = await this.dataSource
+        .getRepository(SubjectEntity)
+        .createQueryBuilder('subject')
+        .leftJoin('subject.studySets', 'studySet')
+        .groupBy('subject.id')
+        .orderBy('COUNT(studySet.id)', 'DESC')
+        .limit(5)
+        .select([
+          'subject.id',
+          'subject.name',
+          'COUNT(studySet.id) AS studySetCount',
+        ])
+        .getRawMany();
+
+      console.log('subjects', subjects);
+
+      return subjects.map((subject) => ({
+        id: subject.subject_id,
+        name: subject.subject_name,
+        studySetCount: parseInt(subject.studysetcount, 10),
+        createdAt: subject.subject_createdAt,
+        updatedAt: subject.subject_updatedAt,
+      }));
+    } catch (error) {
+      console.log('Error getting top 5 subjects by study set count', error);
+      throw new InternalServerErrorException(
+        'Error getting top 5 subjects by study set count',
+      );
+    }
   }
 }
