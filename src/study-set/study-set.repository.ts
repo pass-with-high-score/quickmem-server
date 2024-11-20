@@ -48,6 +48,7 @@ import { GetStudySetByCodeParamDto } from './dto/params/get-study-set-by-code.pa
 import { GetStudySetsBySubjectIdParamDto } from './dto/params/get-study-sets-by-subject-id-param.dto';
 import { GetStudySetsBySubjectIdQueryDto } from './dto/queries/get-study-sets-by-subject-id-query.dto';
 import { TopSubjectResponseInterface } from './interfaces/top-subject-response.interface';
+import { QuizFlashcardStatusEnum } from '../flashcard/enums/quiz-flashcard-status.enum';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -458,10 +459,13 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       if (resetType === 'resetAll') {
         flashcard.rating = FlashcardStatusEnum.NOT_STUDIED;
         flashcard.flipStatus = FlipFlashcardStatus.NONE;
+        flashcard.quizStatus = QuizFlashcardStatusEnum.NONE;
       } else if (resetType === 'flipStatus') {
         flashcard.flipStatus = FlipFlashcardStatus.NONE;
       } else if (resetType === 'rating') {
         flashcard.rating = FlashcardStatusEnum.NOT_STUDIED;
+      } else if (resetType === 'quizStatus') {
+        flashcard.quizStatus = QuizFlashcardStatusEnum.NONE;
       }
       await this.dataSource.getRepository(FlashcardEntity).save(flashcard);
     }
