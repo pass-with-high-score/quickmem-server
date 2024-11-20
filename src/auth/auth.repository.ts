@@ -51,6 +51,8 @@ import { ChangeUsernameBodyDto } from './dto/bodies/change-username-body.dto';
 import { ChangePasswordResponseInterface } from './interfaces/change-password-response.interface';
 import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-username-query.dto';
 import { UserResponseInterface } from './interfaces/user-response.interface';
+import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto';
+import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -970,5 +972,32 @@ export class AuthRepository extends Repository<UserEntity> {
           subscription.subscriptionType === SubscriptionTypeEnum.YEARLY ||
           subscription.subscriptionType === SubscriptionTypeEnum.MONTHLY),
     );
+  }
+
+  async getUserProfileById(
+    getUserProfileParamDto: GetUserProfileParamDto,
+  ): Promise<GetUserProfileResponseInterface> {
+    const { id } = getUserProfileParamDto;
+    const user = await this.findOne({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    const avatar = `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.jpg`;
+
+    return {
+      id: user.id,
+      username: user.username,
+      fullname: user.fullName,
+      email: user.email,
+      avatarUrl: avatar,
+      role: user.role,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 }

@@ -52,6 +52,8 @@ import { ChangeUsernameBodyDto } from './dto/bodies/change-username-body.dto';
 import { ChangePasswordResponseInterface } from './interfaces/change-password-response.interface';
 import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-username-query.dto';
 import { UserResponseInterface } from './interfaces/user-response.interface';
+import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto';
+import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -134,6 +136,15 @@ export class AuthController {
       getUserDetailQueryDto,
       getUserDetailParamDto,
     );
+  }
+
+  @Get('/profile/:id')
+  @UseGuards(OwnershipGuard)
+  @HttpCode(HttpStatus.OK)
+  async getUserProfileById(
+    @Param() getUserProfileParamDto: GetUserProfileParamDto,
+  ): Promise<GetUserProfileResponseInterface> {
+    return this.authService.getUserProfileById(getUserProfileParamDto);
   }
 
   @Get('/verify-email')

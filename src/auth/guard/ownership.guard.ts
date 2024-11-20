@@ -36,6 +36,7 @@ export class OwnershipGuard implements CanActivate {
     }
 
     const userId = decoded.userId; // Extract user ID from the decoded token
+    const id = request.params.id; // Extract the resource ID from the request params
 
     const resourceId = request.body.userId; // Extract the resource ID from the request body
     const userEmail = request.body.email; // Extract the email from the request body
@@ -50,8 +51,12 @@ export class OwnershipGuard implements CanActivate {
       resource = await this.resourceService.findOne({
         where: { email: userEmail },
       });
+    } else if (id) {
+      resource = await this.resourceService.findOne({
+        where: { id },
+      });
     } else {
-      throw new ForbiddenException('No userId or email provided');
+      throw new ForbiddenException('Resource not found');
     }
 
     if (!resource) {

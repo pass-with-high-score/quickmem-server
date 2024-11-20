@@ -34,6 +34,8 @@ import { ChangeUsernameBodyDto } from './dto/bodies/change-username-body.dto';
 import { ChangePasswordResponseInterface } from './interfaces/change-password-response.interface';
 import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-username-query.dto';
 import { UserResponseInterface } from './interfaces/user-response.interface';
+import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto';
+import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
 
 @Injectable()
 export class AuthService {
@@ -195,5 +197,11 @@ export class AuthService {
     return this.usersRepository.searchUserByUsername(
       searchUserByUsernameQueryDto,
     );
+  }
+
+  async getUserProfileById(
+    getUserProfileParamDto: GetUserProfileParamDto,
+  ): Promise<GetUserProfileResponseInterface> {
+    return this.usersRepository.getUserProfileById(getUserProfileParamDto);
   }
 }
