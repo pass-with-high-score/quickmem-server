@@ -32,6 +32,8 @@ import { UpdateItemInClassResponseInterface } from './interfaces/update-item-in-
 import { GetClassByUserIdQueryDto } from './dto/queries/get-class-by-user-Id-query.dto';
 import { GetClassByJoinTokenParamDto } from './dto/params/get-class-by-join-token.param.dto';
 import { GetClassByJoinTokenQueryDto } from './dto/queries/get-class-by-join-token.query.dto';
+import { RemoveStudySetByClassIdBodyDto } from './dto/bodies/remove-study-set-by-class-id-body.dto';
+import { RemoveFolderByClassIdBodyDto } from './dto/bodies/remove-folder-by-class-id-body.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -122,12 +124,32 @@ export class ClassController {
     return this.classService.updateClassFolders(updateFoldersInClassDto);
   }
 
+  @Post('/remove-folder')
+  @HttpCode(HttpStatus.OK)
+  async removeFolderByClassId(
+    @Body() removeFolderByClassIdBodyDto: RemoveFolderByClassIdBodyDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classService.removeFolderByClassId(
+      removeFolderByClassIdBodyDto,
+    );
+  }
+
   @Post('/study-sets')
   @HttpCode(HttpStatus.CREATED)
   async updateStudySetsInClass(
     @Body() updateStudySetsInClassDto: UpdateStudySetsInClassDto,
   ): Promise<UpdateItemInClassResponseInterface> {
     return this.classService.updateStudySetsInClass(updateStudySetsInClassDto);
+  }
+
+  @Post('/remove-study-set')
+  @HttpCode(HttpStatus.OK)
+  async removeStudySetByClassId(
+    @Body() removeStudySetByClassIdBodyDto: RemoveStudySetByClassIdBodyDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classService.removeStudySetByClassId(
+      removeStudySetByClassIdBodyDto,
+    );
   }
 
   @Post('/members')

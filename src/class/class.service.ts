@@ -18,6 +18,8 @@ import { UpdateFoldersInClassDto } from './dto/bodies/update-folders-in-class.dt
 import { GetClassByUserIdQueryDto } from './dto/queries/get-class-by-user-Id-query.dto';
 import { GetClassByJoinTokenParamDto } from './dto/params/get-class-by-join-token.param.dto';
 import { GetClassByJoinTokenQueryDto } from './dto/queries/get-class-by-join-token.query.dto';
+import { RemoveStudySetByClassIdBodyDto } from './dto/bodies/remove-study-set-by-class-id-body.dto';
+import { RemoveFolderByClassIdBodyDto } from './dto/bodies/remove-folder-by-class-id-body.dto';
 
 @Injectable()
 export class ClassService {
@@ -108,6 +110,22 @@ export class ClassService {
     return this.classRepository.getClassByJoinToken(
       getClassByJoinTokenParamDto,
       getClassByJoinTokenQueryDto,
+    );
+  }
+
+  async removeStudySetByClassId(
+    removeStudySetByClassIdBodyDto: RemoveStudySetByClassIdBodyDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classRepository.removeStudySetByClassId(
+      removeStudySetByClassIdBodyDto,
+    );
+  }
+
+  async removeFolderByClassId(
+    removeFolderByClassIdBodyDto: RemoveFolderByClassIdBodyDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classRepository.removeFolderByClassId(
+      removeFolderByClassIdBodyDto,
     );
   }
 }

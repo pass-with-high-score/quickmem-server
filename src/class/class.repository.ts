@@ -29,6 +29,8 @@ import { UpdateItemInClassResponseInterface } from './interfaces/update-item-in-
 import { GetClassByUserIdQueryDto } from './dto/queries/get-class-by-user-Id-query.dto';
 import { GetClassByJoinTokenParamDto } from './dto/params/get-class-by-join-token.param.dto';
 import { GetClassByJoinTokenQueryDto } from './dto/queries/get-class-by-join-token.query.dto';
+import { RemoveStudySetByClassIdBodyDto } from './dto/bodies/remove-study-set-by-class-id-body.dto';
+import { RemoveFolderByClassIdBodyDto } from './dto/bodies/remove-folder-by-class-id-body.dto';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -744,5 +746,129 @@ export class ClassRepository extends Repository<ClassEntity> {
     }
 
     return result;
+  }
+
+  async removeStudySetByClassId(
+    removeStudySetByClassIdBodyDto: RemoveStudySetByClassIdBodyDto,
+  ): Promise<GetClassResponseInterface> {
+    const { userId, classId, studySetId } = removeStudySetByClassIdBodyDto;
+
+    // Find class
+    const classEntity = await this.findClassAndValidatePermissions(classId, [
+      'owner',
+      'members',
+      'studySets',
+      'folders',
+      'folders.studySets',
+      'folders.owner',
+    ]);
+
+    // Find user
+    const userEntity = await this.dataSource
+      .getRepository(UserEntity)
+      .findOneBy({ id: userId });
+
+    if (!userEntity) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!userEntity.isVerified) {
+      throw new UnauthorizedException('User not verified');
+    }
+
+    // Check if user is the owner of the class
+    if (classEntity.owner.id !== userId) {
+      throw new UnauthorizedException('User is not the owner of the class');
+    }
+
+    // Find study set
+    const studySet = await this.dataSource
+      .getRepository(StudySetEntity)
+      .findOneBy({ id: studySetId });
+
+    if (!studySet) {
+      throw new NotFoundException('Study set not found');
+    }
+
+    // Check if study set belongs to the class
+    if (!classEntity.studySets.some((set) => set.id === studySetId)) {
+      throw new NotFoundException('Study set not found in the class');
+    }
+
+    // Remove study set from class
+    classEntity.studySets = classEntity.studySets.filter(
+      (set) => set.id !== studySetId,
+    );
+
+    try {
+      await this.save(classEntity);
+      return this.mapClassEntityToResponse(classEntity, false, false, false);
+    } catch (error) {
+      logger.error('Error removing study set from class:', error);
+      throw new InternalServerErrorException(
+        'Error removing study set from class',
+      );
+    }
+  }
+
+  async removeFolderByClassId(
+    removeFolderByClassIdBodyDto: RemoveFolderByClassIdBodyDto,
+  ): Promise<GetClassResponseInterface> {
+    const { userId, classId, folderId } = removeFolderByClassIdBodyDto;
+
+    // Find class
+    const classEntity = await this.findClassAndValidatePermissions(classId, [
+      'owner',
+      'members',
+      'studySets',
+      'folders',
+      'folders.studySets',
+      'folders.owner',
+    ]);
+
+    // Find user
+    const userEntity = await this.dataSource
+      .getRepository(UserEntity)
+      .findOneBy({ id: userId });
+
+    if (!userEntity) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!userEntity.isVerified) {
+      throw new UnauthorizedException('User not verified');
+    }
+
+    // Check if user is the owner of the class
+    if (classEntity.owner.id !== userId) {
+      throw new UnauthorizedException('User is not the owner of the class');
+    }
+
+    // Find folder
+    const folder = await this.dataSource
+      .getRepository(FolderEntity)
+      .findOneBy({ id: folderId });
+
+    if (!folder) {
+      throw new NotFoundException('Folder not found');
+    }
+
+    // Check if folder belongs to the class
+    if (!classEntity.folders.some((f) => f.id === folderId)) {
+      throw new NotFoundException('Folder not found in the class');
+    }
+
+    // Remove folder from class
+    classEntity.folders = classEntity.folders.filter((f) => f.id !== folderId);
+
+    try {
+      await this.save(classEntity);
+      return this.mapClassEntityToResponse(classEntity, false, false, false);
+    } catch (error) {
+      logger.error('Error removing folders from class:', error);
+      throw new InternalServerErrorException(
+        'Error removing folders from class',
+      );
+    }
   }
 }
