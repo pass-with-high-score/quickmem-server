@@ -458,7 +458,21 @@ export class ClassRepository extends Repository<ClassEntity> {
     // Check if all folders belong to the user
     await this.validateOwnershipOrManagement(folders, userId, 'folder');
 
-    classEntity.folders = folders;
+    const remainingFolders = classEntity.folders.filter(
+      (folder) => folder.owner.id !== userId || !folderIds.includes(folder.id),
+    );
+
+    // Add new folders that belong to the user and are not already in the class
+    const newFolders = folders.filter(
+      (folder) =>
+        folder.owner.id === userId &&
+        !classEntity.folders.some(
+          (existingFolder) => existingFolder.id === folder.id,
+        ),
+    );
+
+    // Combine the remaining folders with the new folders
+    classEntity.folders = [...remainingFolders, ...newFolders];
 
     try {
       await this.save(classEntity);
@@ -485,6 +499,7 @@ export class ClassRepository extends Repository<ClassEntity> {
       'studySets',
       'folders.studySets',
       'folders.owner',
+      'studySets.owner',
     ]);
 
     const userEntity = await this.dataSource
@@ -525,8 +540,24 @@ export class ClassRepository extends Repository<ClassEntity> {
     // Check if all study sets belong to the user
     await this.validateOwnershipOrManagement(studySets, userId, 'study set');
 
-    // Add study sets to class
-    classEntity.studySets = studySets;
+    const remainingStudySets = classEntity.studySets.filter(
+      (studySet) =>
+        studySet.owner.id !== userId || !studySetIds.includes(studySet.id),
+    );
+
+    // Add new study sets that belong to the user and are not already in the class
+    const newStudySets = studySets.filter(
+      (studySet) =>
+        studySet.owner.id === userId &&
+        !classEntity.studySets.some(
+          (existingSet) => existingSet.id === studySet.id,
+        ),
+    );
+
+    // Combine the remaining study sets with the new study sets
+    classEntity.studySets = [...remainingStudySets, ...newStudySets];
+
+    console.log('updatedStudySets: ', classEntity.studySets);
 
     try {
       await this.save(classEntity);
