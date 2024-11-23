@@ -36,6 +36,8 @@ import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-usern
 import { UserResponseInterface } from './interfaces/user-response.interface';
 import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto';
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
+import { UpdateRoleDto } from './dto/bodies/update-role.dto';
+import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
 
 @Injectable()
 export class AuthService {
@@ -203,5 +205,11 @@ export class AuthService {
     getUserProfileParamDto: GetUserProfileParamDto,
   ): Promise<GetUserProfileResponseInterface> {
     return this.usersRepository.getUserProfileById(getUserProfileParamDto);
+  }
+
+  async updateRole(
+    updateRoleDto: UpdateRoleDto,
+  ): Promise<UpdateRoleResponseInterfaceDto> {
+    return this.usersRepository.updateRole(updateRoleDto);
   }
 }

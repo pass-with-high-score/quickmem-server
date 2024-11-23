@@ -54,6 +54,8 @@ import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-usern
 import { UserResponseInterface } from './interfaces/user-response.interface';
 import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto';
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
+import { UpdateRoleDto } from './dto/bodies/update-role.dto';
+import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -261,6 +263,16 @@ export class AuthController {
     @Body() setNewPasswordDto: SetNewPasswordDto,
   ): Promise<SetNewPasswordResponseInterface> {
     return this.authService.setNewPassword(setNewPasswordDto);
+  }
+
+  @UseGuards(OwnershipGuard)
+  @SkipThrottle()
+  @HttpCode(HttpStatus.OK)
+  @Patch('/user/role')
+  async updateRole(
+    @Body() updateRoleDto: UpdateRoleDto,
+  ): Promise<UpdateRoleResponseInterfaceDto> {
+    return this.authService.updateRole(updateRoleDto);
   }
 
   @SkipThrottle()

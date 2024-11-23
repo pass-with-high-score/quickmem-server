@@ -53,6 +53,8 @@ import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-usern
 import { UserResponseInterface } from './interfaces/user-response.interface';
 import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto';
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
+import { UpdateRoleDto } from './dto/bodies/update-role.dto';
+import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -999,5 +1001,50 @@ export class AuthRepository extends Repository<UserEntity> {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
+  }
+
+  async updateRole(
+    updateRoleDto: UpdateRoleDto,
+  ): Promise<UpdateRoleResponseInterfaceDto> {
+    const { userId, role } = updateRoleDto;
+
+    const user = await this.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    if (!user.isVerified) {
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'User is not verified',
+      });
+    }
+
+    if (user.role === role) {
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        message: 'Role is the same as the old role',
+      });
+    }
+
+    user.role = role;
+
+    try {
+      await this.save(user);
+      return {
+        message: 'Role updated successfully',
+        role: user.role,
+        success: true,
+      };
+    } catch (error) {
+      logger.error(error);
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Failed to update role',
+      });
+    }
   }
 }

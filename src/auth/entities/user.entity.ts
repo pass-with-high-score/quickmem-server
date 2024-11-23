@@ -48,7 +48,6 @@ export class UserEntity {
   @Column({ nullable: true })
   fullName: string;
 
-  @Column()
   @Column({ nullable: true })
   avatarUrl: string;
 
