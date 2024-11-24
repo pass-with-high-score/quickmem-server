@@ -461,6 +461,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         flashcard.rating = FlashcardStatusEnum.NOT_STUDIED;
         flashcard.flipStatus = FlipFlashcardStatus.NONE;
         flashcard.quizStatus = QuizFlashcardStatusEnum.NONE;
+        flashcard.trueFalseStatus = TrueFalseStatusEnum.NONE;
       } else if (resetType === 'flipStatus') {
         flashcard.flipStatus = FlipFlashcardStatus.NONE;
       } else if (resetType === 'rating') {
