@@ -49,6 +49,7 @@ import { GetStudySetsBySubjectIdParamDto } from './dto/params/get-study-sets-by-
 import { GetStudySetsBySubjectIdQueryDto } from './dto/queries/get-study-sets-by-subject-id-query.dto';
 import { TopSubjectResponseInterface } from './interfaces/top-subject-response.interface';
 import { QuizFlashcardStatusEnum } from '../flashcard/enums/quiz-flashcard-status.enum';
+import { TrueFalseStatusEnum } from '../flashcard/enums/true-false-status.enum';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -466,6 +467,8 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         flashcard.rating = FlashcardStatusEnum.NOT_STUDIED;
       } else if (resetType === 'quizStatus') {
         flashcard.quizStatus = QuizFlashcardStatusEnum.NONE;
+      } else if (resetType === 'trueFalseStatus') {
+        flashcard.trueFalseStatus = TrueFalseStatusEnum.NONE;
       }
       await this.dataSource.getRepository(FlashcardEntity).save(flashcard);
     }
