@@ -13,6 +13,7 @@ import { ImageEntity } from '../../cloudinary/entities/image.entity';
 import { FlipFlashcardStatus } from '../enums/flip-flashcard-status';
 import { QuizFlashcardStatusEnum } from '../enums/quiz-flashcard-status.enum';
 import { TrueFalseStatusEnum } from '../enums/true-false-status.enum';
+import { WriteStatusEnum } from '../enums/write-status.enum';
 
 @Entity('flashcards')
 export class FlashcardEntity {
@@ -72,6 +73,14 @@ export class FlashcardEntity {
     default: QuizFlashcardStatusEnum.NONE,
   })
   quizStatus: QuizFlashcardStatusEnum;
+
+  @Column({
+    type: 'enum',
+    enumName: 'write_status_enum',
+    enum: WriteStatusEnum,
+    default: WriteStatusEnum.NONE,
+  })
+  writeStatus: WriteStatusEnum;
 
   @OneToOne(() => ImageEntity, (image) => image.flashcard, {
     onDelete: 'SET NULL',

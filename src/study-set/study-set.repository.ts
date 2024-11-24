@@ -50,6 +50,7 @@ import { GetStudySetsBySubjectIdQueryDto } from './dto/queries/get-study-sets-by
 import { TopSubjectResponseInterface } from './interfaces/top-subject-response.interface';
 import { QuizFlashcardStatusEnum } from '../flashcard/enums/quiz-flashcard-status.enum';
 import { TrueFalseStatusEnum } from '../flashcard/enums/true-false-status.enum';
+import { WriteStatusEnum } from '../flashcard/enums/write-status.enum';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -462,6 +463,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         flashcard.flipStatus = FlipFlashcardStatus.NONE;
         flashcard.quizStatus = QuizFlashcardStatusEnum.NONE;
         flashcard.trueFalseStatus = TrueFalseStatusEnum.NONE;
+        flashcard.writeStatus = WriteStatusEnum.NONE;
       } else if (resetType === 'flipStatus') {
         flashcard.flipStatus = FlipFlashcardStatus.NONE;
       } else if (resetType === 'rating') {
@@ -470,6 +472,8 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         flashcard.quizStatus = QuizFlashcardStatusEnum.NONE;
       } else if (resetType === 'trueFalseStatus') {
         flashcard.trueFalseStatus = TrueFalseStatusEnum.NONE;
+      } else if (resetType === 'writeStatus') {
+        flashcard.writeStatus = WriteStatusEnum.NONE;
       }
       await this.dataSource.getRepository(FlashcardEntity).save(flashcard);
     }

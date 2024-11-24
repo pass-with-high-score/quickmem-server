@@ -11,6 +11,8 @@ export class FlashcardResponseInterface {
   rating?: string;
   flipStatus?: string;
   quizStatus?: string;
+  trueFalseStatus?: string;
+  writeStatus?: string;
   createdAt: Date;
   updatedAt: Date;
 }

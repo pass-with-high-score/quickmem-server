@@ -15,6 +15,7 @@ import { GetFlashcardByIdParam } from './dto/queries/get-flashcard-by-id.param';
 import { UpdateQuizStatusParamDto } from './dto/params/update-quiz-status-param.dto';
 import { UpdateFlashcardQuizStatusDto } from './dto/bodies/update-flashcard-quiz-status.dto';
 import { UpdateFlashcardTrueFalseStatusDto } from './dto/bodies/update-flashcard-true-false-status.dto';
+import { UpdateFlashcardWriteStatusDto } from './dto/bodies/update-flashcard-write-status.dto';
 
 @Injectable()
 export class FlashcardService {
@@ -107,6 +108,16 @@ export class FlashcardService {
     return this.flashcardRepository.updateFlashcardTrueFalseStatus(
       updateFlashcardParamDto,
       updateFlashcardTrueFalseStatusDto,
+    );
+  }
+
+  async updateWriteStatus(
+    updateFlashcardParamDto: UpdateFlashcardParamDto,
+    updateWriteStatusDto: UpdateFlashcardWriteStatusDto,
+  ): Promise<UpdateFlashcardInterface> {
+    return this.flashcardRepository.updateWriteStatus(
+      updateFlashcardParamDto,
+      updateWriteStatusDto,
     );
   }
 }

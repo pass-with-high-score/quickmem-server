@@ -6,4 +6,5 @@ export interface UpdateFlashcardInterface {
   isStarred?: boolean;
   quizStatus?: string;
   trueFalseStatus?: string;
+  writeStatus?: string;
 }

@@ -27,6 +27,8 @@ import { UpdateFlashcardQuizStatusDto } from './dto/bodies/update-flashcard-quiz
 import { UpdateQuizStatusParamDto } from './dto/params/update-quiz-status-param.dto';
 import { TrueFalseStatusEnum } from './enums/true-false-status.enum';
 import { UpdateFlashcardTrueFalseStatusDto } from './dto/bodies/update-flashcard-true-false-status.dto';
+import { UpdateFlashcardWriteStatusDto } from './dto/bodies/update-flashcard-write-status.dto';
+import { WriteStatusEnum } from './enums/write-status.enum';
 
 @Injectable()
 export class FlashcardRepository extends Repository<FlashcardEntity> {
@@ -96,6 +98,12 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
           (flashcard) =>
             flashcard.trueFalseStatus === TrueFalseStatusEnum.NONE ||
             flashcard.trueFalseStatus === TrueFalseStatusEnum.WRONG,
+        );
+      } else if (learnMode === LearnModeEnum.WRITE) {
+        filteredFlashcards = flashcards.filter(
+          (flashcard) =>
+            flashcard.writeStatus === WriteStatusEnum.NONE ||
+            flashcard.writeStatus === WriteStatusEnum.WRONG,
         );
       }
       return await Promise.all(
@@ -381,6 +389,38 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     }
   }
 
+  async updateWriteStatus(
+    updateFlashcardParamDto: UpdateFlashcardParamDto,
+    updateWriteStatusDto: UpdateFlashcardWriteStatusDto,
+  ): Promise<UpdateFlashcardInterface> {
+    const { id } = updateFlashcardParamDto;
+    try {
+      const flashcard = await this.findOne({
+        where: { id },
+        relations: ['studySet'],
+      });
+      if (!flashcard) {
+        throw new NotFoundException(`Flashcard with ID ${id} not found`);
+      }
+
+      flashcard.writeStatus = updateWriteStatusDto.writeStatus;
+      await this.save(flashcard);
+      return {
+        id: flashcard.id,
+        writeStatus: flashcard.writeStatus,
+        message: 'Flashcard write status updated successfully',
+      };
+    } catch (error) {
+      logger.error('Error updating flashcard write status:', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Error updating flashcard write status',
+      );
+    }
+  }
+
   async mapFlashcardEntityToResponseInterface(
     flashcard: FlashcardEntity,
   ): Promise<FlashcardResponseInterface> {
@@ -397,6 +437,8 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       rating: flashcard.rating,
       quizStatus: flashcard.quizStatus,
       flipStatus: flashcard.flipStatus,
+      writeStatus: flashcard.writeStatus,
+      trueFalseStatus: flashcard.trueFalseStatus,
       createdAt: flashcard.createdAt,
       updatedAt: flashcard.updatedAt,
     };
