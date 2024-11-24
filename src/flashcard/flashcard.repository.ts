@@ -25,6 +25,8 @@ import { FlipFlashcardStatus } from './enums/flip-flashcard-status';
 import { QuizFlashcardStatusEnum } from './enums/quiz-flashcard-status.enum';
 import { UpdateFlashcardQuizStatusDto } from './dto/bodies/update-flashcard-quiz-status.dto';
 import { UpdateQuizStatusParamDto } from './dto/params/update-quiz-status-param.dto';
+import { TrueFalseStatusEnum } from './enums/true-false-status.enum';
+import { UpdateFlashcardTrueFalseStatusDto } from './dto/bodies/update-flashcard-true-false-status.dto';
 
 @Injectable()
 export class FlashcardRepository extends Repository<FlashcardEntity> {
@@ -89,8 +91,13 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
             flashcard.quizStatus === QuizFlashcardStatusEnum.SKIPPED ||
             flashcard.quizStatus === QuizFlashcardStatusEnum.WRONG,
         );
+      } else if (learnMode === LearnModeEnum.TRUE_FALSE) {
+        filteredFlashcards = flashcards.filter(
+          (flashcard) =>
+            flashcard.trueFalseStatus === TrueFalseStatusEnum.NONE ||
+            flashcard.trueFalseStatus === TrueFalseStatusEnum.WRONG,
+        );
       }
-
       return await Promise.all(
         filteredFlashcards.map((flashcard) =>
           this.mapFlashcardEntityToResponseInterface(flashcard),
@@ -337,6 +344,39 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       }
       throw new InternalServerErrorException(
         'Error updating flashcard starred',
+      );
+    }
+  }
+
+  async updateFlashcardTrueFalseStatus(
+    updateFlashcardParamDto: UpdateFlashcardParamDto,
+    updateFlashcardTrueFalseStatusDto: UpdateFlashcardTrueFalseStatusDto,
+  ): Promise<UpdateFlashcardInterface> {
+    const { id } = updateFlashcardParamDto;
+    try {
+      const flashcard = await this.findOne({
+        where: { id },
+        relations: ['studySet'],
+      });
+      if (!flashcard) {
+        throw new NotFoundException(`Flashcard with ID ${id} not found`);
+      }
+
+      flashcard.trueFalseStatus =
+        updateFlashcardTrueFalseStatusDto.trueFalseStatus;
+      await this.save(flashcard);
+      return {
+        id: flashcard.id,
+        trueFalseStatus: flashcard.trueFalseStatus,
+        message: 'Flashcard true false status updated successfully',
+      };
+    } catch (error) {
+      logger.error('Error updating flashcard true false status:', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Error updating flashcard true false status',
       );
     }
   }

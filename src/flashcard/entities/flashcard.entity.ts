@@ -12,6 +12,7 @@ import { StudySetEntity } from '../../study-set/entities/study-set.entity';
 import { ImageEntity } from '../../cloudinary/entities/image.entity';
 import { FlipFlashcardStatus } from '../enums/flip-flashcard-status';
 import { QuizFlashcardStatusEnum } from '../enums/quiz-flashcard-status.enum';
+import { TrueFalseStatusEnum } from '../enums/true-false-status.enum';
 
 @Entity('flashcards')
 export class FlashcardEntity {
@@ -55,6 +56,14 @@ export class FlashcardEntity {
     default: FlipFlashcardStatus.NONE,
   })
   flipStatus: FlipFlashcardStatus;
+
+  @Column({
+    type: 'enum',
+    enumName: 'true_false_flashcard_status_enum',
+    enum: TrueFalseStatusEnum,
+    default: TrueFalseStatusEnum.NONE,
+  })
+  trueFalseStatus: TrueFalseStatusEnum;
 
   @Column({
     type: 'enum',

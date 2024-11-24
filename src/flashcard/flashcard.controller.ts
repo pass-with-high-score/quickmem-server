@@ -29,6 +29,7 @@ import { UpdateFlashcardFlipStatusDto } from './dto/bodies/update-flashcard-flip
 import { GetFlashcardByIdParam } from './dto/queries/get-flashcard-by-id.param';
 import { UpdateQuizStatusParamDto } from './dto/params/update-quiz-status-param.dto';
 import { UpdateFlashcardQuizStatusDto } from './dto/bodies/update-flashcard-quiz-status.dto';
+import { UpdateFlashcardTrueFalseStatusDto } from './dto/bodies/update-flashcard-true-false-status.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -118,6 +119,19 @@ export class FlashcardController {
     return this.flashcardService.updateFlashcardQuizStatus(
       updateQuizStatusParamDto,
       updateFlashcardQuizStatusDto,
+    );
+  }
+
+  @Patch('/:id/true-false-status')
+  @HttpCode(HttpStatus.OK)
+  async updateFlashcardTrueFalseStatus(
+    @Param() updateFlashcardParamDto: UpdateFlashcardParamDto,
+    @Body()
+    updateFlashcardTrueFalseStatusDto: UpdateFlashcardTrueFalseStatusDto,
+  ): Promise<UpdateFlashcardInterface> {
+    return this.flashcardService.updateFlashcardTrueFalseStatus(
+      updateFlashcardParamDto,
+      updateFlashcardTrueFalseStatusDto,
     );
   }
 
