@@ -40,6 +40,8 @@ import { GetStudySetByCodeParamDto } from './dto/params/get-study-set-by-code.pa
 import { GetStudySetsBySubjectIdParamDto } from './dto/params/get-study-sets-by-subject-id-param.dto';
 import { GetStudySetsBySubjectIdQueryDto } from './dto/queries/get-study-sets-by-subject-id-query.dto';
 import { TopSubjectResponseInterface } from './interfaces/top-subject-response.interface';
+import { UpdateRecentStudySetDto } from './dto/bodies/update-recent-study-set-body.dto';
+import { GetStudySetsByUserIdDto } from './dto/params/get-study-sets-by-user-Id.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -74,6 +76,16 @@ export class StudySetController {
     return await this.studySetService.getStudySetsByOwnerId(
       getStudySetsByOwnerIdDto,
       getStudySetsByOwnerIdParamDto,
+    );
+  }
+
+  @Get('/recent/:userId')
+  @HttpCode(HttpStatus.OK)
+  async getStudySetRecentByUserId(
+    @Param() getStudySetsByUserIdDto: GetStudySetsByUserIdDto,
+  ): Promise<GetAllStudySetResponseInterface[]> {
+    return await this.studySetService.getStudySetRecentByUserId(
+      getStudySetsByUserIdDto,
     );
   }
 
@@ -185,6 +197,14 @@ export class StudySetController {
     return this.studySetService.updateClassesInStudySet(
       updateClassesInStudySetDto,
     );
+  }
+
+  @Post('/recent')
+  @HttpCode(HttpStatus.CREATED)
+  async updateRecentStudySet(
+    @Body() updateRecentStudySetDto: UpdateRecentStudySetDto,
+  ) {
+    return this.studySetService.updateRecentStudySet(updateRecentStudySetDto);
   }
 
   @Delete('/:id')

@@ -51,6 +51,9 @@ import { TopSubjectResponseInterface } from './interfaces/top-subject-response.i
 import { QuizFlashcardStatusEnum } from '../flashcard/enums/quiz-flashcard-status.enum';
 import { TrueFalseStatusEnum } from '../flashcard/enums/true-false-status.enum';
 import { WriteStatusEnum } from '../flashcard/enums/write-status.enum';
+import { UpdateRecentStudySetDto } from './dto/bodies/update-recent-study-set-body.dto';
+import { RecentStudySetEntity } from './entities/recent-study-set.entity';
+import { GetStudySetsByUserIdDto } from './dto/params/get-study-sets-by-user-Id.dto';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -1088,6 +1091,75 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       throw new InternalServerErrorException(
         'Error getting top 5 subjects by study set count',
       );
+    }
+  }
+
+  async updateRecentStudySet(updateRecentStudySetDto: UpdateRecentStudySetDto) {
+    const { userId, studySetId } = updateRecentStudySetDto;
+
+    const recentStudySet = await this.dataSource
+      .getRepository(RecentStudySetEntity)
+      .findOne({
+        where: { user: { id: userId }, studySet: { id: studySetId } },
+      });
+
+    if (recentStudySet) {
+      recentStudySet.accessedAt = new Date();
+      await this.dataSource
+        .getRepository(RecentStudySetEntity)
+        .save(recentStudySet);
+      return;
+    }
+
+    const user = await this.dataSource
+      .getRepository(UserEntity)
+      .findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const studySet = await this.findOne({
+      where: { id: studySetId },
+    });
+    if (!studySet) {
+      throw new NotFoundException('Study set not found');
+    }
+
+    const recentStudySetEntity = new RecentStudySetEntity();
+    recentStudySetEntity.user = user;
+    recentStudySetEntity.studySet = studySet;
+
+    await this.dataSource
+      .getRepository(RecentStudySetEntity)
+      .save(recentStudySetEntity);
+  }
+
+  async getStudySetRecentByUserId(
+    getStudySetsByUserIdDto: GetStudySetsByUserIdDto,
+  ): Promise<GetAllStudySetResponseInterface[]> {
+    const { userId } = getStudySetsByUserIdDto;
+    try {
+      const studySets = await this.dataSource
+        .getRepository(RecentStudySetEntity)
+        .find({
+          where: { user: { id: userId } },
+          relations: [
+            'studySet',
+            'studySet.owner',
+            'studySet.subject',
+            'studySet.color',
+            'studySet.flashcards',
+          ],
+          order: { accessedAt: 'DESC' },
+          take: 15,
+        });
+
+      return studySets.map((recentStudySet) => {
+        return this.mapStudySetToResponse(recentStudySet.studySet, false);
+      });
+    } catch (error) {
+      console.log('Error getting study sets', error);
+      throw new InternalServerErrorException('Error getting study sets');
     }
   }
 }

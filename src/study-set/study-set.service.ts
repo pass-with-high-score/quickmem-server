@@ -26,6 +26,8 @@ import { GetStudySetByCodeParamDto } from './dto/params/get-study-set-by-code.pa
 import { GetStudySetsBySubjectIdParamDto } from './dto/params/get-study-sets-by-subject-id-param.dto';
 import { GetStudySetsBySubjectIdQueryDto } from './dto/queries/get-study-sets-by-subject-id-query.dto';
 import { TopSubjectResponseInterface } from './interfaces/top-subject-response.interface';
+import { UpdateRecentStudySetDto } from './dto/bodies/update-recent-study-set-body.dto';
+import { GetStudySetsByUserIdDto } from './dto/params/get-study-sets-by-user-Id.dto';
 
 @Injectable()
 export class StudySetService {
@@ -149,5 +151,19 @@ export class StudySetService {
     TopSubjectResponseInterface[]
   > {
     return this.studySetRepository.getTop5SubjectByStudySetCount();
+  }
+
+  async updateRecentStudySet(updateRecentStudySetDto: UpdateRecentStudySetDto) {
+    return this.studySetRepository.updateRecentStudySet(
+      updateRecentStudySetDto,
+    );
+  }
+
+  async getStudySetRecentByUserId(
+    getStudySetsByUserIdDto: GetStudySetsByUserIdDto,
+  ): Promise<GetAllStudySetResponseInterface[]> {
+    return this.studySetRepository.getStudySetRecentByUserId(
+      getStudySetsByUserIdDto,
+    );
   }
 }

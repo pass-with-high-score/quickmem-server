@@ -16,6 +16,7 @@ import { FlashcardEntity } from '../../flashcard/entities/flashcard.entity';
 import { ClassEntity } from '../../class/entities/class.entity';
 import { FolderEntity } from '../../folder/entities/folder.entity';
 import { StudyTimeEntity } from '../../study-time/entities/study-time.entity';
+import { RecentStudySetEntity } from './recent-study-set.entity';
 
 @Entity('study_sets')
 export class StudySetEntity {
@@ -67,6 +68,12 @@ export class StudySetEntity {
 
   @Column({ nullable: true, default: false })
   isAIGenerated: boolean;
+
+  @OneToMany(
+    () => RecentStudySetEntity,
+    (recentStudySet) => recentStudySet.studySet,
+  )
+  recentAccesses: RecentStudySetEntity[];
 
   @CreateDateColumn()
   createdAt: Date;

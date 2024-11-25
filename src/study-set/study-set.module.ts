@@ -6,10 +6,16 @@ import { ColorEntity } from './entities/color.entity';
 import { SubjectEntity } from './entities/subject.entity';
 import { StudySetEntity } from './entities/study-set.entity';
 import { StudySetRepository } from './study-set.repository';
+import { RecentStudySetEntity } from './entities/recent-study-set.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ColorEntity, SubjectEntity, StudySetEntity]),
+    TypeOrmModule.forFeature([
+      ColorEntity,
+      SubjectEntity,
+      StudySetEntity,
+      RecentStudySetEntity,
+    ]),
   ],
   providers: [StudySetService, StudySetRepository],
   controllers: [StudySetController],

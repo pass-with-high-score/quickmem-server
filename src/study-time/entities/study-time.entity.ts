@@ -18,7 +18,9 @@ export class StudyTimeEntity {
   @ManyToOne(() => UserEntity, (user) => user.studyTimes)
   user: UserEntity;
 
-  @ManyToOne(() => StudySetEntity, (studySet) => studySet.studyTimes)
+  @ManyToOne(() => StudySetEntity, (studySet) => studySet.studyTimes, {
+    onDelete: 'CASCADE',
+  })
   studySet: StudySetEntity;
 
   @Column('int')
