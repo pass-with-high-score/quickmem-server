@@ -22,6 +22,10 @@ import { UpdateStudySetsInFolderResponseInterface } from './interfaces/update-st
 import { GetFolderByOwnerIdQueryDto } from './dto/queries/get-folder-by-owner-Id-query.dto';
 import { logger } from '../winston-logger.service';
 import { GetFolderByCodeParamDto } from './dto/params/get-folder-by-code.param.dto';
+import { RecentStudySetEntity } from '../study-set/entities/recent-study-set.entity';
+import { UpdateRecentFolderBodyDto } from './dto/bodies/update-recent-folder-body.dto';
+import { RecentFolderEntity } from './entities/recent-folder.entity';
+import { GetFoldersByUserIdDto } from './dto/params/get-folders-by-user-Id.dto';
 
 @Injectable()
 export class FolderRepository extends Repository<FolderEntity> {
@@ -350,5 +354,80 @@ export class FolderRepository extends Repository<FolderEntity> {
     }
 
     return result;
+  }
+
+  async updateRecentFolder(
+    updateRecentFolderBodyDto: UpdateRecentFolderBodyDto,
+  ) {
+    const { userId, folderId } = updateRecentFolderBodyDto;
+
+    const recentFolder = await this.dataSource
+      .getRepository(RecentFolderEntity)
+      .findOne({
+        where: { user: { id: userId }, folder: { id: folderId } },
+      });
+
+    if (recentFolder) {
+      recentFolder.accessedAt = new Date();
+      await this.dataSource
+        .getRepository(RecentStudySetEntity)
+        .save(recentFolder);
+      return;
+    }
+
+    const user = await this.dataSource
+      .getRepository(UserEntity)
+      .findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const folder = await this.findOne({
+      where: { id: folderId },
+    });
+    if (!folder) {
+      throw new NotFoundException('Folder not found');
+    }
+
+    const recentFolderEntity = new RecentFolderEntity();
+    recentFolderEntity.user = user;
+    recentFolderEntity.folder = folder;
+
+    await this.dataSource
+      .getRepository(RecentFolderEntity)
+      .save(recentFolderEntity);
+  }
+
+  async getRecentFoldersByUserId(
+    getFoldersByUserIdDto: GetFoldersByUserIdDto,
+  ): Promise<GetFolderResponseInterface[]> {
+    const { userId } = getFoldersByUserIdDto;
+    try {
+      const recentFolders = await this.dataSource
+        .getRepository(RecentFolderEntity)
+        .find({
+          where: { user: { id: userId } },
+          relations: ['folder', 'folder.owner', 'folder.studySets'],
+          order: { accessedAt: 'DESC' },
+          take: 15,
+        });
+
+      return Promise.all(
+        recentFolders.map((recentFolder) =>
+          this.mapFolderToGetFolderResponseInterface(
+            recentFolder.folder,
+            false,
+          ),
+        ),
+      );
+    } catch (error) {
+      logger.error('Error fetching recent folders by user ID', {
+        userId,
+        error,
+      });
+      throw new InternalServerErrorException(
+        'Error fetching recent folders by user ID',
+      );
+    }
   }
 }

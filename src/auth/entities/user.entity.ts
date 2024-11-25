@@ -19,6 +19,7 @@ import { SubscriptionEntity } from '../../subscription/entities/subscription.ent
 import { DeviceEntity } from '../../firebase/entities/device.entity';
 import { StudyTimeEntity } from '../../study-time/entities/study-time.entity';
 import { RecentStudySetEntity } from '../../study-set/entities/recent-study-set.entity';
+import { RecentFolderEntity } from '../../folder/entities/recent-folder.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -122,8 +123,14 @@ export class UserEntity {
   @ManyToMany(() => ClassEntity, (classEntity) => classEntity.members)
   classes: ClassEntity[];
 
-  @OneToMany(() => RecentStudySetEntity, (recentStudySet) => recentStudySet.user)
+  @OneToMany(
+    () => RecentStudySetEntity,
+    (recentStudySet) => recentStudySet.user,
+  )
   recentStudySets: RecentStudySetEntity[];
+
+  @OneToMany(() => RecentFolderEntity, (recentFolder) => recentFolder.user)
+  recentFolders: RecentFolderEntity[];
 
   @CreateDateColumn()
   createdAt: Date;

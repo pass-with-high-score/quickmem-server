@@ -1,11 +1,11 @@
 import { IsNotEmpty, IsUUID } from 'class-validator';
 
-export class UpdateRecentStudySetDto {
+export class UpdateRecentFolderBodyDto {
   @IsUUID()
   @IsNotEmpty()
   userId: string;
 
   @IsUUID()
   @IsNotEmpty()
-  studySetId: string;
+  folderId: string;
 }

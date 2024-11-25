@@ -27,6 +27,8 @@ import { SearchFoldersByTitleQueryDto } from './dto/queries/search-folders-by-ti
 import { UpdateStudySetsInFolderResponseInterface } from './interfaces/update-study-sets-in-folder-response.interface';
 import { GetFolderByOwnerIdQueryDto } from './dto/queries/get-folder-by-owner-Id-query.dto';
 import { GetFolderByCodeParamDto } from './dto/params/get-folder-by-code.param.dto';
+import { UpdateRecentFolderBodyDto } from './dto/bodies/update-recent-folder-body.dto';
+import { GetFoldersByUserIdDto } from './dto/params/get-folders-by-user-Id.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -61,6 +63,14 @@ export class FolderController {
     );
   }
 
+  @Get('/recent/:userId')
+  @HttpCode(HttpStatus.OK)
+  async getRecentFoldersByUserId(
+    @Param() getFoldersByUserIdDto: GetFoldersByUserIdDto,
+  ): Promise<GetFolderResponseInterface[]> {
+    return this.folderService.getRecentFoldersByUserId(getFoldersByUserIdDto);
+  }
+
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
   async getFolderById(
@@ -89,6 +99,14 @@ export class FolderController {
     return this.folderService.updateStudySetsInFolder(
       updateStudySetsInFolderDto,
     );
+  }
+
+  @Post('/recent')
+  @HttpCode(HttpStatus.CREATED)
+  async updateRecentFolder(
+    @Body() updateRecentFolderBodyDto: UpdateRecentFolderBodyDto,
+  ) {
+    return this.folderService.updateRecentFolder(updateRecentFolderBodyDto);
   }
 
   @Post()

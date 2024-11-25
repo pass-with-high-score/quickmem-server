@@ -13,6 +13,8 @@ import { SearchFoldersByTitleQueryDto } from './dto/queries/search-folders-by-ti
 import { UpdateStudySetsInFolderResponseInterface } from './interfaces/update-study-sets-in-folder-response.interface';
 import { GetFolderByOwnerIdQueryDto } from './dto/queries/get-folder-by-owner-Id-query.dto';
 import { GetFolderByCodeParamDto } from './dto/params/get-folder-by-code.param.dto';
+import { UpdateRecentFolderBodyDto } from './dto/bodies/update-recent-folder-body.dto';
+import { GetFoldersByUserIdDto } from './dto/params/get-folders-by-user-Id.dto';
 
 @Injectable()
 export class FolderService {
@@ -74,5 +76,19 @@ export class FolderService {
     getFolderByCodeParamDto: GetFolderByCodeParamDto,
   ): Promise<GetFolderResponseInterface> {
     return this.folderRepository.getFolderByCode(getFolderByCodeParamDto);
+  }
+
+  async updateRecentFolder(
+    updateRecentFolderBodyDto: UpdateRecentFolderBodyDto,
+  ) {
+    return this.folderRepository.updateRecentFolder(updateRecentFolderBodyDto);
+  }
+
+  async getRecentFoldersByUserId(
+    getFoldersByUserIdDto: GetFoldersByUserIdDto,
+  ): Promise<GetFolderResponseInterface[]> {
+    return this.folderRepository.getRecentFoldersByUserId(
+      getFoldersByUserIdDto,
+    );
   }
 }
