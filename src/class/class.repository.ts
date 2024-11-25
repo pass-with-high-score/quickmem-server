@@ -31,6 +31,8 @@ import { GetClassByJoinTokenParamDto } from './dto/params/get-class-by-join-toke
 import { GetClassByJoinTokenQueryDto } from './dto/queries/get-class-by-join-token.query.dto';
 import { RemoveStudySetByClassIdBodyDto } from './dto/bodies/remove-study-set-by-class-id-body.dto';
 import { RemoveFolderByClassIdBodyDto } from './dto/bodies/remove-folder-by-class-id-body.dto';
+import { UpdateRecentClassBodyDto } from './dto/bodies/update-recent-class-body.dto';
+import { RecentClassEntity } from './entities/recent-class.entity';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -899,6 +901,86 @@ export class ClassRepository extends Repository<ClassEntity> {
       logger.error('Error removing folders from class:', error);
       throw new InternalServerErrorException(
         'Error removing folders from class',
+      );
+    }
+  }
+
+  async updateRecentClass(updateRecentClassBodyDto: UpdateRecentClassBodyDto) {
+    const { userId, classId } = updateRecentClassBodyDto;
+
+    const recentClass = await this.dataSource
+      .getRepository(RecentClassEntity)
+      .findOne({
+        where: { user: { id: userId }, classEntity: { id: classId } },
+      });
+
+    if (recentClass) {
+      recentClass.accessedAt = new Date();
+      await this.dataSource.getRepository(RecentClassEntity).save(recentClass);
+      return;
+    }
+
+    const user = await this.dataSource
+      .getRepository(UserEntity)
+      .findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const classEntity = await this.findOne({
+      where: { id: classId },
+    });
+    if (!classEntity) {
+      throw new NotFoundException('Class not found');
+    }
+
+    const recentClassEntity = new RecentClassEntity();
+    recentClassEntity.user = user;
+    recentClassEntity.classEntity = classEntity;
+
+    await this.dataSource
+      .getRepository(RecentClassEntity)
+      .save(recentClassEntity);
+  }
+
+  async getRecentClassesByUserId(
+    getClassesByUserIdDto: GetClassesByUserIdDto,
+  ): Promise<GetClassResponseInterface[]> {
+    const { userId } = getClassesByUserIdDto;
+    try {
+      const recentClasses = await this.dataSource
+        .getRepository(RecentClassEntity)
+        .find({
+          where: { user: { id: userId } },
+          relations: [
+            'classEntity',
+            'classEntity.owner',
+            'classEntity.members',
+            'classEntity.folders',
+            'classEntity.studySets',
+          ],
+          order: { accessedAt: 'DESC' },
+          take: 10,
+        });
+
+      return Promise.all(
+        recentClasses.map((recentClass) =>
+          this.mapClassEntityToResponse(
+            recentClass.classEntity,
+            false,
+            false,
+            false,
+          ),
+        ),
+      );
+    } catch (error) {
+      console.log(error);
+      logger.error('Error fetching recent classes by user ID', {
+        userId,
+        error,
+      });
+      throw new InternalServerErrorException(
+        'Error fetching recent folders by user ID',
       );
     }
   }

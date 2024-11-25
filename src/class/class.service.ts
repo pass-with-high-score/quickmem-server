@@ -20,6 +20,7 @@ import { GetClassByJoinTokenParamDto } from './dto/params/get-class-by-join-toke
 import { GetClassByJoinTokenQueryDto } from './dto/queries/get-class-by-join-token.query.dto';
 import { RemoveStudySetByClassIdBodyDto } from './dto/bodies/remove-study-set-by-class-id-body.dto';
 import { RemoveFolderByClassIdBodyDto } from './dto/bodies/remove-folder-by-class-id-body.dto';
+import { UpdateRecentClassBodyDto } from './dto/bodies/update-recent-class-body.dto';
 
 @Injectable()
 export class ClassService {
@@ -127,5 +128,15 @@ export class ClassService {
     return this.classRepository.removeFolderByClassId(
       removeFolderByClassIdBodyDto,
     );
+  }
+
+  async updateRecentClass(updateRecentClassBodyDto: UpdateRecentClassBodyDto) {
+    return this.classRepository.updateRecentClass(updateRecentClassBodyDto);
+  }
+
+  async getRecentClassesByUserId(
+    getClassesByUserIdDto: GetClassesByUserIdDto,
+  ): Promise<GetClassResponseInterface[]> {
+    return this.classRepository.getRecentClassesByUserId(getClassesByUserIdDto);
   }
 }

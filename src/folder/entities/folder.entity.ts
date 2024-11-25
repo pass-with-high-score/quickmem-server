@@ -12,7 +12,6 @@ import {
 import { UserEntity } from '../../auth/entities/user.entity';
 import { ClassEntity } from '../../class/entities/class.entity';
 import { StudySetEntity } from '../../study-set/entities/study-set.entity';
-import { RecentStudySetEntity } from '../../study-set/entities/recent-study-set.entity';
 import { RecentFolderEntity } from './recent-folder.entity';
 
 @Entity('folders')

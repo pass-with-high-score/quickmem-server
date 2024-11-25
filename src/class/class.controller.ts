@@ -34,6 +34,7 @@ import { GetClassByJoinTokenParamDto } from './dto/params/get-class-by-join-toke
 import { GetClassByJoinTokenQueryDto } from './dto/queries/get-class-by-join-token.query.dto';
 import { RemoveStudySetByClassIdBodyDto } from './dto/bodies/remove-study-set-by-class-id-body.dto';
 import { RemoveFolderByClassIdBodyDto } from './dto/bodies/remove-folder-by-class-id-body.dto';
+import { UpdateRecentClassBodyDto } from './dto/bodies/update-recent-class-body.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -59,6 +60,14 @@ export class ClassController {
     @Query() searchClassesByTitleQueryDto: SearchClassesByTitleQueryDto,
   ): Promise<GetClassResponseInterface[]> {
     return this.classService.searchClassByTitle(searchClassesByTitleQueryDto);
+  }
+
+  @Get('/recent/:userId')
+  @HttpCode(HttpStatus.OK)
+  async getRecentClassesByUserId(
+    @Param() getClassesByUserIdDto: GetClassesByUserIdDto,
+  ): Promise<GetClassResponseInterface[]> {
+    return this.classService.getRecentClassesByUserId(getClassesByUserIdDto);
   }
 
   @Get('/:id')
@@ -153,10 +162,19 @@ export class ClassController {
   }
 
   @Post('/members')
+  @HttpCode(HttpStatus.CREATED)
   async removeMembersFromClass(
     @Body() removeMembersFromClassDto: RemoveMembersFromClassDto,
   ): Promise<GetClassResponseInterface> {
     return this.classService.removeMembersFromClass(removeMembersFromClassDto);
+  }
+
+  @Post('/recent')
+  @HttpCode(HttpStatus.CREATED)
+  async updateRecentClass(
+    @Body() updateRecentClassBodyDto: UpdateRecentClassBodyDto,
+  ) {
+    return this.classService.updateRecentClass(updateRecentClassBodyDto);
   }
 
   @Delete('/:id')

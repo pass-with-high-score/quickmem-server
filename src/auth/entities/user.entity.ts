@@ -20,6 +20,7 @@ import { DeviceEntity } from '../../firebase/entities/device.entity';
 import { StudyTimeEntity } from '../../study-time/entities/study-time.entity';
 import { RecentStudySetEntity } from '../../study-set/entities/recent-study-set.entity';
 import { RecentFolderEntity } from '../../folder/entities/recent-folder.entity';
+import { RecentClassEntity } from '../../class/entities/recent-class.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -131,6 +132,9 @@ export class UserEntity {
 
   @OneToMany(() => RecentFolderEntity, (recentFolder) => recentFolder.user)
   recentFolders: RecentFolderEntity[];
+
+  @OneToMany(() => RecentClassEntity, (recentClass) => recentClass.user)
+  recentClasses: RecentFolderEntity[];
 
   @CreateDateColumn()
   createdAt: Date;

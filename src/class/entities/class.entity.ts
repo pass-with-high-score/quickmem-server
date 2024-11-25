@@ -5,12 +5,14 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from '../../auth/entities/user.entity';
 import { FolderEntity } from '../../folder/entities/folder.entity';
 import { StudySetEntity } from '../../study-set/entities/study-set.entity';
+import { RecentClassEntity } from './recent-class.entity';
 
 @Entity('classes')
 export class ClassEntity {
@@ -54,6 +56,9 @@ export class ClassEntity {
 
   @Column()
   joinToken: string;
+
+  @OneToMany(() => RecentClassEntity, (recentClass) => recentClass.classEntity)
+  recentAccesses: RecentClassEntity[];
 
   @CreateDateColumn()
   createdAt: Date;
