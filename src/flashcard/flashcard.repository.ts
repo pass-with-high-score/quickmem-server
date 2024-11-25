@@ -103,6 +103,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         filteredFlashcards = flashcards.filter(
           (flashcard) =>
             flashcard.writeStatus === WriteStatusEnum.NONE ||
+            flashcard.writeStatus === WriteStatusEnum.SKIPPED ||
             flashcard.writeStatus === WriteStatusEnum.WRONG,
         );
       }
