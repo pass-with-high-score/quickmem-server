@@ -215,6 +215,7 @@ export class StreakRepository extends Repository<StreakEntity> {
       .innerJoin(UserEntity, 'user', 'user.id = streak.userId')
       .groupBy('streak.userId')
       .addGroupBy('user.username')
+      .addGroupBy('user.avatarUrl')
       .addGroupBy('user.role')
       .orderBy('"streakCount"', 'DESC')
       .limit(limit);
@@ -224,6 +225,7 @@ export class StreakRepository extends Repository<StreakEntity> {
       return topStreaks.map((streak) => ({
         userId: streak.userId,
         username: streak.username,
+        avatarUrl: streak.avatarUrl,
         streakCount: parseInt(streak.streakCount, 10),
         role: streak.role,
       }));
