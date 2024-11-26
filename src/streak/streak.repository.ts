@@ -14,10 +14,14 @@ import { IncrementStreakDto } from './dto/bodies/increment-streak.dto';
 import { StreakInterface } from './interfaces/streak.interface';
 import { GetTopStreakQueryDto } from './dto/queries/get-top-streak-query.dto';
 import { GetTopStreakResponseInterface } from './interfaces/get-top-streak-response.interface';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class StreakRepository extends Repository<StreakEntity> {
-  constructor(private readonly dataSource: DataSource) {
+  constructor(
+    private readonly dataSource: DataSource,
+    private configService: ConfigService,
+  ) {
     super(StreakEntity, dataSource.createEntityManager());
   }
 
@@ -210,13 +214,16 @@ export class StreakRepository extends Repository<StreakEntity> {
     const query = this.createQueryBuilder('streak')
       .select('streak.userId', 'userId')
       .addSelect('user.username', 'username')
-      .addSelect('MAX(streak.streakCount)', 'streakCount')
+      .addSelect('streak.streakCount', 'streakCount')
       .addSelect('user.role', 'role')
+      .addSelect('user.avatarUrl', 'avatarUrl')
       .innerJoin(UserEntity, 'user', 'user.id = streak.userId')
-      .groupBy('streak.userId')
-      .addGroupBy('user.username')
-      .addGroupBy('user.role')
-      .orderBy('"streakCount"', 'DESC')
+      .where('streak.updatedAt >= :date', {
+        date: new Date(new Date().setDate(new Date().getDate() - 1)),
+      })
+      .andWhere('user.isVerified = true')
+      .andWhere('streak.streakCount > 0')
+      .orderBy('streak.streakCount', 'DESC')
       .limit(limit);
 
     try {
@@ -224,6 +231,7 @@ export class StreakRepository extends Repository<StreakEntity> {
       return topStreaks.map((streak) => ({
         userId: streak.userId,
         username: streak.username,
+        avatarUrl: `${this.configService.get<string>('HOST')}/public/images/avatar/${streak.avatarUrl}.jpg`,
         streakCount: parseInt(streak.streakCount, 10),
         role: streak.role,
       }));
