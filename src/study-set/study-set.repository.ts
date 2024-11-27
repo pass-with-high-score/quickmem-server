@@ -999,6 +999,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         const flashcard = new FlashcardEntity();
         flashcard.term = fc.term;
         flashcard.definition = fc.definition;
+        flashcard.isAIGenerated = true;
         flashcard.hint = fc.hint;
         flashcard.explanation = fc.explanation;
         flashcard.studySet = studySet;
