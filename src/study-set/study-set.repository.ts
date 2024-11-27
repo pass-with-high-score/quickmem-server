@@ -753,7 +753,15 @@ export class StudySetRepository extends Repository<StudySetEntity> {
   async createStudySetFromAI(
     createStudySetFromAiDto: CreateStudySetFromAiDto,
   ): Promise<GetAllStudySetResponseInterface> {
-    const { userId, title } = createStudySetFromAiDto;
+    const {
+      userId,
+      title,
+      description,
+      numberOfFlashcards = 10,
+      language = 'en',
+      questionType = 'multiple_choice',
+      difficulty = 'medium',
+    } = createStudySetFromAiDto;
 
     try {
       const GeminiAPIKey = this.configService.get<string>('GEMINI_API_KEY');
@@ -764,7 +772,14 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         this.createSchemaGenAll(),
       );
 
-      const prompt = this.createPromptAll(title);
+      const prompt = this.createPromptAll(
+        title,
+        description,
+        numberOfFlashcards,
+        language,
+        difficulty,
+        questionType,
+      );
 
       const result = await model.generateContent(prompt);
       const parsedText = this.parseAIResponse(result);
@@ -837,35 +852,51 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     };
   }
 
-  private createPromptAll(title: string) {
+  private createPromptAll(
+    title: string,
+    description: string,
+    numberOfFlashcards: number,
+    language: string,
+    difficulty: string,
+    questionType: string,
+  ) {
     return `
-    Bạn sẽ tạo ra một bộ flashcard bao gồm 10 thẻ (bắt buộc không được thiếu hay thừa),
-    với mỗi thẻ có các thuộc tính \`term\` (thuật ngữ), \`definition\` (định nghĩa), và có thể có \`hint\` (gợi ý) và \`explanation\` (giải thích).
-    Bộ flashcard sẽ được tạo dựa trên yêu cầu của người dùng, bao gồm tên bộ flashcard và mô tả.
-    Đầu ra của bạn phải tuân theo cấu trúc JSON dưới đây, và số lượng flashcard không được vượt quá 10.
+  Bạn sẽ tạo ra một bộ flashcard bao gồm **${numberOfFlashcards} thẻ** (bắt buộc không được thiếu hay thừa), 
+  với mỗi thẻ có các thuộc tính bắt buộc là \`term\` (thuật ngữ) và \`definition\` (định nghĩa). Ngoài ra, có thể bao gồm các thuộc tính tùy chọn như \`hint\` (gợi ý) và \`explanation\` (giải thích).
+  
+  Bộ flashcard sẽ được tạo dựa trên yêu cầu sau:
+  - **Tên bộ flashcard:** ${title}
+  - **Mô tả:** ${description}
+  - **Ngôn ngữ:** ${language}
+  - **Độ khó:** ${difficulty}
+  - **Loại câu hỏi:** ${questionType}
 
-    **Lưu ý**: Vui lòng đảm bảo rằng thông tin bạn cung cấp là mới nhất và chính xác nhất có thể, dựa trên những kiến thức cập nhật gần đây.
+  **Lưu ý:**
+  - Ngôn ngữ phải tuân theo ngôn ngữ đã được chỉ định: **${language}**.
+  - Đảm bảo rằng thông tin cung cấp là chính xác, cập nhật và phù hợp với độ khó **${difficulty}**.
+  - Tất cả các flashcard phải liên quan đến **${questionType}**.
+  - Không sử dụng ngôn ngữ không phù hợp hoặc không chính xác.
+  
+  Đầu ra của bạn phải tuân theo cấu trúc JSON dưới đây và không được vượt quá số lượng ${numberOfFlashcards} flashcard.
 
-    Đây là ví dụ về cấu trúc JSON mong muốn:
-
-    \`\`\`json
-    {
-      "title": "${title}",
-      "description": "Mô tả về bộ flashcard này.",
-      "flashcard": [
-        {
-          "term": "Thuật ngữ 1",
-          "definition": "Định nghĩa cho thuật ngữ 1.",
-          "hint": "Gợi ý (tuỳ chọn).",
-          "explanation": "Giải thích chi tiết hơn về thuật ngữ (tuỳ chọn)."
-        },
-        {
-          "term": "Thuật ngữ 2",
-          "definition": "Định nghĩa cho thuật ngữ 2."
-        }
-      ]
-    }
-    \`\`\`
+  \`\`\`json
+  {
+    "title": "${title}",
+    "description": "${description}",
+    "flashcards": [
+      {
+        "term": "Thuật ngữ 1",
+        "definition": "Định nghĩa cho thuật ngữ 1.",
+        "hint": "Gợi ý (tuỳ chọn).",
+        "explanation": "Giải thích chi tiết hơn về thuật ngữ (tuỳ chọn)."
+      },
+      {
+        "term": "Thuật ngữ 2",
+        "definition": "Định nghĩa cho thuật ngữ 2."
+      }
+    ]
+  }
+  \`\`\`
   `;
   }
 
