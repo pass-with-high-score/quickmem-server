@@ -21,6 +21,8 @@ import { GetClassByJoinTokenQueryDto } from './dto/queries/get-class-by-join-tok
 import { RemoveStudySetByClassIdBodyDto } from './dto/bodies/remove-study-set-by-class-id-body.dto';
 import { RemoveFolderByClassIdBodyDto } from './dto/bodies/remove-folder-by-class-id-body.dto';
 import { UpdateRecentClassBodyDto } from './dto/bodies/update-recent-class-body.dto';
+import { InviteUserJoinClassBodyDto } from './dto/bodies/invite-user-join-class-body.dto';
+import { InviteUserJoinClassResponseInterface } from './interfaces/invite-user-join-class-response.interface';
 
 @Injectable()
 export class ClassService {
@@ -138,5 +140,11 @@ export class ClassService {
     getClassesByUserIdDto: GetClassesByUserIdDto,
   ): Promise<GetClassResponseInterface[]> {
     return this.classRepository.getRecentClassesByUserId(getClassesByUserIdDto);
+  }
+
+  async inviteUserJoinClass(
+    inviteUserJoinClassBodyDto: InviteUserJoinClassBodyDto,
+  ): Promise<InviteUserJoinClassResponseInterface> {
+    return this.classRepository.inviteUserJoinClass(inviteUserJoinClassBodyDto);
   }
 }

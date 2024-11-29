@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -33,10 +34,22 @@ import { RemoveStudySetByClassIdBodyDto } from './dto/bodies/remove-study-set-by
 import { RemoveFolderByClassIdBodyDto } from './dto/bodies/remove-folder-by-class-id-body.dto';
 import { UpdateRecentClassBodyDto } from './dto/bodies/update-recent-class-body.dto';
 import { RecentClassEntity } from './entities/recent-class.entity';
+import { InviteUserJoinClassBodyDto } from './dto/bodies/invite-user-join-class-body.dto';
+import { InviteUserJoinClassResponseInterface } from './interfaces/invite-user-join-class-response.interface';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
+import { ConfigService } from '@nestjs/config';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
-  constructor(private dataSource: DataSource) {
+  constructor(
+    private dataSource: DataSource,
+    @InjectQueue('send-email-class') private readonly sendEmailQueue: Queue,
+    private configService: ConfigService,
+    @Inject(NotificationService)
+    private readonly notificationService: NotificationService,
+  ) {
     super(ClassEntity, dataSource.createEntityManager());
   }
 
@@ -981,6 +994,85 @@ export class ClassRepository extends Repository<ClassEntity> {
       });
       throw new InternalServerErrorException(
         'Error fetching recent folders by user ID',
+      );
+    }
+  }
+
+  async inviteUserJoinClass(
+    inviteUserJoinClassBodyDto: InviteUserJoinClassBodyDto,
+  ): Promise<InviteUserJoinClassResponseInterface> {
+    const { classId, userId, ownerUserId } = inviteUserJoinClassBodyDto;
+
+    // Find class
+    const classEntity = await this.findOne({
+      where: { id: classId },
+      relations: ['owner', 'members'],
+    });
+
+    if (!classEntity) {
+      throw new NotFoundException('Class not found');
+    }
+
+    // Find owner
+    const owner = await this.dataSource
+      .getRepository(UserEntity)
+      .findOneBy({ id: ownerUserId });
+
+    if (!owner) {
+      throw new NotFoundException('Owner not found');
+    }
+
+    // Check if user is the owner of the class
+    if (classEntity.owner.id !== ownerUserId) {
+      throw new UnauthorizedException('User is not the owner of the class');
+    }
+
+    // Find user
+    const user = await this.dataSource
+      .getRepository(UserEntity)
+      .findOneBy({ id: userId });
+
+    if (!user) {
+      return {
+        message: 'User not found',
+        status: false,
+      };
+    }
+
+    if (!user.isVerified) {
+      return {
+        message: 'User not verified',
+        status: false,
+      };
+    }
+
+    // Check if user is already in the class
+    if (classEntity.members.some((member) => member.id === userId)) {
+      return {
+        message: 'User already in class',
+        status: false,
+      };
+    }
+
+    try {
+      await this.sendEmailQueue.add('send-invite-join-class', {
+        email: user.email,
+        from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+        joinToken: classEntity.joinToken,
+      });
+      await this.notificationService.createNotification({
+        title: 'Invitation to join class',
+        message: `You have been invited to join the class ${classEntity.title}`,
+        userId: [userId],
+      });
+      return {
+        message: 'Sent invite to user to join class',
+        status: true,
+      };
+    } catch (error) {
+      logger.error('Error inviting user to join class:', error);
+      throw new InternalServerErrorException(
+        'Error inviting user to join class',
       );
     }
   }

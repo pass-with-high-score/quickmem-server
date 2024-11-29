@@ -35,6 +35,8 @@ import { GetClassByJoinTokenQueryDto } from './dto/queries/get-class-by-join-tok
 import { RemoveStudySetByClassIdBodyDto } from './dto/bodies/remove-study-set-by-class-id-body.dto';
 import { RemoveFolderByClassIdBodyDto } from './dto/bodies/remove-folder-by-class-id-body.dto';
 import { UpdateRecentClassBodyDto } from './dto/bodies/update-recent-class-body.dto';
+import { InviteUserJoinClassBodyDto } from './dto/bodies/invite-user-join-class-body.dto';
+import { InviteUserJoinClassResponseInterface } from './interfaces/invite-user-join-class-response.interface';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -175,6 +177,14 @@ export class ClassController {
     @Body() updateRecentClassBodyDto: UpdateRecentClassBodyDto,
   ) {
     return this.classService.updateRecentClass(updateRecentClassBodyDto);
+  }
+
+  @Post('/invite')
+  @HttpCode(HttpStatus.CREATED)
+  async inviteUserJoinClass(
+    @Body() inviteUserJoinClassBodyDto: InviteUserJoinClassBodyDto,
+  ): Promise<InviteUserJoinClassResponseInterface> {
+    return this.classService.inviteUserJoinClass(inviteUserJoinClassBodyDto);
   }
 
   @Delete('/:id')
