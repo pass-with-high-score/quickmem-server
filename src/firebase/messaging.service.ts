@@ -3,7 +3,7 @@ import {
   Inject,
   HttpException,
   HttpStatus,
-  NotFoundException,
+  NotFoundException, InternalServerErrorException,
 } from '@nestjs/common';
 import { MessagingProvider } from './messaging.provider';
 import * as admin from 'firebase-admin';
@@ -15,8 +15,9 @@ import {
 } from './imessaging.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeviceEntity } from './entities/device.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { UserEntity } from '../auth/entities/user.entity';
+import { logger } from '../winston-logger.service';
 
 @Injectable()
 export class MessagingService implements IMessaging {
@@ -108,6 +109,7 @@ export class MessagingService implements IMessaging {
       }
     } catch (err) {
       console.log(err);
+      await this.removeInvalidTokens(tokens);
       throw new HttpException(
         `Error sending message: ${err.message}`,
         HttpStatus.NO_CONTENT,
@@ -159,5 +161,17 @@ export class MessagingService implements IMessaging {
           HttpStatus.NO_CONTENT,
         );
       });
+  }
+
+  async removeInvalidTokens(tokens: string[]): Promise<void> {
+    try {
+      await this.dataSource
+        .getRepository(DeviceEntity)
+        .delete({ deviceToken: In(tokens) });
+      logger.info('Invalid tokens removed');
+    } catch (error) {
+      logger.error('Failed to remove invalid tokens', error);
+      throw new InternalServerErrorException('Failed to remove invalid tokens');
+    }
   }
 }

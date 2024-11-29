@@ -4,10 +4,6 @@ export class InviteUserJoinClassBodyDto {
   @IsUUID()
   @IsNotEmpty()
   classId: string;
-  @IsUUID()
   @IsNotEmpty()
-  userId: string;
-  @IsUUID()
-  @IsNotEmpty()
-  ownerUserId: string;
+  username: string;
 }

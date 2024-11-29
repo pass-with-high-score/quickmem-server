@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from '../../auth/entities/user.entity';
+import { NotificationTypeEnum } from '../enums/notification-type.enum';
 
 @Entity('notifications')
 export class NotificationEntity {
@@ -21,6 +22,16 @@ export class NotificationEntity {
 
   @Column()
   message: string;
+
+  @Column({
+    type: 'enum',
+    enum: NotificationTypeEnum,
+    default: NotificationTypeEnum.NONE,
+  })
+  notificationType: NotificationTypeEnum;
+
+  @Column({ type: 'json', nullable: true })
+  data: any;
 
   @Column({ type: 'boolean', default: false })
   isRead: boolean;

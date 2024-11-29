@@ -33,7 +33,8 @@ export class NotificationRepository extends Repository<NotificationEntity> {
   async createNotification(
     createNotificationBodyDto: CreateNotificationBodyDto,
   ): Promise<CreateNotificationResponseInterface[]> {
-    const { title, message, userId } = createNotificationBodyDto;
+    const { title, message, userId, notificationType, data } =
+      createNotificationBodyDto;
     const notifications: CreateNotificationResponseInterface[] = [];
 
     for (const id of userId) {
@@ -47,6 +48,8 @@ export class NotificationRepository extends Repository<NotificationEntity> {
       notification.title = title;
       notification.message = message;
       notification.user = userEntity;
+      notification.notificationType = notificationType;
+      notification.data = data;
       try {
         await this.save(notification);
         notifications.push({
@@ -55,6 +58,8 @@ export class NotificationRepository extends Repository<NotificationEntity> {
           message: notification.message,
           userId: notification.user.id,
           isRead: notification.isRead,
+          notificationType: notification.notificationType,
+          data: notification.data,
           createdAt: notification.createdAt,
           updatedAt: notification.updatedAt,
         });
@@ -64,7 +69,10 @@ export class NotificationRepository extends Repository<NotificationEntity> {
       }
     }
 
-    await this.sendNotification(title, message, userId, { title, message });
+    await this.sendNotification(title, message, userId, {
+      notificationType,
+      id: data.id,
+    });
 
     return notifications;
   }
@@ -129,6 +137,8 @@ export class NotificationRepository extends Repository<NotificationEntity> {
       id: notification.id,
       title: notification.title,
       message: notification.message,
+      notificationType: notification.notificationType,
+      data: notification.data,
       userId: notification.user.id,
       isRead: notification.isRead,
       createdAt: notification.createdAt,
@@ -150,6 +160,8 @@ export class NotificationRepository extends Repository<NotificationEntity> {
       id: notification.id,
       title: notification.title,
       message: notification.message,
+      notificationType: notification.notificationType,
+      data: notification.data,
       userId: notification.user.id,
       isRead: notification.isRead,
       createdAt: notification.createdAt,
@@ -165,7 +177,6 @@ export class NotificationRepository extends Repository<NotificationEntity> {
     payload: any,
   ): Promise<{ message: string; failedTokens?: string[]; error?: string }> {
     const failedTokens: string[] = [];
-
     for (const userId of userIds) {
       // Find user entity
       const userEntity = await this.dataSource
@@ -205,13 +216,9 @@ export class NotificationRepository extends Repository<NotificationEntity> {
           failedTokens.push(...result);
         }
       } catch (error) {
-        console.log(error);
-        if (
-          error.errorInfo.code === 'messaging/registration-token-not-registered'
-        ) {
-          // Remove invalid tokens
-          await this.removeInvalidTokens(deviceTokens);
-        }
+        console.log(`Failed to send notification to user with ID ${userId}`);
+        console.log(`Tokens: ${deviceTokens}`);
+        await this.removeInvalidTokens(deviceTokens);
         return {
           message: 'Failed to send notification.',
           error: error.message,

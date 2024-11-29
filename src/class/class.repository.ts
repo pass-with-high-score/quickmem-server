@@ -40,6 +40,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { ConfigService } from '@nestjs/config';
 import { NotificationService } from '../notification/notification.service';
+import { NotificationTypeEnum } from '../notification/enums/notification-type.enum';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -1001,7 +1002,7 @@ export class ClassRepository extends Repository<ClassEntity> {
   async inviteUserJoinClass(
     inviteUserJoinClassBodyDto: InviteUserJoinClassBodyDto,
   ): Promise<InviteUserJoinClassResponseInterface> {
-    const { classId, userId, ownerUserId } = inviteUserJoinClassBodyDto;
+    const { classId, username } = inviteUserJoinClassBodyDto;
 
     // Find class
     const classEntity = await this.findOne({
@@ -1013,43 +1014,36 @@ export class ClassRepository extends Repository<ClassEntity> {
       throw new NotFoundException('Class not found');
     }
 
-    // Find owner
-    const owner = await this.dataSource
-      .getRepository(UserEntity)
-      .findOneBy({ id: ownerUserId });
-
-    if (!owner) {
-      throw new NotFoundException('Owner not found');
-    }
-
-    // Check if user is the owner of the class
-    if (classEntity.owner.id !== ownerUserId) {
-      throw new UnauthorizedException('User is not the owner of the class');
-    }
-
     // Find user
     const user = await this.dataSource
       .getRepository(UserEntity)
-      .findOneBy({ id: userId });
+      .findOneBy({ username: username });
 
     if (!user) {
       return {
-        message: 'User not found',
+        message: `User ${username} not found`,
         status: false,
       };
     }
 
     if (!user.isVerified) {
       return {
-        message: 'User not verified',
+        message: `User ${username} not verified`,
+        status: false,
+      };
+    }
+
+    if (classEntity.owner.id === user.id) {
+      return {
+        message: `User ${username} is the owner of the class`,
         status: false,
       };
     }
 
     // Check if user is already in the class
-    if (classEntity.members.some((member) => member.id === userId)) {
+    if (classEntity.members.some((member) => member.id === username)) {
       return {
-        message: 'User already in class',
+        message: `User ${username} already in the class`,
         status: false,
       };
     }
@@ -1063,7 +1057,11 @@ export class ClassRepository extends Repository<ClassEntity> {
       await this.notificationService.createNotification({
         title: 'Invitation to join class',
         message: `You have been invited to join the class ${classEntity.title}`,
-        userId: [userId],
+        userId: [user.id],
+        notificationType: NotificationTypeEnum.INVITE_USER_JOIN_CLASS,
+        data: {
+          id: classEntity.id,
+        },
       });
       return {
         message: 'Sent invite to user to join class',
