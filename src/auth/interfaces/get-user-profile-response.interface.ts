@@ -5,6 +5,7 @@ export interface GetUserProfileResponseInterface {
   email: string;
   avatarUrl: string;
   role: string;
+  coin: number;
   createdAt: Date;
   updatedAt: Date;
 }

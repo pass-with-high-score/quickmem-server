@@ -998,6 +998,7 @@ export class AuthRepository extends Repository<UserEntity> {
       email: user.email,
       avatarUrl: avatar,
       role: user.role,
+      coin: user.coins,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
