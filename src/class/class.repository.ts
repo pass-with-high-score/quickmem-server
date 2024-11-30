@@ -1041,7 +1041,7 @@ export class ClassRepository extends Repository<ClassEntity> {
     }
 
     // Check if user is already in the class
-    if (classEntity.members.some((member) => member.id === username)) {
+    if (classEntity.members.some((member) => member.username === username)) {
       return {
         message: `User ${username} already in the class`,
         status: false,
@@ -1061,6 +1061,7 @@ export class ClassRepository extends Repository<ClassEntity> {
         notificationType: NotificationTypeEnum.INVITE_USER_JOIN_CLASS,
         data: {
           id: classEntity.id,
+          code: classEntity.joinToken,
         },
       });
       return {
