@@ -15,6 +15,9 @@ import { GetFolderByOwnerIdQueryDto } from './dto/queries/get-folder-by-owner-Id
 import { GetFolderByCodeParamDto } from './dto/params/get-folder-by-code.param.dto';
 import { UpdateRecentFolderBodyDto } from './dto/bodies/update-recent-folder-body.dto';
 import { GetFoldersByUserIdDto } from './dto/params/get-folders-by-user-Id.dto';
+import { ResetFlashcardProgressInFolderParamDto } from './dto/params/reset-flashcard-progress-in-folder-param.dto';
+import { ResetFlashcardProgressInFolderQueryDto } from './dto/queries/reset-flashcard-progress-in-folder-query.dto';
+import { ResetFlashcardProgressResponseInterface } from '../study-set/interfaces/reset-flashcard-progress-response.interface';
 
 @Injectable()
 export class FolderService {
@@ -89,6 +92,16 @@ export class FolderService {
   ): Promise<GetFolderResponseInterface[]> {
     return this.folderRepository.getRecentFoldersByUserId(
       getFoldersByUserIdDto,
+    );
+  }
+
+  async resetFlashcardProgressInFolder(
+    resetFlashcardProgressInFolderParamDto: ResetFlashcardProgressInFolderParamDto,
+    resetFlashcardProgressInFolderQueryDto: ResetFlashcardProgressInFolderQueryDto,
+  ): Promise<ResetFlashcardProgressResponseInterface> {
+    return this.folderRepository.resetFlashcardProgressInFolder(
+      resetFlashcardProgressInFolderParamDto,
+      resetFlashcardProgressInFolderQueryDto,
     );
   }
 }

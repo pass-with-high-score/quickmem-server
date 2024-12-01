@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -29,6 +30,9 @@ import { GetFolderByOwnerIdQueryDto } from './dto/queries/get-folder-by-owner-Id
 import { GetFolderByCodeParamDto } from './dto/params/get-folder-by-code.param.dto';
 import { UpdateRecentFolderBodyDto } from './dto/bodies/update-recent-folder-body.dto';
 import { GetFoldersByUserIdDto } from './dto/params/get-folders-by-user-Id.dto';
+import { ResetFlashcardProgressInFolderParamDto } from './dto/params/reset-flashcard-progress-in-folder-param.dto';
+import { ResetFlashcardProgressInFolderQueryDto } from './dto/queries/reset-flashcard-progress-in-folder-query.dto';
+import { ResetFlashcardProgressResponseInterface } from '../study-set/interfaces/reset-flashcard-progress-response.interface';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -115,6 +119,20 @@ export class FolderController {
     @Body() createFolderDto: CreateFolderDto,
   ): Promise<FolderResponseInterface> {
     return this.folderService.createFolder(createFolderDto);
+  }
+
+  @Patch('/:id/reset-progress')
+  @HttpCode(HttpStatus.OK)
+  async resetFlashcardProgressInFolder(
+    @Param()
+    resetFlashcardProgressInFolderParamDto: ResetFlashcardProgressInFolderParamDto,
+    @Query()
+    resetFlashcardProgressInFolderQueryDto: ResetFlashcardProgressInFolderQueryDto,
+  ): Promise<ResetFlashcardProgressResponseInterface> {
+    return this.folderService.resetFlashcardProgressInFolder(
+      resetFlashcardProgressInFolderParamDto,
+      resetFlashcardProgressInFolderQueryDto,
+    );
   }
 
   @Delete('/:id')

@@ -26,6 +26,15 @@ import { RecentStudySetEntity } from '../study-set/entities/recent-study-set.ent
 import { UpdateRecentFolderBodyDto } from './dto/bodies/update-recent-folder-body.dto';
 import { RecentFolderEntity } from './entities/recent-folder.entity';
 import { GetFoldersByUserIdDto } from './dto/params/get-folders-by-user-Id.dto';
+import { ResetFlashcardProgressInFolderParamDto } from './dto/params/reset-flashcard-progress-in-folder-param.dto';
+import { ResetFlashcardProgressInFolderQueryDto } from './dto/queries/reset-flashcard-progress-in-folder-query.dto';
+import { ResetFlashcardProgressResponseInterface } from '../study-set/interfaces/reset-flashcard-progress-response.interface';
+import { FlashcardStatusEnum } from '../flashcard/enums/flashcard-status.enum';
+import { FlipFlashcardStatus } from '../flashcard/enums/flip-flashcard-status';
+import { TrueFalseStatusEnum } from '../flashcard/enums/true-false-status.enum';
+import { WriteStatusEnum } from '../flashcard/enums/write-status.enum';
+import { QuizFlashcardStatusEnum } from '../flashcard/enums/quiz-flashcard-status.enum';
+import { FlashcardEntity } from '../flashcard/entities/flashcard.entity';
 
 @Injectable()
 export class FolderRepository extends Repository<FolderEntity> {
@@ -429,5 +438,58 @@ export class FolderRepository extends Repository<FolderEntity> {
         'Error fetching recent folders by user ID',
       );
     }
+  }
+
+  // Reset progress of all flashcards in a study sets in a folder
+  async resetFlashcardProgressInFolder(
+    resetFlashcardProgressInFolderParamDto: ResetFlashcardProgressInFolderParamDto,
+    resetFlashcardProgressInFolderQueryDto: ResetFlashcardProgressInFolderQueryDto,
+  ): Promise<ResetFlashcardProgressResponseInterface> {
+    const { id } = resetFlashcardProgressInFolderParamDto;
+    const { resetType } = resetFlashcardProgressInFolderQueryDto;
+
+    // Get all study sets in the folder
+    const folder = await this.findOne({
+      where: { id },
+      relations: ['studySets', 'studySets.flashcards'],
+    });
+
+    if (!folder) {
+      throw new NotFoundException('Folder not found');
+    }
+
+    const studySets = folder.studySets;
+    if (!studySets || studySets.length === 0) {
+      throw new NotFoundException('Folder has no study sets');
+    }
+
+    // Reset progress of all flashcards in the study sets
+    for (const studySet of studySets) {
+      for (const flashcard of studySet.flashcards) {
+        if (resetType === 'resetAll') {
+          flashcard.rating = FlashcardStatusEnum.NOT_STUDIED;
+          flashcard.flipStatus = FlipFlashcardStatus.NONE;
+          flashcard.quizStatus = QuizFlashcardStatusEnum.NONE;
+          flashcard.trueFalseStatus = TrueFalseStatusEnum.NONE;
+          flashcard.writeStatus = WriteStatusEnum.NONE;
+        } else if (resetType === 'flipStatus') {
+          flashcard.flipStatus = FlipFlashcardStatus.NONE;
+        } else if (resetType === 'rating') {
+          flashcard.rating = FlashcardStatusEnum.NOT_STUDIED;
+        } else if (resetType === 'quizStatus') {
+          flashcard.quizStatus = QuizFlashcardStatusEnum.NONE;
+        } else if (resetType === 'trueFalseStatus') {
+          flashcard.trueFalseStatus = TrueFalseStatusEnum.NONE;
+        } else if (resetType === 'writeStatus') {
+          flashcard.writeStatus = WriteStatusEnum.NONE;
+        }
+        await this.dataSource.getRepository(FlashcardEntity).save(flashcard);
+      }
+    }
+
+    return {
+      message: 'Flashcard progress reset successfully',
+      folderId: id,
+    };
   }
 }
