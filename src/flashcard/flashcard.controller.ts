@@ -31,6 +31,7 @@ import { UpdateQuizStatusParamDto } from './dto/params/update-quiz-status-param.
 import { UpdateFlashcardQuizStatusDto } from './dto/bodies/update-flashcard-quiz-status.dto';
 import { UpdateFlashcardTrueFalseStatusDto } from './dto/bodies/update-flashcard-true-false-status.dto';
 import { UpdateFlashcardWriteStatusDto } from './dto/bodies/update-flashcard-write-status.dto';
+import { GetFlashcardsByFolderIdDto } from './dto/params/get-flashcards-by-folder-id.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -54,6 +55,18 @@ export class FlashcardController {
   ): Promise<FlashcardResponseInterface[]> {
     return this.flashcardService.getFlashcardByStudySetId(
       getFlashcardsByStudySetIdDto,
+      getFlashcardByIdParam,
+    );
+  }
+
+  @Get('/folder/:id')
+  @HttpCode(HttpStatus.OK)
+  async getFlashcardsByFolderId(
+    @Param() getFlashcardsByFolderIdDto: GetFlashcardsByFolderIdDto,
+    @Query() getFlashcardByIdParam: GetFlashcardByIdParam,
+  ): Promise<FlashcardResponseInterface[]> {
+    return this.flashcardService.getFlashcardsByFolderId(
+      getFlashcardsByFolderIdDto,
       getFlashcardByIdParam,
     );
   }

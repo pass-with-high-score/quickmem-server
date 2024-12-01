@@ -29,6 +29,7 @@ import { TrueFalseStatusEnum } from './enums/true-false-status.enum';
 import { UpdateFlashcardTrueFalseStatusDto } from './dto/bodies/update-flashcard-true-false-status.dto';
 import { UpdateFlashcardWriteStatusDto } from './dto/bodies/update-flashcard-write-status.dto';
 import { WriteStatusEnum } from './enums/write-status.enum';
+import { GetFlashcardsByFolderIdDto } from './dto/params/get-flashcards-by-folder-id.dto';
 
 @Injectable()
 export class FlashcardRepository extends Repository<FlashcardEntity> {
@@ -419,6 +420,75 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       throw new InternalServerErrorException(
         'Error updating flashcard write status',
       );
+    }
+  }
+
+  async getFlashcardsByFolderId(
+    getFlashcardsByFolderIdDto: GetFlashcardsByFolderIdDto,
+    getFlashcardByIdParam: GetFlashcardByIdParam,
+  ): Promise<FlashcardResponseInterface[]> {
+    const { id } = getFlashcardsByFolderIdDto;
+    const { learnMode } = getFlashcardByIdParam;
+    try {
+      // get all study set belonging to the folder
+      const studySets = await this.dataSource
+        .getRepository(StudySetEntity)
+        .find({
+          where: { folders: { id: id } },
+        });
+
+      let flashcards: FlashcardEntity[] = [];
+      // get all flashcards belonging to the study set
+      await Promise.all(
+        studySets.map(async (studySet) => {
+          const studySetFlashcards = await this.dataSource
+            .getRepository(FlashcardEntity)
+            .find({
+              where: { studySet: { id: studySet.id } },
+              relations: ['studySet'],
+            });
+
+          flashcards = [...flashcards, ...studySetFlashcards];
+        }),
+      );
+
+      let filteredFlashcards: FlashcardEntity[];
+      if (learnMode === LearnModeEnum.FLIP) {
+        filteredFlashcards = flashcards.filter(
+          (flashcard) =>
+            flashcard.flipStatus === FlipFlashcardStatus.NONE ||
+            flashcard.flipStatus === FlipFlashcardStatus.STILL_LEARNING,
+        );
+      } else if (learnMode == LearnModeEnum.QUIZ) {
+        filteredFlashcards = flashcards.filter(
+          (flashcard) =>
+            flashcard.quizStatus === QuizFlashcardStatusEnum.NONE ||
+            flashcard.quizStatus === QuizFlashcardStatusEnum.SKIPPED ||
+            flashcard.quizStatus === QuizFlashcardStatusEnum.WRONG,
+        );
+      } else if (learnMode === LearnModeEnum.TRUE_FALSE) {
+        filteredFlashcards = flashcards.filter(
+          (flashcard) =>
+            flashcard.trueFalseStatus === TrueFalseStatusEnum.NONE ||
+            flashcard.trueFalseStatus === TrueFalseStatusEnum.WRONG,
+        );
+      } else if (learnMode === LearnModeEnum.WRITE) {
+        filteredFlashcards = flashcards.filter(
+          (flashcard) =>
+            flashcard.writeStatus === WriteStatusEnum.NONE ||
+            flashcard.writeStatus === WriteStatusEnum.SKIPPED ||
+            flashcard.writeStatus === WriteStatusEnum.WRONG,
+        );
+      }
+
+      return await Promise.all(
+        filteredFlashcards.map((flashcard) =>
+          this.mapFlashcardEntityToResponseInterface(flashcard),
+        ),
+      );
+    } catch (error) {
+      logger.error('Error getting flashcards by folder ID:', error);
+      throw new InternalServerErrorException('Error retrieving flashcards');
     }
   }
 
