@@ -110,7 +110,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       }
       if (String(isGetAll) === 'false') {
         console.log('isGetAll', isGetAll);
-        filteredFlashcards = filteredFlashcards.slice(0, 10);
+        filteredFlashcards = filteredFlashcards.slice(0, 20);
       }
 
       return await Promise.all(
