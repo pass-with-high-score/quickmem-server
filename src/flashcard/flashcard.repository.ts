@@ -19,7 +19,7 @@ import { StarredFlashcardDto } from './dto/bodies/starred-flashcard.dto';
 import { ImageEntity } from '../cloudinary/entities/image.entity';
 import { UpdateFlashcardFlipStatusDto } from './dto/bodies/update-flashcard-flip-status.dto';
 import { UpdateFlashcardInterface } from './interface/update-flashcard.interface';
-import { GetFlashcardByIdParam } from './dto/queries/get-flashcard-by-id.param';
+import { GetFlashcardByIdQuery } from './dto/queries/get-flashcard-by-id.query';
 import { LearnModeEnum } from './enums/learn-mode.enum';
 import { FlipFlashcardStatus } from './enums/flip-flashcard-status';
 import { QuizFlashcardStatusEnum } from './enums/quiz-flashcard-status.enum';
@@ -66,10 +66,10 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
 
   async getFlashcardByStudySetId(
     getFlashcardsByStudySetIdDto: GetFlashcardsByStudySetIdDto,
-    getFlashcardByIdParam: GetFlashcardByIdParam,
+    getFlashcardByIdQuery: GetFlashcardByIdQuery,
   ): Promise<FlashcardResponseInterface[]> {
     const { id } = getFlashcardsByStudySetIdDto;
-    const { learnMode } = getFlashcardByIdParam;
+    const { learnMode, isGetAll } = getFlashcardByIdQuery;
 
     try {
       const flashcards = await this.dataSource
@@ -108,6 +108,11 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
             flashcard.writeStatus === WriteStatusEnum.WRONG,
         );
       }
+      if (String(isGetAll) === 'false') {
+        console.log('isGetAll', isGetAll);
+        filteredFlashcards = filteredFlashcards.slice(0, 10);
+      }
+
       return await Promise.all(
         filteredFlashcards.map((flashcard) =>
           this.mapFlashcardEntityToResponseInterface(flashcard),
@@ -425,10 +430,10 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
 
   async getFlashcardsByFolderId(
     getFlashcardsByFolderIdDto: GetFlashcardsByFolderIdDto,
-    getFlashcardByIdParam: GetFlashcardByIdParam,
+    getFlashcardByIdParam: GetFlashcardByIdQuery,
   ): Promise<FlashcardResponseInterface[]> {
     const { id } = getFlashcardsByFolderIdDto;
-    const { learnMode } = getFlashcardByIdParam;
+    const { learnMode, isGetAll } = getFlashcardByIdParam;
     try {
       // get all study set belonging to the folder
       const studySets = await this.dataSource
@@ -479,6 +484,10 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
             flashcard.writeStatus === WriteStatusEnum.SKIPPED ||
             flashcard.writeStatus === WriteStatusEnum.WRONG,
         );
+      }
+
+      if (String(isGetAll) === 'false') {
+        filteredFlashcards = filteredFlashcards.slice(0, 10);
       }
 
       return await Promise.all(

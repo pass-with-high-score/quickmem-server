@@ -26,7 +26,7 @@ import { UpdateFlashcardRatingDto } from './dto/bodies/update-flashcard-rating.d
 import { StarredFlashcardDto } from './dto/bodies/starred-flashcard.dto';
 import { UpdateFlashcardInterface } from './interface/update-flashcard.interface';
 import { UpdateFlashcardFlipStatusDto } from './dto/bodies/update-flashcard-flip-status.dto';
-import { GetFlashcardByIdParam } from './dto/queries/get-flashcard-by-id.param';
+import { GetFlashcardByIdQuery } from './dto/queries/get-flashcard-by-id.query';
 import { UpdateQuizStatusParamDto } from './dto/params/update-quiz-status-param.dto';
 import { UpdateFlashcardQuizStatusDto } from './dto/bodies/update-flashcard-quiz-status.dto';
 import { UpdateFlashcardTrueFalseStatusDto } from './dto/bodies/update-flashcard-true-false-status.dto';
@@ -51,11 +51,11 @@ export class FlashcardController {
   @HttpCode(HttpStatus.OK)
   async getFlashcardByStudySetId(
     @Param() getFlashcardsByStudySetIdDto: GetFlashcardsByStudySetIdDto,
-    @Query() getFlashcardByIdParam: GetFlashcardByIdParam,
+    @Query() getFlashcardByIdQuery: GetFlashcardByIdQuery,
   ): Promise<FlashcardResponseInterface[]> {
     return this.flashcardService.getFlashcardByStudySetId(
       getFlashcardsByStudySetIdDto,
-      getFlashcardByIdParam,
+      getFlashcardByIdQuery,
     );
   }
 
@@ -63,7 +63,7 @@ export class FlashcardController {
   @HttpCode(HttpStatus.OK)
   async getFlashcardsByFolderId(
     @Param() getFlashcardsByFolderIdDto: GetFlashcardsByFolderIdDto,
-    @Query() getFlashcardByIdParam: GetFlashcardByIdParam,
+    @Query() getFlashcardByIdParam: GetFlashcardByIdQuery,
   ): Promise<FlashcardResponseInterface[]> {
     return this.flashcardService.getFlashcardsByFolderId(
       getFlashcardsByFolderIdDto,
