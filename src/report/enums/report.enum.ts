@@ -1,5 +1,5 @@
 export enum ReportEnum {
-  FLASHCARD = 'FLASHCARD',
+  STUDY_SET = 'STUDY_SET',
   FOLDER = 'FOLDER',
   CLASS = 'CLASS',
   USER = 'USER',
