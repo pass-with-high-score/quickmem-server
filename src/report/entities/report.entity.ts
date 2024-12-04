@@ -18,11 +18,12 @@ export class ReportEntity {
   @Column()
   reason: string;
 
-  @Column({ 
-    type: 'enum', 
-    enum: ReportStatusEnum, 
-    enumName: 'report_status', 
-    default: ReportStatusEnum.PENDING })
+  @Column({
+    type: 'enum',
+    enum: ReportStatusEnum,
+    enumName: 'report_status',
+    default: ReportStatusEnum.PENDING,
+  })
   status: ReportStatusEnum;
 
   @Column({ type: 'enum', enum: ReportEnum, enumName: 'report_enum' })
@@ -30,6 +31,9 @@ export class ReportEntity {
 
   @Column({ nullable: true })
   reportedEntityId: string;
+
+  @ManyToOne(() => UserEntity, (user) => user.ownerOfReportedEntities)
+  ownerOfReportedEntity: UserEntity;
 
   @ManyToOne(() => UserEntity, (user) => user.reports)
   reporter: UserEntity;

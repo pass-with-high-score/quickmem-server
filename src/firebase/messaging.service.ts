@@ -3,7 +3,8 @@ import {
   Inject,
   HttpException,
   HttpStatus,
-  NotFoundException, InternalServerErrorException,
+  NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { MessagingProvider } from './messaging.provider';
 import * as admin from 'firebase-admin';
@@ -73,7 +74,6 @@ export class MessagingService implements IMessaging {
     params: IMessaginToTokensParams,
   ): Promise<string[]> {
     const { title, body, payload, userId, tokens } = params;
-    console.log('Running sendMessageToTokens');
 
     const devices = await this.deviceRepository.find({
       where: { user: { id: userId } },
@@ -108,7 +108,6 @@ export class MessagingService implements IMessaging {
         return [];
       }
     } catch (err) {
-      console.log(err);
       await this.removeInvalidTokens(tokens);
       throw new HttpException(
         `Error sending message: ${err.message}`,
@@ -131,7 +130,6 @@ export class MessagingService implements IMessaging {
         apns: this.apns,
       })
       .catch((err) => {
-        console.log(err);
         throw new HttpException(
           `Error sending message: ${err.message}`,
           HttpStatus.NO_CONTENT,
@@ -155,7 +153,6 @@ export class MessagingService implements IMessaging {
         apns: this.apns,
       })
       .catch((err) => {
-        console.log(err);
         throw new HttpException(
           `Error sending message: ${err.message}`,
           HttpStatus.NO_CONTENT,

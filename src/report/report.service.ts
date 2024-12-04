@@ -29,9 +29,7 @@ export class ReportService {
   async getReportById(
     updateStatusParamDto: UpdateStatusParamDto,
   ): Promise<ReportResponseInterface> {
-    return this.reportRepository.getReportById(
-      updateStatusParamDto
-    );
+    return this.reportRepository.getReportById(updateStatusParamDto);
   }
 
   async getReports(): Promise<ReportResponseInterface[]> {
@@ -39,10 +37,8 @@ export class ReportService {
   }
 
   async getReportsByReporter(
-    getReporterIdParamDto: GetReporterIdParamDto
+    getReporterIdParamDto: GetReporterIdParamDto,
   ): Promise<ReportResponseInterface[]> {
-    return this.reportRepository.getReportsByReporter(
-      getReporterIdParamDto
-    );
+    return this.reportRepository.getReportsByReporter(getReporterIdParamDto);
   }
 }

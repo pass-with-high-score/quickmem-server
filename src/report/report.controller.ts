@@ -5,7 +5,6 @@ import {
   Body,
   Get,
   Param,
-  HttpException,
   HttpStatus,
   HttpCode,
   Patch,
@@ -30,7 +29,6 @@ export class ReportController {
   async createReport(
     @Body() createReportDto: CreateReportDto,
   ): Promise<ReportResponseInterface> {
-    console.log('createReportDto', createReportDto);
     return await this.reportService.createReport(createReportDto);
   }
 
@@ -51,7 +49,7 @@ export class ReportController {
   @Get('/:id/reporter')
   @HttpCode(HttpStatus.OK)
   async getReportsByReporter(
-    @Param() getReporterIdParamDto: GetReporterIdParamDto
+    @Param() getReporterIdParamDto: GetReporterIdParamDto,
   ): Promise<ReportResponseInterface[]> {
     return await this.reportService.getReportsByReporter(getReporterIdParamDto);
   }

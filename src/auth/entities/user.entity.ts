@@ -118,6 +118,9 @@ export class UserEntity {
   @OneToMany(() => ReportEntity, (report) => report.reporter)
   reports: ReportEntity[];
 
+  @OneToMany(() => ReportEntity, (report) => report.ownerOfReportedEntity)
+  ownerOfReportedEntities: ReportEntity[];
+
   @OneToMany(() => DeviceEntity, (device) => device.user)
   devices: DeviceEntity[];
 

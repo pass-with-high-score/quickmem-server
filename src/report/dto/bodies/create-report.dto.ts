@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import { ReportEnum } from '../../enums/report.enum';
 
 export class CreateReportDto {
@@ -6,14 +6,18 @@ export class CreateReportDto {
   @IsNotEmpty()
   reason: string;
 
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   reportedEntityId: string;
 
   @IsEnum(ReportEnum)
   reportedType: ReportEnum;
 
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   reporterId: string;
+
+  @IsUUID()
+  @IsNotEmpty()
+  ownerOfReportedEntityId: string;
 }

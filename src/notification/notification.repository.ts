@@ -69,11 +69,22 @@ export class NotificationRepository extends Repository<NotificationEntity> {
       }
     }
 
-    await this.sendNotification(title, message, userId, {
-      notificationType,
-      id: data.id,
-      code: data.code,
-    });
+    if (notificationType === 'INVITE_USER_JOIN_CLASS') {
+      await this.sendNotification(title, message, userId, {
+        notificationType,
+        id: data.id,
+        code: data.code,
+      });
+    } else if (notificationType === 'REPORT_CREATED') {
+      await this.sendNotification(title, message, userId, {
+        notificationType,
+        id: data.reportId,
+      });
+    } else if (notificationType === 'NONE') {
+      await this.sendNotification(title, message, userId, {
+        notificationType,
+      });
+    }
 
     return notifications;
   }
@@ -217,8 +228,6 @@ export class NotificationRepository extends Repository<NotificationEntity> {
           failedTokens.push(...result);
         }
       } catch (error) {
-        console.log(`Failed to send notification to user with ID ${userId}`);
-        console.log(`Tokens: ${deviceTokens}`);
         await this.removeInvalidTokens(deviceTokens);
         return {
           message: 'Failed to send notification.',
