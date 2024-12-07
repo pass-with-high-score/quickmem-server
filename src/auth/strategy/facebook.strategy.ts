@@ -24,12 +24,12 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
   ): Promise<any> {
     const { displayName, emails, photos } = profile;
     console.log('Facebook profile', profile);
-    const email = emails[0].value;
+    const email = emails && emails.length > 0 ? emails[0].value : null;
     const existingUser = await this.authRepository.findOne({
       where: [{ email: email }, { facebookId: profile.id }],
     });
     const user = {
-      email: emails && emails.length > 0 ? emails[0].value : null,
+      email: email,
       fullName: displayName,
       picture: photos && photos.length > 0 ? photos[0].value : null,
       accessToken,
