@@ -2,15 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-facebook';
 import * as process from 'node:process';
+import { AuthRepository } from '../auth.repository';
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
-  constructor() {
+  constructor(private authRepository: AuthRepository) {
     super({
       clientID: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
       callbackURL: 'https://api.quickmem.app/auth/facebook/callback',
-      profileFields: ['id', 'name', 'displayName', 'photos', 'email'],
+      profileFields: ['id', 'name', 'displayName', 'photos', 'emails'],
       scope: ['email'],
     });
   }
@@ -23,11 +24,16 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
   ): Promise<any> {
     const { displayName, emails, photos } = profile;
     console.log('Facebook profile', profile);
+    const email = emails[0].value;
+    const existingUser = await this.authRepository.findOne({
+      where: [{ email: email }, { facebookId: profile.id }],
+    });
     const user = {
       email: emails && emails.length > 0 ? emails[0].value : null,
       fullName: displayName,
       picture: photos && photos.length > 0 ? photos[0].value : null,
       accessToken,
+      isSignUp: !!existingUser,
     };
     done(null, user);
   }

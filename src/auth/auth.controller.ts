@@ -75,6 +75,7 @@ export class AuthController {
       fullName: user.fullName,
       provider: AuthProviderEnum.GOOGLE,
       picture: user.picture,
+      isSignUp: user.isSignUp,
     });
     const deepLinkUrl = `quickmem://oauth/google/callback?${params.toString()}`;
     return response.redirect(deepLinkUrl);
@@ -113,6 +114,7 @@ export class AuthController {
       fullName: user.fullName,
       provider: AuthProviderEnum.FACEBOOK,
       picture: user.picture,
+      isSignUp: user.isSignUp,
     });
     const deepLinkUrl = `quickmem://oauth/facebook/callback?${params.toString()}`;
     return response.redirect(deepLinkUrl);
