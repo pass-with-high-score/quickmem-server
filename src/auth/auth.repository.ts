@@ -58,6 +58,7 @@ import { UpdateRoleDto } from './dto/bodies/update-role.dto';
 import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
 import { SignUpGoogleBodyDto } from './dto/bodies/sign-up-google-body.dto';
 import { OAuth2Client } from 'google-auth-library';
+import { UserStatusEnum } from './enums/user-status.enum';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -213,6 +214,9 @@ export class AuthRepository extends Repository<UserEntity> {
         isVerified: user.isVerified,
         refreshToken: refresh_token,
         birthday: user.birthday,
+        bannedAt: user.bannedAt,
+        userStatus: user.userStatus,
+        bannedReason: user.bannedReason,
       };
     } catch (error) {
       logger.error(error);
@@ -376,6 +380,9 @@ export class AuthRepository extends Repository<UserEntity> {
           isVerified: user.isVerified,
           refreshToken: refresh_token,
           birthday: user.birthday,
+          bannedAt: user.bannedAt,
+          userStatus: user.userStatus,
+          bannedReason: user.bannedReason,
         };
       } else {
         throw new NotFoundException({
@@ -510,6 +517,9 @@ export class AuthRepository extends Repository<UserEntity> {
       accessToken: accessToken,
       refreshToken: refreshToken,
       birthday: user.birthday,
+      bannedAt: user.bannedAt,
+      userStatus: user.userStatus,
+      bannedReason: user.bannedReason,
     };
   }
 
@@ -1066,6 +1076,7 @@ export class AuthRepository extends Repository<UserEntity> {
       where: {
         username: ILike(`%${username}%`),
         isVerified: true,
+        userStatus: UserStatusEnum.ACTIVE,
       },
       select: ['id', 'username', 'avatarUrl', 'role'],
       relations: ['subscriptions'],
@@ -1128,6 +1139,9 @@ export class AuthRepository extends Repository<UserEntity> {
       coin: user.coins,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      bannedAt: user.bannedAt,
+      userStatus: user.userStatus,
+      bannedReason: user.bannedReason,
     };
   }
 

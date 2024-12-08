@@ -15,4 +15,7 @@ export class AuthResponseInterface {
   isVerified: boolean;
   accessToken: string;
   refreshToken: string;
+  userStatus: string;
+  bannedAt: Date;
+  bannedReason: string;
 }

@@ -21,6 +21,7 @@ import { StudyTimeEntity } from '../../study-time/entities/study-time.entity';
 import { RecentStudySetEntity } from '../../study-set/entities/recent-study-set.entity';
 import { RecentFolderEntity } from '../../folder/entities/recent-folder.entity';
 import { RecentClassEntity } from '../../class/entities/recent-class.entity';
+import { UserStatusEnum } from '../enums/user-status.enum';
 
 @Entity('users')
 export class UserEntity {
@@ -147,6 +148,19 @@ export class UserEntity {
 
   @Column({ nullable: true })
   emailChangedAt: Date;
+
+  @Column({
+    enum: UserStatusEnum,
+    enumName: 'user_status_enum',
+    default: UserStatusEnum.ACTIVE,
+  })
+  userStatus: UserStatusEnum;
+
+  @Column({ nullable: true })
+  bannedReason: string;
+
+  @Column({ nullable: true })
+  bannedAt: Date;
 
   @CreateDateColumn()
   createdAt: Date;

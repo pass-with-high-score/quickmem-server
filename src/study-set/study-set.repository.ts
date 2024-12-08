@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { DataSource, ILike, In, Repository } from 'typeorm';
 import { StudySetEntity } from './entities/study-set.entity';
@@ -54,6 +55,7 @@ import { WriteStatusEnum } from '../flashcard/enums/write-status.enum';
 import { UpdateRecentStudySetDto } from './dto/bodies/update-recent-study-set-body.dto';
 import { RecentStudySetEntity } from './entities/recent-study-set.entity';
 import { GetStudySetsByUserIdDto } from './dto/params/get-study-sets-by-user-Id.dto';
+import { UserStatusEnum } from '../auth/enums/user-status.enum';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -79,6 +81,13 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
       if (!owner) {
         throw new NotFoundException('User not found or username is missing');
+      }
+      if (!owner.isVerified) {
+        throw new UnauthorizedException('User is not verified');
+      }
+
+      if (owner.userStatus === 'BLOCKED') {
+        throw new UnauthorizedException('User is banned');
       }
 
       if (createStudySetDto.subjectId) {
@@ -1034,6 +1043,10 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
       if (!studySet) {
         throw new NotFoundException('Study set not found');
+      }
+
+      if (studySet.owner.userStatus === UserStatusEnum.BLOCKED) {
+        throw new NotFoundException('Study set owner is blocked');
       }
 
       return this.mapStudySetToResponse(studySet, true);

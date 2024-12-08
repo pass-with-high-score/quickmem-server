@@ -6,6 +6,9 @@ export interface GetUserProfileResponseInterface {
   avatarUrl: string;
   role: string;
   coin: number;
+  userStatus: string;
+  bannedAt: Date;
+  bannedReason: string;
   createdAt: Date;
   updatedAt: Date;
 }
