@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 
 class JwtPayloadInterface {
   userId: string;
-  email: string;
+  iat: number;
 }
 
 @Injectable()
@@ -23,16 +23,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayloadInterface): Promise<UserEntity> {
-    const { userId, email } = payload;
+    const { userId, iat } = payload;
 
     const user: UserEntity = await this.usersRepository.findOne({
-      where: { id: userId, email },
+      where: { id: userId },
     });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
     } else if (!user.isVerified) {
       throw new UnauthorizedException('User is not verified');
+    } else if (
+      user.emailChangedAt &&
+      user.emailChangedAt.getTime() / 1000 > iat
+    ) {
+      throw new UnauthorizedException(
+        'Email has been changed, please log in again',
+      );
     }
 
     return user;

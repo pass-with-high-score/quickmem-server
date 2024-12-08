@@ -977,6 +977,16 @@ export class AuthRepository extends Repository<UserEntity> {
       });
     }
 
+    const existingUser = await this.findOne({
+      where: { email: user.tempEmail },
+    });
+    if (existingUser) {
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        message: 'Email is already in use',
+      });
+    }
+
     if (user.tokenTempEmail !== token) {
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
@@ -989,6 +999,7 @@ export class AuthRepository extends Repository<UserEntity> {
 
     user.tempEmail = null;
     user.email = newEmail;
+    user.emailChangedAt = new Date();
     user.tokenTempEmail = null;
     await this.save(user);
     await this.sendEmailQueue.add('update-email-success', {

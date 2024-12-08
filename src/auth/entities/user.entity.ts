@@ -145,6 +145,9 @@ export class UserEntity {
   @OneToMany(() => RecentClassEntity, (recentClass) => recentClass.user)
   recentClasses: RecentFolderEntity[];
 
+  @Column({ nullable: true })
+  emailChangedAt: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 
