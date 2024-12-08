@@ -57,6 +57,7 @@ import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-r
 import { UpdateRoleDto } from './dto/bodies/update-role.dto';
 import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
 import { SignUpGoogleBodyDto } from './dto/bodies/sign-up-google-body.dto';
+import { logger } from '../winston-logger.service';
 
 @Controller('auth')
 export class AuthController {
@@ -157,69 +158,130 @@ export class AuthController {
     @Query() verifyEmailDto: VerifyEmailQueryDto,
     @Res() response: Response,
   ): Promise<void> {
-    const result = await this.authService.verifyEmail(verifyEmailDto);
-
-    const htmlContent = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Email Verification</title>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          background-color: #f4f4f4;
-          margin: 0;
-          padding: 0;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 100vh;
-        }
-        .container {
-          background-color: #fff;
-          padding: 20px;
-          border-radius: 10px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-          max-width: 400px;
-          text-align: center;
-        }
-        h1 {
-          font-size: 24px;
-          color: #333;
-        }
-        p {
-          font-size: 16px;
-          color: #555;
-          margin-bottom: 20px;
-        }
-        .footer {
-          margin-top: 30px;
-          font-size: 12px;
-          color: #888;
-        }
-      </style>
-    </head>
-    <body>
-
-      <div class="container">
-        <h1>Email Verified!</h1>
-        <p>Your email has been successfully verified and updated to:</p>
-        <p><strong>${result.email}</strong></p>
-
-        <div class="footer">
-          <p>Thank you for verifying your email!</p>
-        </div>
+    try {
+      const result = await this.authService.verifyEmail(verifyEmailDto);
+      const successHtml = `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        text-align: center;
+      }
+      h1 {
+        font-size: 24px;
+        color: #333;
+      }
+      p {
+        font-size: 16px;
+        color: #555;
+        margin-bottom: 20px;
+      }
+      .footer {
+        margin-top: 30px;
+        font-size: 12px;
+        color: #888;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Email Verified!</h1>
+      <p>Your email has been successfully verified and updated to:</p>
+      <p><strong>${result.email}</strong></p>
+      <div class="footer">
+        <p>Thank you for verifying your email!</p>
       </div>
-
-    </body>
-    </html>
+    </div>
+  </body>
+  </html>
   `;
-
-    response
-      .status(result.success ? HttpStatus.OK : HttpStatus.BAD_REQUEST)
-      .send(htmlContent);
+      if (result.success) {
+        response.status(HttpStatus.OK).send(successHtml);
+      }
+    } catch (e) {
+      logger.error('Error verifying email', e);
+      const errorHtml = `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification Failed</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        text-align: center;
+      }
+      h1 {
+        font-size: 24px;
+        color: #d9534f;
+      }
+      p {
+        font-size: 16px;
+        color: #555;
+        margin-bottom: 20px;
+      }
+      .retry-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+      .footer {
+        margin-top: 30px;
+        font-size: 12px;
+        color: #888;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Email Verification Failed</h1>
+      <p>Your email verification failed. The token might have expired or is invalid.</p>
+      <p>Please open the <strong>QuickMem</strong> app to resend the verification email.</p>
+      <div class="footer">
+        <p>If the issue persists, contact support for further assistance.</p>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+      response.status(HttpStatus.BAD_REQUEST).send(errorHtml);
+    }
   }
 
   @SkipThrottle()
