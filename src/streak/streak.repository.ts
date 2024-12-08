@@ -219,7 +219,7 @@ export class StreakRepository extends Repository<StreakEntity> {
       .addSelect('user.avatarUrl', 'avatarUrl')
       .innerJoin(UserEntity, 'user', 'user.id = streak.userId')
       .where('streak.updatedAt >= :date', {
-        date: new Date(new Date().setDate(new Date().getDate() - 1)),
+        date: new Date(new Date().setDate(new Date().getDate() - 2)),
       })
       .andWhere('user.isVerified = true')
       .andWhere('streak.streakCount > 0')
