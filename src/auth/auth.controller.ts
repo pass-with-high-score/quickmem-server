@@ -56,6 +56,7 @@ import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto'
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
 import { UpdateRoleDto } from './dto/bodies/update-role.dto';
 import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
+import { SignUpGoogleBodyDto } from './dto/bodies/sign-up-google-body.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -355,5 +356,13 @@ export class AuthController {
     @Body() updateCoinDto: UpdateCoinDto,
   ): Promise<UpdateCoinResponseInterface> {
     return this.authService.updateCoin(updateCoinDto);
+  }
+
+  @Post('/signup/google')
+  @HttpCode(HttpStatus.CREATED)
+  async createUserWithGoogle(
+    @Body() signUpGoogleBodyDto: SignUpGoogleBodyDto,
+  ): Promise<AuthResponseInterface> {
+    return this.authService.createUserWithGoogle(signUpGoogleBodyDto);
   }
 }

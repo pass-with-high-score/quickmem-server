@@ -56,4 +56,9 @@ export class StreakService {
       logger.error('Error in streak cron job:', error);
     }
   }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async sendStreakReminder() {
+    await this.streakRepository.sendStreakReminder();
+  }
 }

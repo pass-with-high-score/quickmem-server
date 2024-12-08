@@ -1,4 +1,5 @@
 import {
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -15,12 +16,19 @@ import { StreakInterface } from './interfaces/streak.interface';
 import { GetTopStreakQueryDto } from './dto/queries/get-top-streak-query.dto';
 import { GetTopStreakResponseInterface } from './interfaces/get-top-streak-response.interface';
 import { ConfigService } from '@nestjs/config';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationTypeEnum } from '../notification/enums/notification-type.enum';
 
 @Injectable()
 export class StreakRepository extends Repository<StreakEntity> {
   constructor(
     private readonly dataSource: DataSource,
-    private configService: ConfigService,
+    private readonly configService: ConfigService,
+    @InjectQueue('send-email-streak') private readonly emailQueue: Queue,
+    @Inject(NotificationService)
+    private readonly notificationService: NotificationService,
   ) {
     super(StreakEntity, dataSource.createEntityManager());
   }
@@ -241,5 +249,62 @@ export class StreakRepository extends Repository<StreakEntity> {
         message: 'Error getting top streaks',
       });
     }
+  }
+
+  async sendStreakReminder() {
+    logger.info('Running streak reminder job');
+
+    try {
+      const users = await this.getAllUsers();
+      const currentDate = new Date();
+      const eightHoursBeforeMidnight = new Date();
+      eightHoursBeforeMidnight.setHours(16, 0, 0, 0); // 16:00 là 8 giờ trước nửa đêm
+
+      for (const user of users) {
+        const streaks = await this.getStreaksByUserId({
+          userId: user.id,
+        });
+        const lastStreak = streaks.streaks[streaks.streaks.length - 1];
+
+        // Kiểm tra nếu người dùng chưa nhận email hôm nay
+        const lastReminderSent = new Date(user.lastReminderSentAt || 0);
+
+        const isSameDay =
+          lastReminderSent.toDateString() === currentDate.toDateString();
+
+        if (
+          lastStreak &&
+          lastStreak.date.toDateString() !== currentDate.toDateString() &&
+          currentDate >= eightHoursBeforeMidnight &&
+          !isSameDay
+        ) {
+          // Gửi email nhắc nhở
+          await this.emailQueue.add('send-streak-reminder', {
+            email: user.email,
+            name: user.username,
+            from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+          });
+
+          // Tạo thông báo nhắc nhở
+          await this.notificationService.createNotification({
+            userId: [user.id],
+            title: '🔥 Don’t Break Your Learning Streak!',
+            message:
+              'You’ve been doing an amazing job! 🌟 Don’t let your learning streak fade away. Take a few minutes today and complete a quick study session to keep your streak alive. Every day counts! 💪',
+            notificationType: NotificationTypeEnum.STREAK_REMINDER,
+          });
+
+          await this.updateLastReminderSent(user.id, currentDate);
+        }
+      }
+    } catch (error) {
+      logger.error('Error in streak reminder job:', error);
+    }
+  }
+
+  async updateLastReminderSent(userId: string, date: Date) {
+    await this.dataSource
+      .getRepository(UserEntity)
+      .update(userId, { lastReminderSentAt: date });
   }
 }

@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import {
   ConflictException,
+  ForbiddenException,
   HttpStatus,
   Injectable,
   InternalServerErrorException,
@@ -55,6 +56,8 @@ import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto'
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
 import { UpdateRoleDto } from './dto/bodies/update-role.dto';
 import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
+import { SignUpGoogleBodyDto } from './dto/bodies/sign-up-google-body.dto';
+import { OAuth2Client } from 'google-auth-library';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -105,6 +108,119 @@ export class AuthRepository extends Repository<UserEntity> {
       coinAction: action,
       coins: user.coins,
     };
+  }
+
+  async createUserWithGoogle(
+    signUpGoogleBodyDto: SignUpGoogleBodyDto,
+  ): Promise<AuthResponseInterface> {
+    const {
+      email,
+      fullName,
+      avatarUrl,
+      role,
+      birthday,
+      provider,
+      googleToken,
+      username,
+    } = signUpGoogleBodyDto;
+
+    const emailExists = await this.findOne({
+      where: [{ email }],
+    });
+
+    if (emailExists) {
+      if (emailExists.isVerified === false) {
+        throw new ConflictException({
+          statusCode: HttpStatus.PRECONDITION_FAILED,
+          message: 'User already exists but not verified',
+        });
+      } else {
+        throw new ConflictException({
+          statusCode: HttpStatus.CONFLICT,
+          message: 'User already exists',
+        });
+      }
+    }
+
+    let currentUsername = username;
+
+    let userExits = await this.findOne({
+      where: [{ username }],
+    });
+
+    // if exists, add a random number to the username
+    while (userExits) {
+      currentUsername = username + Math.floor(Math.random() * 1000);
+      userExits = await this.findOne({
+        where: [{ username: currentUsername }],
+      });
+    }
+
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(googleToken, salt);
+
+    const user = this.create({
+      email,
+      username: currentUsername,
+      password: hashedPassword,
+      fullName: fullName,
+      avatarUrl: avatarUrl,
+      role,
+      birthday,
+      provider,
+      googleToken,
+      isVerified: true,
+    });
+    const client = new OAuth2Client(
+      this.configService.get<string>('GOOGLE_CLIENT_ID'),
+    );
+    let payload: any;
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: googleToken,
+        audience: this.configService.get<string>('GOOGLE_CLIENT_ID'),
+      });
+      payload = ticket.getPayload();
+    } catch (error) {
+      logger.error(error);
+      throw new ForbiddenException('Invalid Google token');
+    }
+    if (payload.email !== email) {
+      throw new ForbiddenException('Email does not match the token');
+    }
+
+    try {
+      await this.save(user);
+      const payload: { email: string; userId: string } = {
+        email,
+        userId: user.id,
+      };
+      const access_token: string = this.jwtService.sign(payload);
+      const refresh_token: string = this.jwtService.sign(payload, {
+        expiresIn: '7d',
+      });
+      return {
+        id: user.id,
+        username: user.username,
+        email,
+        fullName: user.fullName,
+        avatarUrl: user.avatarUrl,
+        role: user.role,
+        accessToken: access_token,
+        isPremium: false,
+        provider,
+        coin: user.coins,
+        isVerified: user.isVerified,
+        refreshToken: refresh_token,
+        birthday: user.birthday,
+      };
+    } catch (error) {
+      logger.error(error);
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Failed to create user',
+      });
+    }
   }
 
   async createUser(
@@ -1048,5 +1164,4 @@ export class AuthRepository extends Repository<UserEntity> {
       });
     }
   }
-
 }

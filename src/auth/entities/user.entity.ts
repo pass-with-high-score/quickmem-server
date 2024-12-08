@@ -77,7 +77,13 @@ export class UserEntity {
   provider: AuthProviderEnum;
 
   @Column({ nullable: true })
-  googleId: string;
+  googleToken: string;
+
+  @Column({ nullable: true })
+  googleId?: string;
+
+  @Column({ nullable: true })
+  lastReminderSentAt: Date;
 
   @Column({ nullable: true })
   facebookId: string;

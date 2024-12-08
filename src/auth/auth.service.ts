@@ -38,6 +38,7 @@ import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto'
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
 import { UpdateRoleDto } from './dto/bodies/update-role.dto';
 import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
+import { SignUpGoogleBodyDto } from './dto/bodies/sign-up-google-body.dto';
 
 @Injectable()
 export class AuthService {
@@ -211,5 +212,11 @@ export class AuthService {
     updateRoleDto: UpdateRoleDto,
   ): Promise<UpdateRoleResponseInterfaceDto> {
     return this.usersRepository.updateRole(updateRoleDto);
+  }
+
+  async createUserWithGoogle(
+    signUpGoogleBodyDto: SignUpGoogleBodyDto,
+  ): Promise<AuthResponseInterface> {
+    return this.usersRepository.createUserWithGoogle(signUpGoogleBodyDto);
   }
 }
