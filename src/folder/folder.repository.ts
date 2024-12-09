@@ -98,6 +98,11 @@ export class FolderRepository extends Repository<FolderEntity> {
         throw new NotFoundException('Folder not found');
       }
 
+      if (folder.link === null) {
+        folder.link = this.generateRandomString(7);
+        await this.save(folder);
+      }
+
       return this.mapFolderToGetFolderResponseInterface(folder, true);
     } catch (error) {
       console.error('Error fetching folder by ID:', error);
