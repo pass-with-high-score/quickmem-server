@@ -242,7 +242,7 @@ export class StreakRepository extends Repository<StreakEntity> {
       return topStreaks.map((streak) => ({
         userId: streak.userid,
         username: streak.username,
-        avatarUrl: `${this.configService.get<string>('HOST')}/public/images/avatar/${streak.avatarUrl}.jpg`,
+        avatarUrl: `${this.configService.get<string>('HOST')}/public/images/avatar/${streak.avatarurl}.jpg`,
         streakCount: parseInt(streak.streakcount, 10),
         role: streak.role,
       }));
