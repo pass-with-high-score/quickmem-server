@@ -220,27 +220,31 @@ export class StreakRepository extends Repository<StreakEntity> {
   ): Promise<GetTopStreakResponseInterface[]> {
     const { limit = 10 } = getTopStreakQueryDto;
     const query = this.createQueryBuilder('streak')
-      .select('streak.userId', 'userId')
-      .addSelect('user.username', 'username')
-      .addSelect('streak.streakCount', 'streakCount')
-      .addSelect('user.role', 'role')
-      .addSelect('user.avatarUrl', 'avatarUrl')
+      .select([
+        'DISTINCT streak.userId AS userId',
+        'user.username AS username',
+        'MAX(streak.streakCount) AS streakCount',
+        'user.role AS role',
+        'user.avatarUrl AS avatarUrl',
+      ])
       .innerJoin(UserEntity, 'user', 'user.id = streak.userId')
       .where('streak.updatedAt >= :date', {
         date: new Date(new Date().setDate(new Date().getDate() - 2)),
       })
       .andWhere('user.isVerified = true')
       .andWhere('streak.streakCount > 0')
-      .orderBy('streak.streakCount', 'DESC')
+      .groupBy('streak.userId, user.username, user.role, user.avatarUrl')
+      .orderBy('streakCount', 'DESC')
       .limit(limit);
 
     try {
       const topStreaks = await query.getRawMany();
+      console.log(topStreaks);
       return topStreaks.map((streak) => ({
         userId: streak.userId,
         username: streak.username,
         avatarUrl: `${this.configService.get<string>('HOST')}/public/images/avatar/${streak.avatarUrl}.jpg`,
-        streakCount: parseInt(streak.streakCount, 10),
+        streakCount: parseInt(streak.streakcount, 10),
         role: streak.role,
       }));
     } catch (e) {
