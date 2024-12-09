@@ -239,9 +239,8 @@ export class StreakRepository extends Repository<StreakEntity> {
 
     try {
       const topStreaks = await query.getRawMany();
-      console.log(topStreaks);
       return topStreaks.map((streak) => ({
-        userId: streak.userId,
+        userId: streak.userid,
         username: streak.username,
         avatarUrl: `${this.configService.get<string>('HOST')}/public/images/avatar/${streak.avatarUrl}.jpg`,
         streakCount: parseInt(streak.streakcount, 10),

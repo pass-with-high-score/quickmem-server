@@ -17,6 +17,7 @@ import { ClassEntity } from '../../class/entities/class.entity';
 import { FolderEntity } from '../../folder/entities/folder.entity';
 import { StudyTimeEntity } from '../../study-time/entities/study-time.entity';
 import { RecentStudySetEntity } from './recent-study-set.entity';
+import { LearnModeEnum } from '../../flashcard/enums/learn-mode.enum';
 
 @Entity('study_sets')
 export class StudySetEntity {
@@ -74,6 +75,9 @@ export class StudySetEntity {
     (recentStudySet) => recentStudySet.studySet,
   )
   recentAccesses: RecentStudySetEntity[];
+
+  @Column({ type: 'simple-array', nullable: true })
+  bestLearnModes?: LearnModeEnum[];
 
   @CreateDateColumn()
   createdAt: Date;

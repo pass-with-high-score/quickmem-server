@@ -56,6 +56,8 @@ import { UpdateRecentStudySetDto } from './dto/bodies/update-recent-study-set-bo
 import { RecentStudySetEntity } from './entities/recent-study-set.entity';
 import { GetStudySetsByUserIdDto } from './dto/params/get-study-sets-by-user-Id.dto';
 import { UserStatusEnum } from '../auth/enums/user-status.enum';
+import { AnalyzeStudySetDto } from './dto/bodies/analyze-study-set.dto';
+import { LearnModeEnum } from '../flashcard/enums/learn-mode.enum';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -1206,5 +1208,48 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       console.log('Error getting study sets', error);
       throw new InternalServerErrorException('Error getting study sets');
     }
+  }
+
+  async analyzeStudySet(
+    analyzeStudySetDto: AnalyzeStudySetDto,
+  ): Promise<{ bestMode: LearnModeEnum[] }> {
+    const { studySetId } = analyzeStudySetDto;
+    const studySet = await this.findOne({
+      where: { id: studySetId },
+      relations: ['flashcards'],
+    });
+
+    if (!studySet) {
+      throw new NotFoundException('Study set not found');
+    }
+
+    // Call the AI service to analyze the study set
+    const aiResponse = await this.callAIService(studySet);
+
+    // Save the analysis result to the database
+    studySet.bestLearnModes = aiResponse.bestMode;
+    await this.save(studySet);
+
+    return { bestMode: aiResponse.bestMode };
+  }
+
+  private async callAIService(
+    studySet: StudySetEntity,
+  ): Promise<{ bestMode: LearnModeEnum[] }> {
+    const flashcards = studySet.flashcards.map((flashcard) => {
+      return {
+        term: flashcard.term,
+        definition: flashcard.definition,
+        hint: flashcard.hint,
+        explanation: flashcard.explanation,
+      };
+    });
+
+    const aiServiceUrl = this.configService.get<string>('AI_SERVICE_URL');
+    const response = await axios.post(aiServiceUrl, {
+      flashcards,
+    });
+
+    return response.data;
   }
 }
