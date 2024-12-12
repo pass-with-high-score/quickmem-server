@@ -207,6 +207,12 @@ export class StudySetController {
     return this.studySetService.updateRecentStudySet(updateRecentStudySetDto);
   }
 
+  @Delete('/invalid')
+  @HttpCode(HttpStatus.OK)
+  async removeInvalidStudySets() {
+    return this.studySetService.removeInvalidStudySets();
+  }
+
   @Delete('/:id')
   @HttpCode(HttpStatus.OK) // can change to 204 (No Content) but it will not return any response
   async deleteStudySetById(

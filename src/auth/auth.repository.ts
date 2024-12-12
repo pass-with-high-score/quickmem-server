@@ -292,6 +292,7 @@ export class AuthRepository extends Repository<UserEntity> {
       password: hashedPassword,
       fullName: fullName,
       avatarUrl: avatarUrl,
+      coins: 5,
       role,
       birthday,
       otp, // Store OTP

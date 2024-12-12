@@ -104,4 +104,8 @@ export class FolderService {
       resetFlashcardProgressInFolderQueryDto,
     );
   }
+
+  async removeInvalidFolders() {
+    return this.folderRepository.removeInvalidFolders();
+  }
 }

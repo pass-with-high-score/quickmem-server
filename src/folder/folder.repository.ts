@@ -497,4 +497,28 @@ export class FolderRepository extends Repository<FolderEntity> {
       folderId: id,
     };
   }
+
+  async removeInvalidFolders() {
+    const folders = await this.find({
+      relations: ['studySets'],
+    });
+
+    for (const folder of folders) {
+      if (folder.studySets.length === 0 && folder.id) {
+        await this.remove(folder);
+      }
+      const sameNameFolders = folders.filter(
+        (f) => f.title === folder.title && f.id !== folder.id && f.id,
+      );
+      if (sameNameFolders.length > 0) {
+        await Promise.all(
+          sameNameFolders.map(async (f) => {
+            if (f.id) {
+              await this.remove(f);
+            }
+          }),
+        );
+      }
+    }
+  }
 }

@@ -1252,4 +1252,27 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
     return response.data;
   }
+
+  async removeInvalidStudySets() {
+    const studySets = await this.find({
+      relations: ['flashcards'],
+    });
+
+    const studySetMap = {};
+    const studySetIdsToDelete = [];
+    for (const studySet of studySets) {
+      if (studySet.flashcards.length === 0) {
+        studySetIdsToDelete.push(studySet.id);
+      } else {
+        if (studySetMap[studySet.title]) {
+          studySetIdsToDelete.push(studySetMap[studySet.title]);
+        }
+        studySetMap[studySet.title] = studySet.id;
+      }
+    }
+
+    await this.dataSource
+      .getRepository(StudySetEntity)
+      .delete(studySetIdsToDelete);
+  }
 }

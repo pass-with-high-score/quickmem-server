@@ -166,4 +166,8 @@ export class StudySetService {
       getStudySetsByUserIdDto,
     );
   }
+
+  async removeInvalidStudySets() {
+    return this.studySetRepository.removeInvalidStudySets();
+  }
 }

@@ -135,6 +135,12 @@ export class FolderController {
     );
   }
 
+  @Delete('/invalid')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeInvalidFolders() {
+    return this.folderService.removeInvalidFolders();
+  }
+
   @Delete('/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteFolder(
