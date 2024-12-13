@@ -209,7 +209,7 @@ export class StudySetController {
     return this.studySetService.updateRecentStudySet(updateRecentStudySetDto);
   }
 
-  @Post('/create-hint-flashcard')
+  @Post('/ai/write-hint')
   @HttpCode(HttpStatus.CREATED)
   async createHintFromAIForFlashcard(
     @Body() createWriteHintBodyDto: CreateWriteHintBodyDto,
