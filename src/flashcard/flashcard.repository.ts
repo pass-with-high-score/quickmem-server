@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { shuffle } from 'lodash';
 import { CreateFlashcardDto } from './dto/bodies/create-flashcard.dto';
 import { FlashcardResponseInterface } from './interface/flashcard-response.interface';
 import { StudySetEntity } from '../study-set/entities/study-set.entity';
@@ -69,7 +70,12 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     getFlashcardByIdQuery: GetFlashcardByIdQuery,
   ): Promise<FlashcardResponseInterface[]> {
     const { id } = getFlashcardsByStudySetIdDto;
-    const { learnMode, isGetAll } = getFlashcardByIdQuery;
+    const {
+      learnMode,
+      isGetAll,
+      isSwapped = false,
+      isRandom = false,
+    } = getFlashcardByIdQuery;
 
     try {
       const flashcards = await this.dataSource
@@ -113,9 +119,13 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         filteredFlashcards = filteredFlashcards.slice(0, 10);
       }
 
+      if (isRandom) {
+        filteredFlashcards = shuffle(filteredFlashcards);
+      }
+
       return await Promise.all(
         filteredFlashcards.map((flashcard) =>
-          this.mapFlashcardEntityToResponseInterface(flashcard),
+          this.mapFlashcardEntityToResponseInterface(flashcard, isSwapped),
         ),
       );
     } catch (error) {
@@ -433,7 +443,12 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     getFlashcardByIdParam: GetFlashcardByIdQuery,
   ): Promise<FlashcardResponseInterface[]> {
     const { id } = getFlashcardsByFolderIdDto;
-    const { learnMode, isGetAll } = getFlashcardByIdParam;
+    const {
+      learnMode,
+      isGetAll,
+      isSwapped = false,
+      isRandom = false,
+    } = getFlashcardByIdParam;
     try {
       // get all study set belonging to the folder
       const studySets = await this.dataSource
@@ -490,9 +505,13 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         filteredFlashcards = filteredFlashcards.slice(0, 20);
       }
 
+      if (isRandom) {
+        filteredFlashcards = shuffle(filteredFlashcards);
+      }
+
       return await Promise.all(
         filteredFlashcards.map((flashcard) =>
-          this.mapFlashcardEntityToResponseInterface(flashcard),
+          this.mapFlashcardEntityToResponseInterface(flashcard, isSwapped),
         ),
       );
     } catch (error) {
@@ -503,13 +522,15 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
 
   async mapFlashcardEntityToResponseInterface(
     flashcard: FlashcardEntity,
+    isSwapped: boolean = false,
   ): Promise<FlashcardResponseInterface> {
     return {
       id: flashcard.id,
       studySetId: flashcard.studySet.id,
-      term: flashcard.term,
-      definition: flashcard.definition,
-      definitionImageURL: flashcard.definitionImageURL,
+      term: isSwapped ? flashcard.definition : flashcard.term,
+      termImageURL: isSwapped ? flashcard.definitionImageURL : undefined,
+      definition: isSwapped ? flashcard.term : flashcard.definition,
+      definitionImageURL: isSwapped ? undefined : flashcard.definitionImageURL,
       hint: flashcard.hint,
       isAIGenerated: flashcard.isAIGenerated,
       explanation: flashcard.explanation,

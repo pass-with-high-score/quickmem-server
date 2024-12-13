@@ -3,6 +3,7 @@ export class FlashcardResponseInterface {
   studySetId?: string;
   isAIGenerated: boolean;
   term: string;
+  termImageURL?: string;
   definition: string;
   definitionImageURL?: string;
   hint?: string;

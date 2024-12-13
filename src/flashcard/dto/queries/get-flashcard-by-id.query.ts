@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 import { LearnModeEnum } from '../../enums/learn-mode.enum';
 
 export class GetFlashcardByIdQuery {
@@ -8,4 +8,10 @@ export class GetFlashcardByIdQuery {
 
   @IsNotEmpty()
   isGetAll: boolean;
+
+  @IsOptional()
+  isSwapped: boolean;
+
+  @IsOptional()
+  isRandom: boolean;
 }
