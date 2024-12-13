@@ -119,7 +119,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         filteredFlashcards = filteredFlashcards.slice(0, 10);
       }
 
-      if (isRandom) {
+      if (String(isRandom) === 'true') {
         filteredFlashcards = shuffle(filteredFlashcards);
       }
 
@@ -505,7 +505,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         filteredFlashcards = filteredFlashcards.slice(0, 20);
       }
 
-      if (isRandom) {
+      if (String(isRandom) === 'true') {
         filteredFlashcards = shuffle(filteredFlashcards);
       }
 
@@ -524,13 +524,14 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     flashcard: FlashcardEntity,
     isSwapped: boolean = false,
   ): Promise<FlashcardResponseInterface> {
+    const isSwap = String(isSwapped) === 'true';
     return {
       id: flashcard.id,
       studySetId: flashcard.studySet.id,
-      term: isSwapped ? flashcard.definition : flashcard.term,
-      termImageURL: isSwapped ? flashcard.definitionImageURL : undefined,
-      definition: isSwapped ? flashcard.term : flashcard.definition,
-      definitionImageURL: isSwapped ? undefined : flashcard.definitionImageURL,
+      term: isSwap ? flashcard.definition : flashcard.term,
+      termImageURL: isSwap ? flashcard.definitionImageURL : undefined,
+      definition: isSwap ? flashcard.term : flashcard.definition,
+      definitionImageURL: isSwap ? undefined : flashcard.definitionImageURL,
       hint: flashcard.hint,
       isAIGenerated: flashcard.isAIGenerated,
       explanation: flashcard.explanation,
