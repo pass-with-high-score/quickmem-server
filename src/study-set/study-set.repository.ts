@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -58,12 +59,14 @@ import { GetStudySetsByUserIdDto } from './dto/params/get-study-sets-by-user-Id.
 import { UserStatusEnum } from '../auth/enums/user-status.enum';
 import { AnalyzeStudySetDto } from './dto/bodies/analyze-study-set.dto';
 import { LearnModeEnum } from '../flashcard/enums/learn-mode.enum';
+import { CreateWriteHintBodyDto } from './dto/bodies/create-write-hint-body.dto';
+import { CreateWriteHintResponseInterface } from './interfaces/create-write-hint-response.interface';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
   constructor(
-    private dataSource: DataSource,
-    private configService: ConfigService,
+    private readonly dataSource: DataSource,
+    private readonly configService: ConfigService,
   ) {
     super(StudySetEntity, dataSource.createEntityManager());
   }
@@ -687,7 +690,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       throw new NotFoundException('Study set not found');
     }
 
-    // Fetch all the folders corresponding to the provided IDs.
+    // Fetch all the classes corresponding to the provided IDs.
     const classEntities = await this.dataSource
       .getRepository(ClassEntity)
       .find({
@@ -1274,5 +1277,79 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     await this.dataSource
       .getRepository(StudySetEntity)
       .delete(studySetIdsToDelete);
+  }
+
+  async createHintFromAIForFlashcard(
+    createWriteHintBodyDto: CreateWriteHintBodyDto,
+  ): Promise<CreateWriteHintResponseInterface> {
+    const flashcard = await this.dataSource
+      .getRepository(FlashcardEntity)
+      .findOne({
+        where: { id: createWriteHintBodyDto.flashcardId },
+      });
+
+    if (!flashcard) {
+      throw new NotFoundException('Flashcard not found');
+    }
+
+    // initialize the AI model
+    const GeminiAPIKey = this.configService.get<string>('GEMINI_API_KEY');
+    const genAI = new GoogleGenerativeAI(GeminiAPIKey);
+    const model = this.initializeGenerativeAIModel(
+      genAI,
+      this.createSchemaGenHint(),
+    );
+
+    // create prompt
+    const prompt = `
+  Bạn là một AI thông minh, nhiệm vụ của bạn là tạo một gợi ý (hint) chi tiết và hữu ích cho flashcard dựa trên các thông tin sau:
+  - **Câu hỏi (question)**: ${createWriteHintBodyDto.question}
+  - **Câu trả lời (answer)**: ${createWriteHintBodyDto.answer}
+  - **Tiêu đề bộ học (study set title)**: ${createWriteHintBodyDto.studySetTitle}
+  - **Mô tả bộ học (study set description)**: ${createWriteHintBodyDto.description || 'Không có'}
+
+  Yêu cầu:  
+  - Gợi ý phải dài ít nhất 2 câu, tập trung vào giải thích ngữ nghĩa của câu hỏi hoặc câu trả lời.  
+  - Cung cấp ngữ cảnh hoặc tình huống cụ thể để người học dễ liên tưởng đến câu trả lời.  
+  - Tránh lặp lại nguyên văn câu hỏi hoặc câu trả lời, mà thay vào đó hãy diễn giải ý nghĩa hoặc mô tả tình huống liên quan.  
+  - Không nói trực tiếp lại đáp án và câu hỏi
+  - Nếu nội dung khó hiểu, hãy giải thích khái niệm bằng cách so sánh hoặc đưa ví dụ cụ thể.  
+
+  **Lưu ý quan trọng:**  
+  - Nếu bạn không thể tạo ra gợi ý vì thiếu thông tin hoặc ngữ cảnh không rõ ràng, hãy phản hồi một trong các thông điệp sau:
+    - Nếu câu hỏi hoặc câu trả lời bị thiếu hoặc không rõ ràng:  
+      "Không thể tạo gợi ý do thiếu thông tin câu hỏi hoặc câu trả lời. Vui lòng cung cấp câu hỏi và câu trả lời rõ ràng hơn."
+    - Nếu thông tin bộ học không đủ rõ ràng:  
+      "Không thể tạo gợi ý vì mô tả bộ học không đủ chi tiết. Vui lòng cung cấp mô tả bộ học rõ ràng hơn."
+    - Nếu không thể tạo ra gợi ý hợp lý:  
+      "Không thể tạo gợi ý do thiếu ngữ cảnh hoặc thông tin liên quan. Vui lòng cung cấp thông tin bổ sung để tạo gợi ý chính xác hơn."
+
+  Hãy viết một gợi ý đầy đủ, sáng tạo và dễ hiểu bằng ngôn ngữ phù hợp với thông tin đầu vào!
+`;
+
+    const result = await model.generateContent(prompt);
+    const parsedText = this.parseAIResponse(result);
+
+    const aiHint = parsedText.hint;
+
+    // Update flashcard with the new hint
+    flashcard.hint = aiHint;
+    await this.dataSource.getRepository(FlashcardEntity).save(flashcard);
+
+    return {
+      flashcardId: flashcard.id,
+      aiHint,
+    };
+  }
+
+  private createSchemaGenHint() {
+    return {
+      description: 'Create a hint for a flashcard',
+      type: SchemaType.OBJECT,
+      properties: {
+        hint: { type: SchemaType.STRING },
+      },
+      required: ['hint'],
+    };
   }
 }

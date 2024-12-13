@@ -28,6 +28,8 @@ import { GetStudySetsBySubjectIdQueryDto } from './dto/queries/get-study-sets-by
 import { TopSubjectResponseInterface } from './interfaces/top-subject-response.interface';
 import { UpdateRecentStudySetDto } from './dto/bodies/update-recent-study-set-body.dto';
 import { GetStudySetsByUserIdDto } from './dto/params/get-study-sets-by-user-Id.dto';
+import { CreateWriteHintBodyDto } from './dto/bodies/create-write-hint-body.dto';
+import { CreateWriteHintResponseInterface } from './interfaces/create-write-hint-response.interface';
 
 @Injectable()
 export class StudySetService {
@@ -169,5 +171,13 @@ export class StudySetService {
 
   async removeInvalidStudySets() {
     return this.studySetRepository.removeInvalidStudySets();
+  }
+
+  async createHintFromAIForFlashcard(
+    createWriteHintBodyDto: CreateWriteHintBodyDto,
+  ): Promise<CreateWriteHintResponseInterface> {
+    return this.studySetRepository.createHintFromAIForFlashcard(
+      createWriteHintBodyDto,
+    );
   }
 }

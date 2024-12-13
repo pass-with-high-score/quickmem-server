@@ -1,7 +1,23 @@
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateWriteHintBodyDto {
-  @IsNotEmpty()
   @IsUUID()
-  studySetId: string;
+  @IsNotEmpty()
+  flashcardId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  studySetTitle: string;
+
+  @IsOptional()
+  @IsString()
+  description: string;
+
+  @IsNotEmpty()
+  @IsString()
+  question: string;
+
+  @IsNotEmpty()
+  @IsString()
+  answer: string;
 }
