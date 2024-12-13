@@ -782,9 +782,7 @@ export class AuthRepository extends Repository<UserEntity> {
     getUserDetailParamDto: GetUserDetailParamDto,
   ): Promise<UserDetailResponseInterface> {
     const { id } = getUserDetailParamDto;
-    const { isOwner } = getUserDetailQueryDto;
-
-    logger.info(`Getting user profile detail for user ID ${id}`);
+    const { isOwner = false } = getUserDetailQueryDto;
 
     const userPromise = this.findOne({
       where: { id },
@@ -794,12 +792,12 @@ export class AuthRepository extends Repository<UserEntity> {
     const studySetsPromise = this.dataSource
       .getRepository(StudySetEntity)
       .find({
-        where: { owner: { id }, isPublic: isOwner ? undefined : true },
+        where: { owner: { id }, isPublic: String(isOwner) === 'true' },
         relations: ['color', 'subject', 'flashcards', 'owner'],
       });
 
     const foldersPromise = this.dataSource.getRepository(FolderEntity).find({
-      where: { owner: { id }, isPublic: isOwner ? undefined : true },
+      where: { owner: { id }, isPublic: String(isOwner) === 'true' },
       relations: ['studySets', 'owner'],
     });
 
