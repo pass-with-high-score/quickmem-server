@@ -7,7 +7,7 @@ import { Logger } from '@nestjs/common';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import * as process from 'node:process';
-import { LoggingInterceptor } from './logging.interceptor'; // Correct import statement
+import { LoggingInterceptor } from './logging.interceptor';
 
 async function bootstrap() {
   const logger = new Logger('bootstrap');

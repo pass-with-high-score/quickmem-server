@@ -1,22 +1,57 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  Logger,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { logger } from './winston-logger.service';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(LoggingInterceptor.name);
+  private readonly consoleLog = new Logger(LoggingInterceptor.name);
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
-    const { method, url } = request;
+    const { method, url, headers, body } = request;
     const now = Date.now();
 
-    this.logger.log(`Incoming request: ${method} ${url}`);
+    const clientIp = headers['x-forwarded-for'] || request.ip;
 
-    return next
-      .handle()
-      .pipe(
-        tap(() => this.logger.log(`Response for ${method} ${url} took ${Date.now() - now}ms`)),
-      );
+    const requestLog = {
+      timestamp: new Date().toISOString(),
+      method,
+      url,
+      clientIp,
+      headers: { ...headers },
+      body: { ...body },
+    };
+
+    this.consoleLog.log(
+      `Incoming Request: ${JSON.stringify(requestLog, null, 2)}`,
+    );
+    logger.info(`Incoming Request: ${JSON.stringify(requestLog)}`);
+
+    return next.handle().pipe(
+      tap(() => {
+        const httpResponse = context.switchToHttp().getResponse();
+        const statusCode = httpResponse.statusCode;
+        const responseLog = {
+          timestamp: new Date().toISOString(),
+          method,
+          url,
+          clientIp,
+          statusCode,
+          responseTime: `${Date.now() - now}ms`,
+        };
+
+        this.consoleLog.log(
+          `Response Sent: ${JSON.stringify(responseLog, null, 2)}`,
+        );
+        logger.info(`Response Sent: ${JSON.stringify(responseLog)}`);
+      }),
+    );
   }
 }
