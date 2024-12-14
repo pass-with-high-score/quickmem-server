@@ -22,6 +22,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { MessagingModule } from './firebase/messaging.module';
 import { StudyTimeModule } from './study-time/study-time.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { PixabayModule } from './pixabay/pixabay.module';
 
 @Module({
   imports: [
@@ -104,6 +105,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     SubscriptionModule,
     MessagingModule,
     StudyTimeModule,
+    PixabayModule,
   ],
   providers: [
     {
