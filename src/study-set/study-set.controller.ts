@@ -10,6 +10,7 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
@@ -44,15 +45,19 @@ import { UpdateRecentStudySetDto } from './dto/bodies/update-recent-study-set-bo
 import { GetStudySetsByUserIdDto } from './dto/params/get-study-sets-by-user-Id.dto';
 import { CreateWriteHintBodyDto } from './dto/bodies/create-write-hint-body.dto';
 import { CreateWriteHintResponseInterface } from './interfaces/create-write-hint-response.interface';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
 @Controller('study-set')
+@UseInterceptors(CacheInterceptor)
 export class StudySetController {
   constructor(private readonly studySetService: StudySetService) {}
 
   @Get('/search')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('searchStudySetByTitle')
+  @CacheTTL(10000)
   async searchStudySetByTitle(
     @Query() searchStudySetsQueryDto: SearchStudySetsQueryDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
@@ -63,6 +68,8 @@ export class StudySetController {
 
   @Get('/link/:code')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('getStudySetByCode')
+  @CacheTTL(10000)
   async getStudySetByCode(
     @Param() getClassByCodeParamDto: GetStudySetByCodeParamDto,
   ): Promise<GetAllStudySetResponseInterface> {
@@ -71,6 +78,8 @@ export class StudySetController {
 
   @Get('/owner/:ownerId')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('getStudySetsByOwnerId')
+  @CacheTTL(10000)
   async getStudySetsByOwnerId(
     @Param() getStudySetsByOwnerIdDto: GetStudySetsByOwnerIdDto,
     @Query() getStudySetsByOwnerIdParamDto: GetStudySetsByOwnerIdQueryDto,
@@ -83,6 +92,8 @@ export class StudySetController {
 
   @Get('/recent/:userId')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('getStudySetRecentByUserId')
+  @CacheTTL(10000)
   async getStudySetRecentByUserId(
     @Param() getStudySetsByUserIdDto: GetStudySetsByUserIdDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
@@ -93,6 +104,8 @@ export class StudySetController {
 
   @Get('/subject/:subjectId')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('getStudySetsBySubjectId')
+  @CacheTTL(10000)
   async getStudySetsBySubjectId(
     @Param() getStudySetsBySubjectIdParamDto: GetStudySetsBySubjectIdParamDto,
     @Query() getStudySetsBySubjectIdQueryDto: GetStudySetsBySubjectIdQueryDto,
@@ -105,6 +118,8 @@ export class StudySetController {
 
   @Get('/top-subject')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('getTop5SubjectByStudySetCount')
+  @CacheTTL(10000)
   async getTop5SubjectByStudySetCount(): Promise<
     TopSubjectResponseInterface[]
   > {
@@ -113,6 +128,8 @@ export class StudySetController {
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('getStudySetById')
+  @CacheTTL(10000)
   async getStudySetById(
     @Param() getStudySetByIdDto: GetStudySetByIdDto,
   ): Promise<GetAllStudySetResponseInterface> {

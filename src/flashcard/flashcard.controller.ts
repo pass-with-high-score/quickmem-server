@@ -11,6 +11,7 @@ import {
   Put,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { FlashcardService } from './flashcard.service';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -32,15 +33,19 @@ import { UpdateFlashcardQuizStatusDto } from './dto/bodies/update-flashcard-quiz
 import { UpdateFlashcardTrueFalseStatusDto } from './dto/bodies/update-flashcard-true-false-status.dto';
 import { UpdateFlashcardWriteStatusDto } from './dto/bodies/update-flashcard-write-status.dto';
 import { GetFlashcardsByFolderIdDto } from './dto/params/get-flashcards-by-folder-id.dto';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
 @Controller('flashcard')
+@UseInterceptors(CacheInterceptor)
 export class FlashcardController {
   constructor(private readonly flashcardService: FlashcardService) {}
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('getFlashcardById')
+  @CacheTTL(10000)
   async getFlashcardById(
     @Param() getFlashcardByIdDto: GetFlashcardByIdDto,
   ): Promise<FlashcardResponseInterface> {
@@ -49,6 +54,8 @@ export class FlashcardController {
 
   @Get('/study-set/:id')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('getFlashcardByStudySetId')
+  @CacheTTL(10000)
   async getFlashcardByStudySetId(
     @Param() getFlashcardsByStudySetIdDto: GetFlashcardsByStudySetIdDto,
     @Query() getFlashcardByIdQuery: GetFlashcardByIdQuery,
@@ -61,6 +68,8 @@ export class FlashcardController {
 
   @Get('/folder/:id')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('getFlashcardsByFolderId')
+  @CacheTTL(10000)
   async getFlashcardsByFolderId(
     @Param() getFlashcardsByFolderIdDto: GetFlashcardsByFolderIdDto,
     @Query() getFlashcardByIdParam: GetFlashcardByIdQuery,

@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import * as dotenv from 'dotenv';
 import { configValidationSchema } from './config.schema';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -22,8 +21,7 @@ import { NotificationModule } from './notification/notification.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { MessagingModule } from './firebase/messaging.module';
 import { StudyTimeModule } from './study-time/study-time.module';
-
-dotenv.config();
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -88,6 +86,12 @@ dotenv.config();
         },
       }),
     }),
+    CacheModule.register({
+      store: 'memory',
+      max: 100,
+      ttl: 5,
+      isGlobal: true,
+    }),
     AuthModule,
     FlashcardModule,
     StudySetModule,
@@ -99,7 +103,7 @@ dotenv.config();
     NotificationModule,
     SubscriptionModule,
     MessagingModule,
-    StudyTimeModule
+    StudyTimeModule,
   ],
   providers: [
     {

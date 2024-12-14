@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { MessagingService } from '../firebase/messaging.service';
 import { NotificationService } from './notification.service';
@@ -24,9 +25,11 @@ import { UpdateIsReadParamDto } from './dto/params/update-is-read-param.dto';
 import { UpdateIsReadResponseInterface } from './interfaces/update-is-read-response.interface';
 import { DeleteNotificationParamDto } from './dto/params/delete-notification-param.dto';
 import { RegisterDeviceTokenBodyDto } from './dto/bodies/register-device-token-body.dto';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
+@UseInterceptors(CacheInterceptor)
 @Controller('notifications')
 export class NotificationController {
   constructor(
@@ -36,6 +39,8 @@ export class NotificationController {
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('getNotificationById')
+  @CacheTTL(10000)
   async getNotificationById(
     @Param() getNotificationByIdParamDto: GetNotificationByIdParamDto,
   ): Promise<GetNotificationByIdResponseInterface> {
@@ -46,6 +51,8 @@ export class NotificationController {
 
   @Get('/user/:id')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('getNotificationsByUserId')
+  @CacheTTL(10000)
   async getNotificationsByUserId(
     @Param() getNotificationByUserIdParamDto: GetNotificationByUserIdParamDto,
   ): Promise<GetNotificationByIdResponseInterface[]> {

@@ -146,7 +146,7 @@ export class ReportRepository extends Repository<ReportEntity> {
   async getReports(): Promise<ReportResponseInterface[]> {
     try {
       const reports = await this.dataSource.getRepository(ReportEntity).find({
-        relations: ['reporter'],
+        relations: ['reporter', 'ownerOfReportedEntity'],
       });
 
       return reports.map((report) => this.mapReportToReportResponse(report));
@@ -182,20 +182,24 @@ export class ReportRepository extends Repository<ReportEntity> {
       id: report.id,
       reason: report.reason,
       reportedEntityId: report.reportedEntityId,
-      reporter: {
-        id: report.reporter.id,
-        username: report.reporter.username,
-        email: report.reporter.email,
-        fullName: report.reporter.fullName,
-        avatarUrl: report.reporter.avatarUrl,
-      },
-      ownerOfReportedEntityId: {
-        id: report.ownerOfReportedEntity.id,
-        username: report.ownerOfReportedEntity.username,
-        email: report.ownerOfReportedEntity.email,
-        fullName: report.ownerOfReportedEntity.fullName,
-        avatarUrl: report.ownerOfReportedEntity.avatarUrl,
-      },
+      reporter: report.reporter
+        ? {
+            id: report.reporter.id,
+            username: report.reporter.username,
+            email: report.reporter.email,
+            fullName: report.reporter.fullName,
+            avatarUrl: report.reporter.avatarUrl,
+          }
+        : null,
+      ownerOfReportedEntityId: report.ownerOfReportedEntity
+        ? {
+            id: report.ownerOfReportedEntity.id,
+            username: report.ownerOfReportedEntity.username,
+            email: report.ownerOfReportedEntity.email,
+            fullName: report.ownerOfReportedEntity.fullName,
+            avatarUrl: report.ownerOfReportedEntity.avatarUrl,
+          }
+        : null,
       reportedType: report.reportedType,
       status: report.status,
       createdAt: report.createdAt,

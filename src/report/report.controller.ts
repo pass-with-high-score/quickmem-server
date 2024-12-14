@@ -8,6 +8,7 @@ import {
   HttpStatus,
   HttpCode,
   Patch,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ReportService } from './report.service';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -17,29 +18,27 @@ import { ReportResponseInterface } from './interfaces/report-response.interface'
 import { UpdateStatusParamDto } from './dto/params/update-status-param.dto';
 import { UpdateStatusDto } from './dto/bodies/update-status.dto';
 import { GetReporterIdParamDto } from './dto/params/get-reporterId-param.dto';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
+@UseInterceptors(CacheInterceptor)
 @Controller('report')
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}
 
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
-  async createReport(
-    @Body() createReportDto: CreateReportDto,
-  ): Promise<ReportResponseInterface> {
-    return await this.reportService.createReport(createReportDto);
-  }
-
-  @Get('/all')
+  @Get('/')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('getReports')
+  @CacheTTL(10000)
   async getReports(): Promise<ReportResponseInterface[]> {
     return await this.reportService.getReports();
   }
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('getReportById')
+  @CacheTTL(10000)
   async getReportById(
     @Param() updateStatusParamDto: UpdateStatusParamDto,
   ): Promise<ReportResponseInterface> {
@@ -48,10 +47,20 @@ export class ReportController {
 
   @Get('/:id/reporter')
   @HttpCode(HttpStatus.OK)
+  @CacheKey('getReportsByReporter')
+  @CacheTTL(10000)
   async getReportsByReporter(
     @Param() getReporterIdParamDto: GetReporterIdParamDto,
   ): Promise<ReportResponseInterface[]> {
     return await this.reportService.getReportsByReporter(getReporterIdParamDto);
+  }
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async createReport(
+    @Body() createReportDto: CreateReportDto,
+  ): Promise<ReportResponseInterface> {
+    return await this.reportService.createReport(createReportDto);
   }
 
   @Patch('/:id/status')
