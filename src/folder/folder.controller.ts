@@ -45,8 +45,6 @@ export class FolderController {
 
   @Get('/search')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('searchFolderByTitle')
-  @CacheTTL(10000)
   async searchFolderByTitle(
     @Query() searchFoldersByTitleQueryDto: SearchFoldersByTitleQueryDto,
   ): Promise<GetFolderResponseInterface[]> {

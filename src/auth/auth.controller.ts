@@ -128,8 +128,6 @@ export class AuthController {
   @Get('/user/search')
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.OK)
-  @CacheKey('searchUserByUsername')
-  @CacheTTL(10000)
   async searchUserByUsername(
     @Query() searchUserByUsernameQueryDto: SearchUserByUsernameQueryDto,
   ): Promise<UserResponseInterface[]> {

@@ -63,8 +63,6 @@ export class ClassController {
 
   @Get('/search')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('searchClassByTitle')
-  @CacheTTL(10000)
   async searchClassByTitle(
     @Query() searchClassesByTitleQueryDto: SearchClassesByTitleQueryDto,
   ): Promise<GetClassResponseInterface[]> {

@@ -56,8 +56,6 @@ export class StudySetController {
 
   @Get('/search')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('searchStudySetByTitle')
-  @CacheTTL(10000)
   async searchStudySetByTitle(
     @Query() searchStudySetsQueryDto: SearchStudySetsQueryDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
@@ -104,8 +102,6 @@ export class StudySetController {
 
   @Get('/subject/:subjectId')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getStudySetsBySubjectId')
-  @CacheTTL(10000)
   async getStudySetsBySubjectId(
     @Param() getStudySetsBySubjectIdParamDto: GetStudySetsBySubjectIdParamDto,
     @Query() getStudySetsBySubjectIdQueryDto: GetStudySetsBySubjectIdQueryDto,
