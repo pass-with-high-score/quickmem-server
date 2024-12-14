@@ -18,7 +18,7 @@ import { GetTotalTimeByUserIdParamDto } from './dto/params/get-total-time-by-use
 import { GetTotalByUserIdResponseInterface } from './interfaces/get-total-by-user-id-response.interface';
 import { GetTotalTimeByStudySetIdParamDto } from './dto/params/get-total-time-by-study-set-id-param.dto';
 import { GetTotalByStudySetIdResponseInterface } from './interfaces/get-total-by-study-set-id-response.interface';
-import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller('study-time')
 @SkipThrottle()
@@ -29,8 +29,6 @@ export class StudyTimeController {
 
   @Get('user/:userId')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getTotalTimeByUserId')
-  @CacheTTL(10000)
   async getTotalTimeByUserId(
     @Param() getTotalTimeParamDto: GetTotalTimeByUserIdParamDto,
   ): Promise<GetTotalByUserIdResponseInterface> {
@@ -39,8 +37,6 @@ export class StudyTimeController {
 
   @Get('study-set/:studySetId')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getTotalTimeByStudySetId')
-  @CacheTTL(10000)
   async getTotalTimeByStudySetId(
     @Param() getTotalTimeByUserIdParamDto: GetTotalTimeByStudySetIdParamDto,
   ): Promise<GetTotalByStudySetIdResponseInterface> {

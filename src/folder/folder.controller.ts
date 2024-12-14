@@ -34,7 +34,7 @@ import { GetFoldersByUserIdDto } from './dto/params/get-folders-by-user-Id.dto';
 import { ResetFlashcardProgressInFolderParamDto } from './dto/params/reset-flashcard-progress-in-folder-param.dto';
 import { ResetFlashcardProgressInFolderQueryDto } from './dto/queries/reset-flashcard-progress-in-folder-query.dto';
 import { ResetFlashcardProgressResponseInterface } from '../study-set/interfaces/reset-flashcard-progress-response.interface';
-import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -53,8 +53,6 @@ export class FolderController {
 
   @Get('/link/:code')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getFolderByCode')
-  @CacheTTL(10000)
   async getFolderByCode(
     @Param() getFolderByCodeParamDto: GetFolderByCodeParamDto,
   ): Promise<GetFolderResponseInterface> {
@@ -63,8 +61,6 @@ export class FolderController {
 
   @Get('/owner/:ownerId')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getFolderByOwnerId')
-  @CacheTTL(10000)
   async getFolderByOwnerId(
     @Param() getFoldersByOwnerIdDto: GetFoldersByOwnerIdDto,
     @Query() getFolderByOwnerIdQueryDto: GetFolderByOwnerIdQueryDto,
@@ -77,8 +73,6 @@ export class FolderController {
 
   @Get('/recent/:userId')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getRecentFoldersByUserId')
-  @CacheTTL(10000)
   async getRecentFoldersByUserId(
     @Param() getFoldersByUserIdDto: GetFoldersByUserIdDto,
   ): Promise<GetFolderResponseInterface[]> {
@@ -87,8 +81,6 @@ export class FolderController {
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getFolderById')
-  @CacheTTL(10000)
   async getFolderById(
     @Param() getFoldersByIdDto: GetFoldersByIdDto,
   ): Promise<GetFolderResponseInterface> {

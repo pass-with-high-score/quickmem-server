@@ -19,7 +19,7 @@ import { IncrementStreakDto } from './dto/bodies/increment-streak.dto';
 import { StreakInterface } from './interfaces/streak.interface';
 import { GetTopStreakQueryDto } from './dto/queries/get-top-streak-query.dto';
 import { GetTopStreakResponseInterface } from './interfaces/get-top-streak-response.interface';
-import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -30,8 +30,6 @@ export class StreakController {
 
   @Get('/top')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getTopUsers')
-  @CacheTTL(10000)
   async getTopUsers(
     @Query() getTopStreakQueryDto: GetTopStreakQueryDto,
   ): Promise<GetTopStreakResponseInterface[]> {
@@ -40,8 +38,6 @@ export class StreakController {
 
   @Get('/:userId')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getStreaksByUserId')
-  @CacheTTL(10000)
   async getStreaksByUserId(
     @Param() getStreaksByUserIdParamDto: GetStreaksByUserIdParamDto,
   ): Promise<GetStreaksResponseInterface> {

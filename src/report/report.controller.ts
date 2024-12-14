@@ -18,7 +18,7 @@ import { ReportResponseInterface } from './interfaces/report-response.interface'
 import { UpdateStatusParamDto } from './dto/params/update-status-param.dto';
 import { UpdateStatusDto } from './dto/bodies/update-status.dto';
 import { GetReporterIdParamDto } from './dto/params/get-reporterId-param.dto';
-import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -29,16 +29,12 @@ export class ReportController {
 
   @Get('/')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getReports')
-  @CacheTTL(10000)
   async getReports(): Promise<ReportResponseInterface[]> {
     return await this.reportService.getReports();
   }
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getReportById')
-  @CacheTTL(10000)
   async getReportById(
     @Param() updateStatusParamDto: UpdateStatusParamDto,
   ): Promise<ReportResponseInterface> {
@@ -47,8 +43,6 @@ export class ReportController {
 
   @Get('/:id/reporter')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getReportsByReporter')
-  @CacheTTL(10000)
   async getReportsByReporter(
     @Param() getReporterIdParamDto: GetReporterIdParamDto,
   ): Promise<ReportResponseInterface[]> {

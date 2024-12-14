@@ -22,7 +22,7 @@ import { UpdateAutoRenewParamDto } from './dto/params/update-auto-renew.param.dt
 import { UpdateAutoRenewBodyDto } from './dto/bodies/update-auto-renew.body.dto';
 import { GetSubscriptionByIdParamDto } from './dto/params/get-subscription-by-id.param.dto';
 import { GetSubscriptionByUserIdParamDto } from './dto/params/get-subscription-by-user-id.param.dto';
-import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -33,8 +33,6 @@ export class SubscriptionController {
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getSubscriptionById')
-  @CacheTTL(10000)
   async getSubscriptionById(
     @Param() getSubscriptionByIdParamDto: GetSubscriptionByIdParamDto,
   ): Promise<SubscriptionInterface> {
@@ -45,8 +43,6 @@ export class SubscriptionController {
 
   @Get('/user/:id')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getSubscriptionsByUserId')
-  @CacheTTL(10000)
   async getSubscriptionsByUserId(
     @Param() getSubscriptionByUserIdParamDto: GetSubscriptionByUserIdParamDto,
   ): Promise<SubscriptionInterface[]> {

@@ -25,7 +25,7 @@ import { UpdateIsReadParamDto } from './dto/params/update-is-read-param.dto';
 import { UpdateIsReadResponseInterface } from './interfaces/update-is-read-response.interface';
 import { DeleteNotificationParamDto } from './dto/params/delete-notification-param.dto';
 import { RegisterDeviceTokenBodyDto } from './dto/bodies/register-device-token-body.dto';
-import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -39,8 +39,6 @@ export class NotificationController {
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getNotificationById')
-  @CacheTTL(10000)
   async getNotificationById(
     @Param() getNotificationByIdParamDto: GetNotificationByIdParamDto,
   ): Promise<GetNotificationByIdResponseInterface> {
@@ -51,8 +49,6 @@ export class NotificationController {
 
   @Get('/user/:id')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getNotificationsByUserId')
-  @CacheTTL(10000)
   async getNotificationsByUserId(
     @Param() getNotificationByUserIdParamDto: GetNotificationByUserIdParamDto,
   ): Promise<GetNotificationByIdResponseInterface[]> {

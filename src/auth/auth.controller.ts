@@ -59,7 +59,7 @@ import { UpdateRoleDto } from './dto/bodies/update-role.dto';
 import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
 import { SignUpGoogleBodyDto } from './dto/bodies/sign-up-google-body.dto';
 import { logger } from '../winston-logger.service';
-import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller('auth')
 @UseInterceptors(CacheInterceptor)
@@ -137,8 +137,6 @@ export class AuthController {
   @Get('/me/:id')
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getUserProfileDetail')
-  @CacheTTL(10000)
   async getUserProfileDetail(
     @Query() getUserDetailQueryDto: GetUserDetailQueryDto,
     @Param() getUserDetailParamDto: GetUserDetailParamDto,
@@ -150,10 +148,6 @@ export class AuthController {
   }
 
   @Get('/profile/:id')
-  @UseGuards(OwnershipGuard)
-  @HttpCode(HttpStatus.OK)
-  @CacheKey('getUserProfileById')
-  @CacheTTL(10000)
   async getUserProfileById(
     @Param() getUserProfileParamDto: GetUserProfileParamDto,
   ): Promise<GetUserProfileResponseInterface> {
@@ -162,8 +156,6 @@ export class AuthController {
 
   @Get('/verify-email')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('verifyEmail')
-  @CacheTTL(10000)
   async verifyEmail(
     @Query() verifyEmailDto: VerifyEmailQueryDto,
     @Res() response: Response,

@@ -38,7 +38,7 @@ import { RemoveFolderByClassIdBodyDto } from './dto/bodies/remove-folder-by-clas
 import { UpdateRecentClassBodyDto } from './dto/bodies/update-recent-class-body.dto';
 import { InviteUserJoinClassBodyDto } from './dto/bodies/invite-user-join-class-body.dto';
 import { InviteUserJoinClassResponseInterface } from './interfaces/invite-user-join-class-response.interface';
-import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -48,8 +48,6 @@ export class ClassController {
   constructor(private readonly classService: ClassService) {}
 
   @Get('/token/:joinToken')
-  @CacheKey('getClassByJoinToken')
-  @CacheTTL(10000)
   @HttpCode(HttpStatus.OK)
   async getClassByJoinToken(
     @Param() getClassByJoinTokenParamDto: GetClassByJoinTokenParamDto,
@@ -71,8 +69,6 @@ export class ClassController {
 
   @Get('/recent/:userId')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getRecentClassesByUserId')
-  @CacheTTL(10000)
   async getRecentClassesByUserId(
     @Param() getClassesByUserIdDto: GetClassesByUserIdDto,
   ): Promise<GetClassResponseInterface[]> {
@@ -81,8 +77,6 @@ export class ClassController {
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getClassById')
-  @CacheTTL(10000)
   async getClassById(
     @Param() getClassByIdParamDto: GetClassByIdParamDto,
   ): Promise<GetClassResponseInterface> {
@@ -91,8 +85,6 @@ export class ClassController {
 
   @Get('/user/:userId')
   @HttpCode(HttpStatus.OK)
-  @CacheKey('getClassesByUserId')
-  @CacheTTL(10000)
   async getClassesByUserId(
     @Param() getClassesByUserIdDto: GetClassesByUserIdDto,
     @Query() getClassByUserIdQueryDto: GetClassByUserIdQueryDto,
