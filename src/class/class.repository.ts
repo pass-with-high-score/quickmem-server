@@ -41,6 +41,8 @@ import { Queue } from 'bull';
 import { ConfigService } from '@nestjs/config';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationTypeEnum } from '../notification/enums/notification-type.enum';
+import { CreateNotificationBodyDto } from '../notification/dto/bodies/create-notification-body.dto';
+import { InviteStatusEnum } from './enums/invite-status.enum';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -643,6 +645,17 @@ export class ClassRepository extends Repository<ClassEntity> {
 
     try {
       await this.save(classEntity);
+      // send notification to members
+      const notification = new CreateNotificationBodyDto();
+      notification.title = 'You have been removed from a class';
+      notification.message = `You have been removed from the class ${classEntity.title}`;
+      notification.notificationType = NotificationTypeEnum.REMOVED_FROM_CLASS;
+      notification.userId = memberIds;
+      notification.data = {
+        classId: classEntity.id,
+        className: classEntity.title,
+      };
+      await this.notificationService.createNotification(notification);
       return this.mapClassEntityToResponse(classEntity, false, false, false);
     } catch (error) {
       logger.error('Error removing members from class:', error);
@@ -1023,6 +1036,7 @@ export class ClassRepository extends Repository<ClassEntity> {
       return {
         message: `User ${username} not found`,
         status: false,
+        inviteStatus: InviteStatusEnum.USER_NOT_FOUND,
       };
     }
 
@@ -1030,6 +1044,7 @@ export class ClassRepository extends Repository<ClassEntity> {
       return {
         message: `User ${username} not verified`,
         status: false,
+        inviteStatus: InviteStatusEnum.USER_NOT_VERIFIED,
       };
     }
 
@@ -1037,6 +1052,7 @@ export class ClassRepository extends Repository<ClassEntity> {
       return {
         message: `User ${username} is the owner of the class`,
         status: false,
+        inviteStatus: InviteStatusEnum.IS_OWNER,
       };
     }
 
@@ -1045,6 +1061,7 @@ export class ClassRepository extends Repository<ClassEntity> {
       return {
         message: `User ${username} already in the class`,
         status: false,
+        inviteStatus: InviteStatusEnum.ALREADY_JOINED,
       };
     }
 
@@ -1067,6 +1084,7 @@ export class ClassRepository extends Repository<ClassEntity> {
       return {
         message: 'Sent invite to user to join class',
         status: true,
+        inviteStatus: InviteStatusEnum.SUCCESS,
       };
     } catch (error) {
       logger.error('Error inviting user to join class:', error);

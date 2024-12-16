@@ -84,6 +84,11 @@ export class NotificationRepository extends Repository<NotificationEntity> {
       await this.sendNotification(title, message, userId, {
         notificationType,
       });
+    } else {
+      await this.sendNotification(title, message, userId, {
+        notificationType,
+        id: data.classId,
+      });
     }
 
     return notifications;
