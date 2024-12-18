@@ -288,12 +288,16 @@ export class AuthRepository extends Repository<UserEntity> {
 
     const otp = crypto.randomInt(100000, 999999).toString(); // Generate a 6-digit OTP
 
+    const defaultImage = await this.dataSource
+      .getRepository(DefaultImageEntity)
+      .findOne({ where: { id: avatarUrl } });
+
     const user = this.create({
       email,
       username: currentUsername,
       password: hashedPassword,
       fullName: fullName,
-      avatarUrl: avatarUrl,
+      avatarUrl: defaultImage.url,
       coins: 5,
       role,
       birthday,
@@ -357,7 +361,6 @@ export class AuthRepository extends Repository<UserEntity> {
         const refresh_token: string = this.jwtService.sign(payload, {
           expiresIn: '7d',
         });
-        const avatar = `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.jpg`;
         const isPremium = await this.isUserPremium(user.id);
         await this.sendEmailQueue.add('send-login-email', {
           fullName: user.fullName,
@@ -374,7 +377,7 @@ export class AuthRepository extends Repository<UserEntity> {
           username: user.username,
           email,
           fullName: user.fullName,
-          avatarUrl: avatar,
+          avatarUrl: user.avatarUrl,
           role: user.role,
           accessToken: access_token,
           isPremium,
@@ -497,7 +500,6 @@ export class AuthRepository extends Repository<UserEntity> {
     };
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-    const avatar = `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.jpg`;
     user.refreshToken = refreshToken;
     await this.save(user);
     await this.sendEmailQueue.add('send-signup-email', {
@@ -511,7 +513,7 @@ export class AuthRepository extends Repository<UserEntity> {
       username: user.username,
       email: user.email,
       fullName: user.fullName,
-      avatarUrl: avatar,
+      avatarUrl: user.avatarUrl,
       role: user.role,
       coin: user.coins,
       provider: user.provider,
@@ -760,7 +762,7 @@ export class AuthRepository extends Repository<UserEntity> {
 
       return {
         message: 'Avatar updated successfully',
-        avatarUrl: `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.jpg`,
+        avatarUrl: avatar,
       };
     } catch (error) {
       logger.error(
@@ -845,7 +847,7 @@ export class AuthRepository extends Repository<UserEntity> {
       owner: {
         id: studySet.owner.id,
         username: studySet.owner.username,
-        avatarUrl: `${process.env.HOST}/public/images/avatar/${studySet.owner.avatarUrl}.jpg`,
+        avatarUrl: studySet.owner.avatarUrl,
         role: studySet.owner.role,
       },
       color: {
@@ -871,7 +873,7 @@ export class AuthRepository extends Repository<UserEntity> {
       owner: {
         id: folder.owner.id,
         username: folder.owner.username,
-        avatarUrl: `${process.env.HOST}/public/images/avatar/${folder.owner.avatarUrl}.jpg`,
+        avatarUrl: folder.owner.avatarUrl,
         role: folder.owner.role,
       },
       createdAt: folder.createdAt,
@@ -887,21 +889,19 @@ export class AuthRepository extends Repository<UserEntity> {
         id: classItem.owner.id,
         role: classItem.owner.role,
         username: classItem.owner.username,
-        avatarUrl: `${process.env.HOST}/public/images/avatar/${classItem.owner.avatarUrl}.jpg`,
+        avatarUrl: classItem.owner.avatarUrl,
       },
       studySetCount: classItem.studySets.length,
       createdAt: classItem.createdAt,
       updatedAt: classItem.updatedAt,
     }));
 
-    const avatar = `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.jpg`;
-
     return {
       id: user.id,
       username: user.username,
       fullname: user.fullName,
       role: user.role,
-      avatarUrl: avatar,
+      avatarUrl: user.avatarUrl,
       studySets: formattedStudySets,
       folders: formattedFolders,
       classes: formattedClasses,
@@ -1088,7 +1088,7 @@ export class AuthRepository extends Repository<UserEntity> {
     return users.map((user) => ({
       id: user.id,
       username: user.username,
-      avatarUrl: `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.jpg`,
+      avatarUrl: user.avatarUrl,
       role: user.role,
     }));
   }
@@ -1128,14 +1128,12 @@ export class AuthRepository extends Repository<UserEntity> {
       });
     }
 
-    const avatar = `${process.env.HOST}/public/images/avatar/${user.avatarUrl}.jpg`;
-
     return {
       id: user.id,
       username: user.username,
       fullname: user.fullName,
       email: user.email,
-      avatarUrl: avatar,
+      avatarUrl: user.avatarUrl,
       role: user.role,
       coin: user.coins,
       createdAt: user.createdAt,

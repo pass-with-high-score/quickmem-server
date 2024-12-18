@@ -292,7 +292,7 @@ export class FolderRepository extends Repository<FolderEntity> {
         ? {
             id: folder.owner.id,
             username: folder.owner.username,
-            avatarUrl: `${process.env.HOST}/public/images/avatar/${folder.owner.avatarUrl}.jpg`,
+            avatarUrl: folder.owner.avatarUrl,
             role: folder.owner.role,
           }
         : undefined,
@@ -318,7 +318,7 @@ export class FolderRepository extends Repository<FolderEntity> {
             owner: {
               id: studySet.owner.id,
               username: studySet.owner.username,
-              avatarUrl: `${process.env.HOST}/public/images/avatar/${studySet.owner.avatarUrl}.jpg`,
+              avatarUrl: studySet.owner.avatarUrl,
               role: studySet.owner.role,
             },
             color: studySet.color
