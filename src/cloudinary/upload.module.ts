@@ -7,11 +7,12 @@ import { ImageEntity } from './entities/image.entity';
 import { ImageRepository } from './image.repository';
 import { ImageService } from './image.service';
 import { ScheduleModule } from '@nestjs/schedule';
+import { DefaultImageEntity } from '../auth/entities/default-image.entity';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([ImageEntity]),
+    TypeOrmModule.forFeature([ImageEntity, DefaultImageEntity]),
     ScheduleModule.forRoot(),
   ],
   controllers: [UploadController],

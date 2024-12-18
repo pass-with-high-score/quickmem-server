@@ -698,7 +698,7 @@ export class ClassRepository extends Repository<ClassEntity> {
         id: classEntity.owner.id,
         role: classEntity.owner.role,
         username: classEntity.owner.username,
-        avatarUrl: `${process.env.HOST}/public/images/avatar/${classEntity.owner.avatarUrl}.jpg`,
+        avatarUrl: classEntity.owner.avatarUrl,
       },
       isJoined: classEntity.members.some((member) => member.id === userId),
       allowMemberManagement: classEntity.allowMemberManagement,
@@ -723,7 +723,7 @@ export class ClassRepository extends Repository<ClassEntity> {
         id: classEntity.owner.id,
         role: classEntity.owner.role,
         username: classEntity.owner.username,
-        avatarUrl: `${process.env.HOST}/public/images/avatar/${classEntity.owner.avatarUrl}.jpg`,
+        avatarUrl: classEntity.owner.avatarUrl,
       },
       allowMemberManagement: classEntity.allowMemberManagement,
       allowSetManagement: classEntity.allowSetManagement,
@@ -735,7 +735,7 @@ export class ClassRepository extends Repository<ClassEntity> {
         ? classEntity.members.map((member) => ({
             id: member.id,
             username: member.username,
-            avatarUrl: `${process.env.HOST}/public/images/avatar/${member.avatarUrl}.jpg`,
+            avatarUrl: member.avatarUrl,
             isOwner: member.id === classEntity.owner.id,
             role: member.role,
           }))
@@ -765,7 +765,7 @@ export class ClassRepository extends Repository<ClassEntity> {
             owner: {
               id: studySet.owner.id,
               username: studySet.owner.username,
-              avatarUrl: `${process.env.HOST}/public/images/avatar/${studySet.owner.avatarUrl}.jpg`,
+              avatarUrl: studySet.owner.avatarUrl,
               role: studySet.owner.role,
             },
             createdAt: studySet.createdAt,
@@ -783,7 +783,7 @@ export class ClassRepository extends Repository<ClassEntity> {
             owner: {
               id: folder.owner.id,
               username: folder.owner.username,
-              avatarUrl: `${process.env.HOST}/public/images/avatar/${folder.owner.avatarUrl}.jpg`,
+              avatarUrl: folder.owner.avatarUrl,
               role: folder.owner.role,
             },
             createdAt: folder.createdAt,

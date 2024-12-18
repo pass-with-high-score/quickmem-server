@@ -60,6 +60,7 @@ import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-respons
 import { SignUpGoogleBodyDto } from './dto/bodies/sign-up-google-body.dto';
 import { logger } from '../winston-logger.service';
 import { CacheInterceptor } from '@nestjs/cache-manager';
+import { GetAvatarsResponseInterface } from './interfaces/get-avatars-response.interface';
 
 @Controller('auth')
 @UseInterceptors(CacheInterceptor)
@@ -132,6 +133,12 @@ export class AuthController {
     @Query() searchUserByUsernameQueryDto: SearchUserByUsernameQueryDto,
   ): Promise<UserResponseInterface[]> {
     return this.authService.searchUserByUsername(searchUserByUsernameQueryDto);
+  }
+
+  @Get('/avatars')
+  @HttpCode(HttpStatus.OK)
+  async getAvatars(): Promise<GetAvatarsResponseInterface[]> {
+    return this.authService.getAvatars();
   }
 
   @Get('/me/:id')
