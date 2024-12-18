@@ -39,6 +39,7 @@ import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-r
 import { UpdateRoleDto } from './dto/bodies/update-role.dto';
 import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
 import { SignUpGoogleBodyDto } from './dto/bodies/sign-up-google-body.dto';
+import { GetAvatarsResponseInterface } from './interfaces/get-avatars-response.interface';
 
 @Injectable()
 export class AuthService {
@@ -218,5 +219,9 @@ export class AuthService {
     signUpGoogleBodyDto: SignUpGoogleBodyDto,
   ): Promise<AuthResponseInterface> {
     return this.usersRepository.createUserWithGoogle(signUpGoogleBodyDto);
+  }
+
+  async getAvatars(): Promise<GetAvatarsResponseInterface[]> {
+    return this.usersRepository.getAvatars();
   }
 }

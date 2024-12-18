@@ -6,12 +6,14 @@ import { CloudinaryProvider } from './cloudinary.provider';
 import { logger } from '../winston-logger.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DefaultImageEntity } from '../auth/entities/default-image.entity';
+import { ImageRepository } from './image.repository';
 
 @Injectable()
 export class ImageService {
   constructor(
     @InjectRepository(ImageEntity)
     private readonly imageRepository: Repository<ImageEntity>,
+    private readonly imagesRepository: ImageRepository,
     private readonly cloudinaryProvider: CloudinaryProvider,
     @InjectRepository(DefaultImageEntity)
     private readonly defaultImageRepository: Repository<DefaultImageEntity>,
@@ -77,5 +79,9 @@ export class ImageService {
       avatar.url = image.secure_url;
       await this.defaultImageRepository.save(avatar);
     }
+  }
+
+  async changeUserAvatar(): Promise<void> {
+    return await this.imagesRepository.changeUserAvatar();
   }
 }

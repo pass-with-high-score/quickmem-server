@@ -69,6 +69,12 @@ export class UploadController {
     }
   }
 
+  @Post('/change-user-avatar')
+  @HttpCode(HttpStatus.CREATED)
+  async changeUserAvatar(): Promise<void> {
+    return await this.imageService.changeUserAvatar();
+  }
+
   @Delete('/unused')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteUnusedImages() {

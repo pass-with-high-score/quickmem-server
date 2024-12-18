@@ -59,6 +59,8 @@ import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-respons
 import { SignUpGoogleBodyDto } from './dto/bodies/sign-up-google-body.dto';
 import { OAuth2Client } from 'google-auth-library';
 import { UserStatusEnum } from './enums/user-status.enum';
+import { GetAvatarsResponseInterface } from './interfaces/get-avatars-response.interface';
+import { DefaultImageEntity } from './entities/default-image.entity';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -1187,5 +1189,16 @@ export class AuthRepository extends Repository<UserEntity> {
         message: 'Failed to update role',
       });
     }
+  }
+
+  async getAvatars(): Promise<GetAvatarsResponseInterface[]> {
+    const avatars = await this.dataSource
+      .getRepository(DefaultImageEntity)
+      .find();
+
+    return avatars.map((avatar) => ({
+      id: avatar.id,
+      url: avatar.url,
+    }));
   }
 }
