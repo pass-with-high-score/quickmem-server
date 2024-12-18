@@ -7,6 +7,8 @@ import {
   UseGuards,
   Delete,
   Body,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryProvider } from './cloudinary.provider';
@@ -26,6 +28,7 @@ export class UploadController {
   ) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
     FileInterceptor('flashcard', { ...multerConfig, limits: { files: 1 } }),
   ) // Limit to 1 file
@@ -45,14 +48,10 @@ export class UploadController {
     }
   }
 
-  @Delete('/unused')
-  async deleteUnusedImages() {
-    try {
-      await this.imageService.deleteUnusedImages();
-      return { message: 'Delete successful!' };
-    } catch (error) {
-      return { message: 'Delete failed!', error };
-    }
+  @Post('/default')
+  @HttpCode(HttpStatus.CREATED)
+  async createDefaultImage(): Promise<any> {
+    return this.imageService.createDefaultImage();
   }
 
   @Post('/delete')
@@ -65,6 +64,23 @@ export class UploadController {
         message: 'Delete successful!',
         result,
       };
+    } catch (error) {
+      return { message: 'Delete failed!', error };
+    }
+  }
+
+  @Post('/change-user-avatar')
+  @HttpCode(HttpStatus.CREATED)
+  async changeUserAvatar(): Promise<void> {
+    return await this.imageService.changeUserAvatar();
+  }
+
+  @Delete('/unused')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteUnusedImages() {
+    try {
+      await this.imageService.deleteUnusedImages();
+      return { message: 'Delete successful!' };
     } catch (error) {
       return { message: 'Delete failed!', error };
     }
