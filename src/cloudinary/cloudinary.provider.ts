@@ -35,6 +35,14 @@ export class CloudinaryProvider {
     });
   }
 
+  async getAllImageInFolder(folder: string): Promise<any> {
+    return cloudinary.api.resources({
+      type: 'upload',
+      prefix: folder,
+      max_results: 500,
+    });
+  }
+
   async deleteImage(imageURL: string): Promise<any> {
     const publicId = imageURL.split('/').slice(-2).join('/').split('.')[0];
     return cloudinary.uploader.destroy(publicId);

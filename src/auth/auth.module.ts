@@ -12,11 +12,12 @@ import { BullModule } from '@nestjs/bull';
 import { EmailConsumer } from './email-consumer';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { FacebookStrategy } from './strategy/facebook.strategy';
+import { DefaultImageEntity } from './entities/default-image.entity';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([UserEntity]),
+    TypeOrmModule.forFeature([UserEntity, DefaultImageEntity]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
