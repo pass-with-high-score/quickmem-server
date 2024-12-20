@@ -8,6 +8,7 @@ import * as session from 'express-session';
 import * as passport from 'passport';
 import * as process from 'node:process';
 import { LoggingInterceptor } from './logging.interceptor';
+import { useApitally } from 'apitally/nestjs';
 
 async function bootstrap() {
   const logger = new Logger('bootstrap');
@@ -46,6 +47,11 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document, {
     jsonDocumentUrl: 'swagger/json',
+  });
+
+  useApitally(app, {
+    clientId: process.env.APITALLY_CLIENT_ID,
+    env: process.env.APITALLY_ENV,
   });
 
   app.useGlobalPipes(
