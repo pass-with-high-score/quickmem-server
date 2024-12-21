@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -13,10 +13,12 @@ import { EmailConsumer } from './email-consumer';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { FacebookStrategy } from './strategy/facebook.strategy';
 import { DefaultImageEntity } from './entities/default-image.entity';
+import { UploadModule } from '../cloudinary/upload.module';
 
 @Module({
   imports: [
     ConfigModule,
+    forwardRef(() => UploadModule),
     TypeOrmModule.forFeature([UserEntity, DefaultImageEntity]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
@@ -45,6 +47,6 @@ import { DefaultImageEntity } from './entities/default-image.entity';
     FacebookStrategy,
   ],
   controllers: [AuthController],
-  exports: [JwtStrategy, PassportModule],
+  exports: [JwtStrategy, PassportModule, AuthService],
 })
 export class AuthModule {}
