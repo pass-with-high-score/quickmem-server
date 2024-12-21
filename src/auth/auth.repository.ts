@@ -761,10 +761,9 @@ export class AuthRepository extends Repository<UserEntity> {
           message: 'Avatar is the same as the old avatar',
         });
       }
-      await this.cloudinaryProvider.deleteImageInFolder(
-        user.avatarUrl,
-        'avatar',
-      );
+      if (user.avatarUrl.includes('avatar_upload')) {
+        await this.cloudinaryProvider.deleteImage(user.avatarUrl);
+      }
       user.avatarUrl = avatar;
       await this.save(user);
 

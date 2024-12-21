@@ -71,15 +71,6 @@ export class CloudinaryProvider {
     return cloudinary.uploader.destroy(publicId);
   }
 
-  async deleteImageInFolder(imageURL: string, folder: string): Promise<any> {
-    const images = await this.getAllImageInFolder(folder);
-    for (const image of images.resources) {
-      if (image.secure_url === imageURL) {
-        return cloudinary.uploader.destroy(image.secure_url);
-      }
-    }
-  }
-
   async getAllImages(): Promise<any> {
     return cloudinary.api.resources({ type: 'upload', max_results: 500 });
   }
