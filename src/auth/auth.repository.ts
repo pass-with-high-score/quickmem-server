@@ -6,6 +6,7 @@ import {
   ConflictException,
   ForbiddenException,
   HttpStatus,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -61,14 +62,17 @@ import { OAuth2Client } from 'google-auth-library';
 import { UserStatusEnum } from './enums/user-status.enum';
 import { GetAvatarsResponseInterface } from './interfaces/get-avatars-response.interface';
 import { DefaultImageEntity } from './entities/default-image.entity';
+import { CloudinaryProvider } from '../cloudinary/cloudinary.provider';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
   constructor(
-    private dataSource: DataSource,
-    private jwtService: JwtService,
+    private readonly dataSource: DataSource,
+    private readonly jwtService: JwtService,
     @InjectQueue('send-email') private readonly sendEmailQueue: Queue,
-    private configService: ConfigService,
+    private readonly configService: ConfigService,
+    @Inject(CloudinaryProvider)
+    private readonly cloudinaryProvider: CloudinaryProvider,
   ) {
     super(UserEntity, dataSource.createEntityManager());
   }
@@ -757,6 +761,10 @@ export class AuthRepository extends Repository<UserEntity> {
           message: 'Avatar is the same as the old avatar',
         });
       }
+      await this.cloudinaryProvider.deleteImageInFolder(
+        user.avatarUrl,
+        'avatar',
+      );
       user.avatarUrl = avatar;
       await this.save(user);
 

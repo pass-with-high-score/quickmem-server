@@ -35,6 +35,29 @@ export class CloudinaryProvider {
     });
   }
 
+  async uploadAvatar(file: Express.Multer.File): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'avatar_upload',
+          resource_type: 'image',
+        },
+        (error, result) => {
+          if (error) {
+            return reject(error);
+          }
+          return resolve(result);
+        },
+      );
+
+      if (file.buffer) {
+        uploadStream.end(file.buffer);
+      } else {
+        reject(new Error('Empty file buffer'));
+      }
+    });
+  }
+
   async getAllImageInFolder(folder: string): Promise<any> {
     return cloudinary.api.resources({
       type: 'upload',
@@ -46,6 +69,15 @@ export class CloudinaryProvider {
   async deleteImage(imageURL: string): Promise<any> {
     const publicId = imageURL.split('/').slice(-2).join('/').split('.')[0];
     return cloudinary.uploader.destroy(publicId);
+  }
+
+  async deleteImageInFolder(imageURL: string, folder: string): Promise<any> {
+    const images = await this.getAllImageInFolder(folder);
+    for (const image of images.resources) {
+      if (image.secure_url === imageURL) {
+        return cloudinary.uploader.destroy(image.secure_url);
+      }
+    }
   }
 
   async getAllImages(): Promise<any> {

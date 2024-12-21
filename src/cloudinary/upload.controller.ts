@@ -9,6 +9,8 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  Inject,
+  Param,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryProvider } from './cloudinary.provider';
@@ -17,6 +19,10 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { ImageService } from './image.service';
 import { DeleteImageDto } from './dto/bodies/delete-image.dto';
+import { UploadAvatarParamDto } from './dto/bodies/upload-avatar-param.dto';
+import { AuthService } from '../auth/auth.service';
+import { UpdateAvatarParamDto } from '../auth/dto/params/update-avatar-param.dto';
+import { UpdateAvatarDto } from '../auth/dto/bodies/update-avatar.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -25,6 +31,8 @@ export class UploadController {
   constructor(
     private readonly cloudinaryProvider: CloudinaryProvider,
     private readonly imageService: ImageService,
+    @Inject(AuthService)
+    private readonly authService: AuthService,
   ) {}
 
   @Post()
@@ -42,6 +50,36 @@ export class UploadController {
       return {
         message: 'Upload successful!',
         url: image.url,
+      };
+    } catch (error) {
+      return { message: 'Upload failed!', error };
+    }
+  }
+
+  @Post('/avatar/:userId')
+  @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(
+    FileInterceptor('avatar', { ...multerConfig, limits: { files: 1 } }),
+  ) // Limit to 1 file
+  async uploadAvatar(
+    @UploadedFile() file: Express.Multer.File,
+    @Param() uploadAvatarParamDto: UploadAvatarParamDto,
+  ) {
+    try {
+      if (!file || !file.buffer) {
+        throw new BadRequestException('Empty file');
+      }
+      const result = await this.cloudinaryProvider.uploadAvatar(file);
+      const params: UpdateAvatarParamDto = {
+        id: uploadAvatarParamDto.userId,
+      };
+      const body: UpdateAvatarDto = {
+        avatar: result.url,
+      };
+      await this.authService.updateAvatar(params, body);
+      return {
+        message: 'Upload successful!',
+        url: result.url,
       };
     } catch (error) {
       return { message: 'Upload failed!', error };
