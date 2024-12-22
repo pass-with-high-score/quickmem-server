@@ -350,7 +350,7 @@ export class FolderRepository extends Repository<FolderEntity> {
         throw new NotFoundException('Folder not found');
       }
 
-      return this.mapFolderToGetFolderResponseInterface(folder, false, false);
+      return this.getFolderById({ id: folder.id });
     } catch (error) {
       console.error('Error fetching folder by code:', error);
       throw new NotFoundException('Error fetching folder by code');
