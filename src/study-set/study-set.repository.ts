@@ -1,6 +1,6 @@
 import {
+  BadRequestException,
   ConflictException,
-  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -23,7 +23,6 @@ import { DeleteStudySetResponseInterface } from './interfaces/delete-study-set-r
 import { DuplicateStudySetDto } from './dto/bodies/duplicate-study-set.dto';
 import { SearchStudySetsQueryDto } from './dto/queries/search-study-sets-query.dto';
 import { FlashcardEntity } from 'src/flashcard/entities/flashcard.entity';
-import * as process from 'node:process';
 import { FlashcardStatusEnum } from 'src/flashcard/enums/flashcard-status.enum';
 import { ResetFlashcardProgressParamDto } from './dto/params/reset-flashcard-progress-param.dto';
 import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flashcard-progress-response.interface';
@@ -747,9 +746,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       owner: {
         id: studySet.owner ? studySet.owner.id : undefined,
         username: studySet.owner ? studySet.owner.username : undefined,
-        avatarUrl: studySet.owner
-          ? studySet.owner.avatarUrl
-          : undefined,
+        avatarUrl: studySet.owner ? studySet.owner.avatarUrl : undefined,
         role: studySet.owner ? studySet.owner.role : undefined,
       },
       color: studySet.color
@@ -798,15 +795,22 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       const result = await model.generateContent(prompt);
       const parsedText = this.parseAIResponse(result);
 
-      const studySet = await this.createStudySetFromParsedText(
-        parsedText,
-        userId,
-      );
-
-      return this.mapStudySetToResponse(studySet, true);
+      if (parsedText['study-set'].isViolent) {
+        throw new BadRequestException({
+          message: parsedText['study-set'].message,
+        });
+      } else {
+        const studySet = await this.createStudySetFromParsedText(
+          parsedText,
+          userId,
+        );
+        return this.mapStudySetToResponse(studySet, true);
+      }
     } catch (error) {
-      console.error('Error while creating study set from AI:', error.message);
-      throw new Error('Failed to create study set from AI');
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(error.message);
     }
   }
 
@@ -833,6 +837,8 @@ export class StudySetRepository extends Repository<StudySetEntity> {
           properties: {
             title: { type: SchemaType.STRING },
             description: { type: SchemaType.STRING },
+            isViolent: { type: SchemaType.BOOLEAN },
+            message: { type: SchemaType.STRING },
             flashcard: {
               type: SchemaType.ARRAY,
               items: {
@@ -911,6 +917,9 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     ]
   }
   \`\`\`
+  
+  Lưu ý nếu như nội dung cung cấp không có ý nghĩa gì hoặc không hợp lệ thì bạn không cần phải tạo bộ flashcard.
+  Thay vào đó hãy trả về thông báo lỗi với thuộc tính \`isViolent\` là \`true\` và \`message\` là thông báo lỗi cụ thể.
   `;
   }
 
@@ -1323,6 +1332,9 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       "Không thể tạo gợi ý vì mô tả bộ học không đủ chi tiết. Vui lòng cung cấp mô tả bộ học rõ ràng hơn."
     - Nếu không thể tạo ra gợi ý hợp lý:  
       "Không thể tạo gợi ý do thiếu ngữ cảnh hoặc thông tin liên quan. Vui lòng cung cấp thông tin bổ sung để tạo gợi ý chính xác hơn."
+      
+  Lưu ý nếu như nội dung cung cấp không có ý nghĩa gì hoặc không hợp lệ thì bạn không cần phải tạo hint.
+  Thay vào đó hãy trả về thông báo lỗi với thuộc tính \`isViolent\` là \`true\` và \`message\` là thông báo lỗi cụ thể.
 
   Hãy viết một gợi ý đầy đủ, sáng tạo và dễ hiểu bằng ngôn ngữ phù hợp với thông tin đầu vào!
 `;
@@ -1333,12 +1345,16 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     const aiHint = parsedText.hint;
 
     // Update flashcard with the new hint
-    flashcard.hint = aiHint;
-    await this.dataSource.getRepository(FlashcardEntity).save(flashcard);
+    if (!parsedText.isViolent) {
+      flashcard.hint = aiHint;
+      await this.dataSource.getRepository(FlashcardEntity).save(flashcard);
+    }
 
     return {
       flashcardId: flashcard.id,
       aiHint,
+      isViolated: parsedText.isViolent,
+      message: parsedText.message,
     };
   }
 
@@ -1348,8 +1364,10 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       type: SchemaType.OBJECT,
       properties: {
         hint: { type: SchemaType.STRING },
+        isViolent: { type: SchemaType.BOOLEAN },
+        message: { type: SchemaType.STRING },
       },
-      required: ['hint'],
+      required: ['hint', 'isViolent', 'message'],
     };
   }
 }
