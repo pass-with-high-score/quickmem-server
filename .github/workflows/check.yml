@@ -24,7 +24,9 @@ jobs:
         run: sudo apt-get install sshpass
       - name: Deploy to Server via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} -p 22 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} './deploy.sh'
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > key.pem
+          chmod 600 key.pem
+          ssh -o StrictHostKeyChecking=no -i key.pem -p 22 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} './deploy.sh'
       - name: Send Telegram Notification on Success
         if: success()
         run: |
