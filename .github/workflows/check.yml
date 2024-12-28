@@ -22,12 +22,9 @@ jobs:
 
       - name: Install sshpass
         run: sudo apt-get install sshpass
-
-      - name: Deploy to Server via SSH with password
+      - name: Deploy to Server via SSH
         run: |
-          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no -p 22 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} './deploy.sh'
-
-
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} -p 22 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} './deploy.sh'
       - name: Send Telegram Notification on Success
         if: success()
         run: |
