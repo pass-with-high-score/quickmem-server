@@ -4,7 +4,6 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import {
   ConflictException,
-  ForbiddenException,
   HttpStatus,
   Inject,
   Injectable,
@@ -57,12 +56,12 @@ import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto'
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
 import { UpdateRoleDto } from './dto/bodies/update-role.dto';
 import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
-import { SignUpGoogleBodyDto } from './dto/bodies/sign-up-google-body.dto';
-import { OAuth2Client } from 'google-auth-library';
 import { UserStatusEnum } from './enums/user-status.enum';
 import { GetAvatarsResponseInterface } from './interfaces/get-avatars-response.interface';
 import { DefaultImageEntity } from './entities/default-image.entity';
 import { CloudinaryProvider } from '../cloudinary/cloudinary.provider';
+import { SocialSignupCredentialBodyDto } from './dto/bodies/social-signup-credential-body.dto';
+import { SocialLoginCredentialBodyDto } from './dto/bodies/social-login-credential-body.dto';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -115,122 +114,6 @@ export class AuthRepository extends Repository<UserEntity> {
       coinAction: action,
       coins: user.coins,
     };
-  }
-
-  async createUserWithGoogle(
-    signUpGoogleBodyDto: SignUpGoogleBodyDto,
-  ): Promise<AuthResponseInterface> {
-    const {
-      email,
-      fullName,
-      avatarUrl,
-      role,
-      birthday,
-      provider,
-      googleToken,
-      username,
-    } = signUpGoogleBodyDto;
-
-    const emailExists = await this.findOne({
-      where: [{ email }],
-    });
-
-    if (emailExists) {
-      if (emailExists.isVerified === false) {
-        throw new ConflictException({
-          statusCode: HttpStatus.PRECONDITION_FAILED,
-          message: 'User already exists but not verified',
-        });
-      } else {
-        throw new ConflictException({
-          statusCode: HttpStatus.CONFLICT,
-          message: 'User already exists',
-        });
-      }
-    }
-
-    let currentUsername = username;
-
-    let userExits = await this.findOne({
-      where: [{ username }],
-    });
-
-    // if exists, add a random number to the username
-    while (userExits) {
-      currentUsername = username + Math.floor(Math.random() * 1000);
-      userExits = await this.findOne({
-        where: [{ username: currentUsername }],
-      });
-    }
-
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(googleToken, salt);
-
-    const user = this.create({
-      email,
-      username: currentUsername,
-      password: hashedPassword,
-      fullName: fullName,
-      avatarUrl: avatarUrl,
-      role,
-      birthday,
-      provider,
-      googleToken,
-      isVerified: true,
-    });
-    const client = new OAuth2Client(
-      this.configService.get<string>('GOOGLE_CLIENT_ID'),
-    );
-    let payload: any;
-    try {
-      const ticket = await client.verifyIdToken({
-        idToken: googleToken,
-        audience: this.configService.get<string>('GOOGLE_CLIENT_ID'),
-      });
-      payload = ticket.getPayload();
-    } catch (error) {
-      logger.error(error);
-      throw new ForbiddenException('Invalid Google token');
-    }
-    if (payload.email !== email) {
-      throw new ForbiddenException('Email does not match the token');
-    }
-
-    try {
-      await this.save(user);
-      const payload: { email: string; userId: string } = {
-        email,
-        userId: user.id,
-      };
-      const access_token: string = this.jwtService.sign(payload);
-      const refresh_token: string = this.jwtService.sign(payload, {
-        expiresIn: '7d',
-      });
-      return {
-        id: user.id,
-        username: user.username,
-        email,
-        fullName: user.fullName,
-        avatarUrl: user.avatarUrl,
-        role: user.role,
-        accessToken: access_token,
-        isPremium: false,
-        provider,
-        coin: user.coins,
-        isVerified: user.isVerified,
-        refreshToken: refresh_token,
-        birthday: user.birthday,
-        bannedAt: user.bannedAt,
-        userStatus: user.userStatus,
-        bannedReason: user.bannedReason,
-      };
-    } catch (error) {
-      logger.error(error);
-      throw new InternalServerErrorException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Failed to create user',
-      });
-    }
   }
 
   async createUser(
@@ -305,9 +188,9 @@ export class AuthRepository extends Repository<UserEntity> {
       coins: 5,
       role,
       birthday,
-      otp, // Store OTP
-      provider,
+      otp,
       isVerified,
+      provider: [provider],
       otpExpires: new Date(Date.now() + 10 * 60 * 1000), // OTP expires in 10 minutes
     });
 
@@ -350,7 +233,7 @@ export class AuthRepository extends Repository<UserEntity> {
             message: 'Password is incorrect',
           });
         }
-        if (provider !== user.provider) {
+        if (!user.provider.includes(provider)) {
           throw new UnauthorizedException({
             statusCode: HttpStatus.UNAUTHORIZED,
             message: 'Invalid login provider',
@@ -385,7 +268,7 @@ export class AuthRepository extends Repository<UserEntity> {
           role: user.role,
           accessToken: access_token,
           isPremium,
-          provider,
+          provider: user.provider,
           coin: user.coins,
           isVerified: user.isVerified,
           refreshToken: refresh_token,
@@ -1205,5 +1088,185 @@ export class AuthRepository extends Repository<UserEntity> {
       id: avatar.id,
       url: avatar.url,
     }));
+  }
+
+  async createUserWithGoogle(
+    socialSignupCredentialBodyDto: SocialSignupCredentialBodyDto,
+  ): Promise<AuthResponseInterface> {
+    const {
+      email,
+      id,
+      role,
+      birthday,
+      provider,
+      username,
+      idToken,
+      photoUrl,
+      displayName,
+    } = socialSignupCredentialBodyDto;
+
+    const emailExists = await this.findOne({
+      where: [{ email }],
+    });
+
+    if (emailExists) {
+      if (emailExists.isVerified === false) {
+        throw new ConflictException({
+          statusCode: HttpStatus.PRECONDITION_FAILED,
+          message: 'User already exists but not verified',
+        });
+      } else {
+        throw new ConflictException({
+          statusCode: HttpStatus.CONFLICT,
+          message: 'User already exists',
+        });
+      }
+    }
+
+    let currentUsername = username;
+
+    let userExits = await this.findOne({
+      where: [{ username }],
+    });
+
+    // if exists, add a random number to the username
+    while (userExits) {
+      currentUsername = username + Math.floor(Math.random() * 1000);
+      userExits = await this.findOne({
+        where: [{ username: currentUsername }],
+      });
+    }
+
+    const user = this.create({
+      email,
+      googleId: id,
+      username: currentUsername,
+      fullName: displayName,
+      avatarUrl: photoUrl,
+      role,
+      birthday,
+      provider: [provider],
+      googleToken: idToken,
+      isVerified: true,
+    });
+
+    try {
+      await this.save(user);
+      const payload: { email: string; userId: string } = {
+        email,
+        userId: user.id,
+      };
+      const access_token: string = this.jwtService.sign(payload);
+      const refresh_token: string = this.jwtService.sign(payload, {
+        expiresIn: '7d',
+      });
+      await this.sendEmailQueue.add('send-signup-email', {
+        fullName: user.fullName,
+        email: user.email,
+        from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+      });
+      return {
+        id: user.id,
+        username: user.username,
+        email,
+        fullName: user.fullName,
+        avatarUrl: user.avatarUrl,
+        role: user.role,
+        accessToken: access_token,
+        isPremium: false,
+        provider: user.provider,
+        coin: user.coins,
+        isVerified: user.isVerified,
+        refreshToken: refresh_token,
+        birthday: user.birthday,
+        bannedAt: user.bannedAt,
+        userStatus: user.userStatus,
+        bannedReason: user.bannedReason,
+      };
+    } catch (error) {
+      logger.error(error);
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Failed to create user',
+      });
+    }
+  }
+
+  async loginGoogle(
+    socialLoginCredentialBodyDto: SocialLoginCredentialBodyDto,
+  ): Promise<AuthResponseInterface> {
+    const { email, id, provider, idToken, photoUrl, displayName } =
+      socialLoginCredentialBodyDto;
+
+    const user = await this.findOne({ where: { email } });
+
+    if (!user) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    if (user.googleId !== id) {
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Invalid google id',
+      });
+    }
+
+    if (!user.provider.includes(provider)) {
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Invalid login provider',
+        provider: user.provider,
+      });
+    }
+
+    const payload: { email: string; userId: string } = {
+      email,
+      userId: user.id,
+    };
+
+    const access_token: string = this.jwtService.sign(payload);
+    const refresh_token: string = this.jwtService.sign(payload, {
+      expiresIn: '7d',
+    });
+    const isPremium = await this.isUserPremium(user.id);
+    await this.sendEmailQueue.add('send-login-email', {
+      fullName: user.fullName,
+      email: user.email,
+      from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+    });
+
+    try {
+      user.avatarUrl = photoUrl;
+      user.googleToken = idToken;
+      user.fullName = displayName;
+      await this.save(user);
+      return {
+        id: user.id,
+        username: user.username,
+        email,
+        fullName: user.fullName,
+        avatarUrl: user.avatarUrl,
+        role: user.role,
+        accessToken: access_token,
+        isPremium,
+        provider: user.provider,
+        coin: user.coins,
+        isVerified: user.isVerified,
+        refreshToken: refresh_token,
+        birthday: user.birthday,
+        bannedAt: user.bannedAt,
+        userStatus: user.userStatus,
+        bannedReason: user.bannedReason,
+      };
+    } catch (error) {
+      logger.error(error);
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Failed to validate user',
+      });
+    }
   }
 }

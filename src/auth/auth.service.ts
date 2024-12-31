@@ -38,8 +38,9 @@ import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto'
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
 import { UpdateRoleDto } from './dto/bodies/update-role.dto';
 import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
-import { SignUpGoogleBodyDto } from './dto/bodies/sign-up-google-body.dto';
 import { GetAvatarsResponseInterface } from './interfaces/get-avatars-response.interface';
+import { SocialSignupCredentialBodyDto } from './dto/bodies/social-signup-credential-body.dto';
+import { SocialLoginCredentialBodyDto } from './dto/bodies/social-login-credential-body.dto';
 
 @Injectable()
 export class AuthService {
@@ -215,13 +216,21 @@ export class AuthService {
     return this.usersRepository.updateRole(updateRoleDto);
   }
 
-  async createUserWithGoogle(
-    signUpGoogleBodyDto: SignUpGoogleBodyDto,
-  ): Promise<AuthResponseInterface> {
-    return this.usersRepository.createUserWithGoogle(signUpGoogleBodyDto);
-  }
-
   async getAvatars(): Promise<GetAvatarsResponseInterface[]> {
     return this.usersRepository.getAvatars();
+  }
+
+  async createUserWithGoogle(
+    socialSignupCredentialBodyDto: SocialSignupCredentialBodyDto,
+  ): Promise<AuthResponseInterface> {
+    return this.usersRepository.createUserWithGoogle(
+      socialSignupCredentialBodyDto,
+    );
+  }
+
+  async loginGoogle(
+    socialLoginCredentialBodyDto: SocialLoginCredentialBodyDto,
+  ): Promise<AuthResponseInterface> {
+    return this.usersRepository.loginGoogle(socialLoginCredentialBodyDto);
   }
 }

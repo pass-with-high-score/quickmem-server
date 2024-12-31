@@ -1,5 +1,4 @@
 import { UserRoleEnum } from '../enums/user-role.enum';
-import { AuthProviderEnum } from '../enums/auth-provider.enum';
 
 export class AuthResponseInterface {
   id: string;
@@ -9,7 +8,7 @@ export class AuthResponseInterface {
   avatarUrl: string;
   birthday: Date;
   role: UserRoleEnum;
-  provider: AuthProviderEnum;
+  provider: string[];
   coin: number;
   isPremium: boolean;
   isVerified: boolean;

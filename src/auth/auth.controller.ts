@@ -10,7 +10,6 @@ import {
   Query,
   Req,
   Res,
-  Session,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -31,7 +30,6 @@ import { ResendVerificationEmailResponseInterface } from './interfaces/resend-ve
 import { UpdateFullnameDto } from './dto/bodies/update-fullname.dto';
 import { UpdateFullnameResponseInterfaceDto } from './interfaces/update-fullname-response.interface.dto';
 import { OwnershipGuard } from './guard/ownership.guard';
-import { GoogleAuthGuard } from './guard/google-auth.guard';
 import { Request, Response } from 'express';
 import { FacebookAuthGuard } from './guard/facebook-auth.guard';
 import { AuthProviderEnum } from './enums/auth-provider.enum';
@@ -57,46 +55,16 @@ import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto'
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
 import { UpdateRoleDto } from './dto/bodies/update-role.dto';
 import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
-import { SignUpGoogleBodyDto } from './dto/bodies/sign-up-google-body.dto';
 import { logger } from '../winston-logger.service';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { GetAvatarsResponseInterface } from './interfaces/get-avatars-response.interface';
+import { SocialSignupCredentialBodyDto } from './dto/bodies/social-signup-credential-body.dto';
+import { SocialLoginCredentialBodyDto } from './dto/bodies/social-login-credential-body.dto';
 
 @Controller('auth')
 @UseInterceptors(CacheInterceptor)
 export class AuthController {
   constructor(private authService: AuthService) {}
-
-  @Get('google/callback')
-  @UseGuards(GoogleAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  googleAuthRedirect(@Req() request: Request, @Res() response: Response) {
-    console.log('User information from Google', request.user);
-    const user = request.user as any;
-
-    // Serialize user information into query string
-    const params = new URLSearchParams({
-      token: user.accessToken,
-      email: user.email,
-      fullName: user.fullName,
-      provider: AuthProviderEnum.GOOGLE,
-      picture: user.picture,
-      isSignUp: user.isSignUp,
-    });
-    const deepLinkUrl = `quickmem://oauth/google/callback?${params.toString()}`;
-    return response.redirect(deepLinkUrl);
-  }
-
-  @Get('google')
-  @UseGuards(GoogleAuthGuard)
-  async googleAuth(
-    @Session() session: Record<string, any>,
-    @Req() request: Request,
-  ) {
-    // Guard sẽ xử lý yêu cầu đến Google OAuth
-    console.log('User information from Google', request.user);
-    console.log('Session', session);
-  }
 
   @Get('facebook')
   @UseGuards(FacebookAuthGuard)
@@ -302,6 +270,15 @@ export class AuthController {
     return this.authService.signUp(authCredentialsDto);
   }
 
+  @SkipThrottle()
+  @HttpCode(HttpStatus.CREATED)
+  @Post('/signup/google')
+  async createUserWithGoogle(
+    @Body() socialSignupCredentialBodyDto: SocialSignupCredentialBodyDto,
+  ): Promise<AuthResponseInterface> {
+    return this.authService.createUserWithGoogle(socialSignupCredentialBodyDto);
+  }
+
   @UseGuards(OwnershipGuard)
   @HttpCode(HttpStatus.OK)
   @Patch('/user/fullname')
@@ -356,6 +333,15 @@ export class AuthController {
     @Body() authCredentialsDto: LoginCredentialsDto,
   ): Promise<AuthResponseInterface> {
     return this.authService.login(authCredentialsDto);
+  }
+
+  @SkipThrottle()
+  @HttpCode(HttpStatus.OK)
+  @Post('/login/google')
+  async loginGoogle(
+    @Body() socialLoginCredentialBodyDto: SocialLoginCredentialBodyDto,
+  ): Promise<AuthResponseInterface> {
+    return this.authService.loginGoogle(socialLoginCredentialBodyDto);
   }
 
   @SkipThrottle()
@@ -427,13 +413,5 @@ export class AuthController {
     @Body() updateCoinDto: UpdateCoinDto,
   ): Promise<UpdateCoinResponseInterface> {
     return this.authService.updateCoin(updateCoinDto);
-  }
-
-  @Post('/signup/google')
-  @HttpCode(HttpStatus.CREATED)
-  async createUserWithGoogle(
-    @Body() signUpGoogleBodyDto: SignUpGoogleBodyDto,
-  ): Promise<AuthResponseInterface> {
-    return this.authService.createUserWithGoogle(signUpGoogleBodyDto);
   }
 }

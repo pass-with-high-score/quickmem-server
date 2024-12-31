@@ -70,15 +70,13 @@ export class UserEntity {
   isVerified?: boolean;
 
   @Column({
-    type: 'enum',
-    enum: AuthProviderEnum,
-    enumName: 'auth_provider_enum',
+    type: 'simple-array',
     default: AuthProviderEnum.EMAIL,
   })
-  provider: AuthProviderEnum;
+  provider: AuthProviderEnum[];
 
   @Column({ nullable: true })
-  googleToken: string;
+  googleToken?: string;
 
   @Column({ nullable: true })
   googleId?: string;
