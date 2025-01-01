@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AuthRepository } from './auth.repository';
 import { SignupCredentialsDto } from './dto/bodies/signup-credentials.dto';
 import { AuthResponseInterface } from './interfaces/auth-response.interface';
@@ -14,9 +14,6 @@ import { SetNewPasswordDto } from './dto/bodies/set-new-password.dto';
 import { ResendVerificationEmailResponseInterface } from './interfaces/resend-verification-email-response.interface';
 import { UpdateFullnameDto } from './dto/bodies/update-fullname.dto';
 import { UpdateFullnameResponseInterfaceDto } from './interfaces/update-fullname-response.interface.dto';
-import axios from 'axios';
-import { OAuth2Client } from 'google-auth-library';
-import { logger } from '../winston-logger.service';
 import { UpdateCoinDto } from './dto/bodies/update-coin.dto';
 import { UpdateCoinResponseInterface } from './interfaces/update-coin-response.interface';
 import { UpdateAvatarParamDto } from './dto/params/update-avatar-param.dto';
@@ -44,11 +41,7 @@ import { SocialLoginCredentialBodyDto } from './dto/bodies/social-login-credenti
 
 @Injectable()
 export class AuthService {
-  private googleClient: OAuth2Client;
-
-  constructor(private readonly usersRepository: AuthRepository) {
-    this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-  }
+  constructor(private readonly usersRepository: AuthRepository) {}
 
   async signUp(
     authCredentialsDto: SignupCredentialsDto,
@@ -65,49 +58,6 @@ export class AuthService {
   async login(
     authCredentialsDto: LoginCredentialsDto,
   ): Promise<AuthResponseInterface> {
-    const { email, idToken, provider } = authCredentialsDto;
-    logger.info('Login attempt', { email, provider });
-
-    if (provider === 'GOOGLE') {
-      if (!idToken) {
-        throw new UnauthorizedException(
-          'ID Token is required for Google login',
-        );
-      }
-
-      try {
-        const user = await axios.get(
-          'https://www.googleapis.com/oauth2/v3/userinfo?access_token=' +
-            idToken,
-        );
-        if (user.data.email !== email) {
-          throw new UnauthorizedException('Invalid Google ID token');
-        }
-      } catch (error) {
-        console.error('Error verifying Google ID token:', error);
-        throw new UnauthorizedException('Invalid Google ID token');
-      }
-    } else if (provider === 'FACEBOOK') {
-      if (!idToken) {
-        throw new UnauthorizedException(
-          'Access Token is required for Facebook login',
-        );
-      }
-
-      try {
-        const response = await axios.get(
-          `https://graph.facebook.com/me?access_token=${idToken}&fields=email`,
-        );
-        const payload = response.data;
-        if (!payload || payload.email !== email) {
-          throw new UnauthorizedException('Invalid Facebook access token');
-        }
-      } catch (error) {
-        console.log('Error verifying Facebook access token:', error);
-        throw new UnauthorizedException('Invalid Facebook access token');
-      }
-    }
-
     // Proceed with the existing login logic
     return await this.usersRepository.validateUser(authCredentialsDto);
   }

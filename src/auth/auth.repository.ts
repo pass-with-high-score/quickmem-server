@@ -1207,18 +1207,18 @@ export class AuthRepository extends Repository<UserEntity> {
       });
     }
 
+    if (!user.provider.includes(provider)) {
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.CONFLICT,
+        message: 'Invalid login provider',
+        provider: user.provider,
+      });
+    }
+
     if (user.googleId !== id) {
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
         message: 'Invalid google id',
-      });
-    }
-
-    if (!user.provider.includes(provider)) {
-      throw new UnauthorizedException({
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: 'Invalid login provider',
-        provider: user.provider,
       });
     }
 
