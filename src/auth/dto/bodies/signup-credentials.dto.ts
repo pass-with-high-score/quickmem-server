@@ -28,6 +28,10 @@ export class SignupCredentialsDto {
   @IsStrongPassword(
     {
       minLength: 6,
+      minLowercase: 1,
+      minUppercase: 0,
+      minNumbers: 0,
+      minSymbols: 0,
     },
     { message: 'Password is too weak' },
   )
