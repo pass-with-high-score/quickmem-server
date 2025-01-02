@@ -27,7 +27,7 @@ export class SignupCredentialsDto {
   @IsOptional()
   @IsStrongPassword(
     {
-      minLength: 8,
+      minLength: 6,
     },
     { message: 'Password is too weak' },
   )
