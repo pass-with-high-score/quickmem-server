@@ -1,11 +1,4 @@
-import {
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsStrongPassword,
-} from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsStrongPassword } from 'class-validator';
 import { AuthProviderEnum } from '../../enums/auth-provider.enum';
 
 export class LoginCredentialsDto {
@@ -13,18 +6,18 @@ export class LoginCredentialsDto {
   @IsEmail({}, { message: 'Invalid email' })
   email: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsStrongPassword(
     {
-      minLength: 8,
+      minLength: 6,
+      minLowercase: 1,
+      minUppercase: 0,
+      minNumbers: 0,
+      minSymbols: 0,
     },
     { message: 'Password is too weak' },
   )
   password: string;
-
-  @IsOptional()
-  @IsString()
-  idToken?: string;
 
   @IsEnum(AuthProviderEnum)
   @IsNotEmpty({ message: 'Provider is required' })
