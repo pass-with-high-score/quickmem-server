@@ -9,6 +9,8 @@ export interface GetUserProfileResponseInterface {
   userStatus: string;
   bannedAt: Date;
   bannedReason: string;
+  studySetCount: number;
+  folderCount: number;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1010,6 +1010,13 @@ export class AuthRepository extends Repository<UserEntity> {
   ): Promise<GetUserProfileResponseInterface> {
     const { id } = getUserProfileParamDto;
     const user = await this.findOne({ where: { id } });
+    const studySetCount = await this.dataSource
+      .getRepository(StudySetEntity)
+      .count({ where: { owner: { id } } });
+
+    const folderCount = await this.dataSource
+      .getRepository(FolderEntity)
+      .count({ where: { owner: { id } } });
 
     if (!user) {
       throw new NotFoundException({
@@ -1026,6 +1033,8 @@ export class AuthRepository extends Repository<UserEntity> {
       avatarUrl: user.avatarUrl,
       role: user.role,
       coin: user.coins,
+      studySetCount,
+      folderCount,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       bannedAt: user.bannedAt,
