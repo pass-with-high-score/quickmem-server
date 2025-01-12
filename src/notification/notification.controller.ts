@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Request,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -90,11 +91,11 @@ export class NotificationController {
     );
   }
 
-  @Post('clear/:userId')
+  @Post('clear')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async clearAllNotification(
-    @Param() clearAllNotificationBodyDto: ClearAllNotificationParamDto,
-  ): Promise<void> {
+  async clearAllNotification(@Request() req): Promise<void> {
+    const clearAllNotificationBodyDto = new ClearAllNotificationParamDto();
+    clearAllNotificationBodyDto.userId = req.user.userId;
     return this.notificationService.clearAllNotification(
       clearAllNotificationBodyDto,
     );
