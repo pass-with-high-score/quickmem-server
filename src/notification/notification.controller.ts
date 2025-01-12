@@ -90,7 +90,7 @@ export class NotificationController {
     );
   }
 
-  @Post('clear')
+  @Post('clear/:userId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async clearAllNotification(
     @Param() clearAllNotificationBodyDto: ClearAllNotificationParamDto,
