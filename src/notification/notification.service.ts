@@ -10,6 +10,7 @@ import { GetNotificationByIdParamDto } from './dto/params/get-notification-by-id
 import { GetNotificationByIdResponseInterface } from './interfaces/get-notification-by-id-response.interface';
 import { GetNotificationByUserIdParamDto } from './dto/params/get-notification-by-user-id-param.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ClearAllNotificationBodyDto } from './dto/bodies/clear-all-notification-body.dto';
 
 @Injectable()
 export class NotificationService {
@@ -63,5 +64,13 @@ export class NotificationService {
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async deleteOldNotifications(): Promise<void> {
     return this.notificationRepository.deleteOldNotifications();
+  }
+
+  async clearAllNotification(
+    clearAllNotificationBodyDto: ClearAllNotificationBodyDto,
+  ): Promise<void> {
+    return this.notificationRepository.clearAllNotification(
+      clearAllNotificationBodyDto,
+    );
   }
 }

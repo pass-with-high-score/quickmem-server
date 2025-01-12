@@ -19,6 +19,7 @@ import { GetNotificationByUserIdParamDto } from './dto/params/get-notification-b
 import { MessagingService } from '../firebase/messaging.service';
 import { IMessaginToTokensParams } from '../firebase/imessaging.interface';
 import { DeviceEntity } from '../firebase/entities/device.entity';
+import { ClearAllNotificationBodyDto } from './dto/bodies/clear-all-notification-body.dto';
 
 @Injectable()
 export class NotificationRepository extends Repository<NotificationEntity> {
@@ -285,6 +286,20 @@ export class NotificationRepository extends Repository<NotificationEntity> {
     } catch (error) {
       logger.error('Failed to remove invalid tokens', error);
       throw new InternalServerErrorException('Failed to remove invalid tokens');
+    }
+  }
+
+  async clearAllNotification(
+    clearAllNotificationBodyDto: ClearAllNotificationBodyDto,
+  ): Promise<void> {
+    const { userId } = clearAllNotificationBodyDto;
+    try {
+      await this.delete({ user: { id: userId } });
+    } catch (error) {
+      logger.error(error);
+      throw new InternalServerErrorException(
+        'Failed to clear all notifications',
+      );
     }
   }
 }
