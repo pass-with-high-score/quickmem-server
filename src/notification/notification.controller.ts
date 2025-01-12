@@ -26,7 +26,7 @@ import { UpdateIsReadResponseInterface } from './interfaces/update-is-read-respo
 import { DeleteNotificationParamDto } from './dto/params/delete-notification-param.dto';
 import { RegisterDeviceTokenBodyDto } from './dto/bodies/register-device-token-body.dto';
 import { CacheInterceptor } from '@nestjs/cache-manager';
-import { ClearAllNotificationBodyDto } from './dto/bodies/clear-all-notification-body.dto';
+import { ClearAllNotificationParamDto } from './dto/params/clear-all-notification-param.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -93,7 +93,7 @@ export class NotificationController {
   @Post('clear')
   @HttpCode(HttpStatus.NO_CONTENT)
   async clearAllNotification(
-    clearAllNotificationBodyDto: ClearAllNotificationBodyDto,
+    @Param() clearAllNotificationBodyDto: ClearAllNotificationParamDto,
   ): Promise<void> {
     return this.notificationService.clearAllNotification(
       clearAllNotificationBodyDto,

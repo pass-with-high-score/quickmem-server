@@ -19,7 +19,7 @@ import { GetNotificationByUserIdParamDto } from './dto/params/get-notification-b
 import { MessagingService } from '../firebase/messaging.service';
 import { IMessaginToTokensParams } from '../firebase/imessaging.interface';
 import { DeviceEntity } from '../firebase/entities/device.entity';
-import { ClearAllNotificationBodyDto } from './dto/bodies/clear-all-notification-body.dto';
+import { ClearAllNotificationParamDto } from './dto/params/clear-all-notification-param.dto';
 
 @Injectable()
 export class NotificationRepository extends Repository<NotificationEntity> {
@@ -290,7 +290,7 @@ export class NotificationRepository extends Repository<NotificationEntity> {
   }
 
   async clearAllNotification(
-    clearAllNotificationBodyDto: ClearAllNotificationBodyDto,
+    clearAllNotificationBodyDto: ClearAllNotificationParamDto,
   ): Promise<void> {
     const { userId } = clearAllNotificationBodyDto;
     try {
