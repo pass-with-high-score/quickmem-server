@@ -95,7 +95,7 @@ export class NotificationController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async clearAllNotification(@Request() req): Promise<void> {
     const clearAllNotificationBodyDto = new ClearAllNotificationParamDto();
-    clearAllNotificationBodyDto.userId = req.user.userId;
+    clearAllNotificationBodyDto.userId = req.user.id;
     return this.notificationService.clearAllNotification(
       clearAllNotificationBodyDto,
     );
