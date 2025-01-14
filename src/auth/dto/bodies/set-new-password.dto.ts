@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsStrongPassword } from 'class-validator';
+import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
 
 export class SetNewPasswordDto {
   @IsEmail()
@@ -9,6 +9,6 @@ export class SetNewPasswordDto {
   oldPassword: string;
 
   @IsNotEmpty()
-  @IsStrongPassword()
+  @MinLength(6)
   newPassword: string;
 }

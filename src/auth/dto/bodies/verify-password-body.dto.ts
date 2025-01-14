@@ -1,9 +1,4 @@
-import {
-  IsNotEmpty,
-  IsString,
-  IsStrongPassword,
-  IsUUID,
-} from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID, MinLength } from 'class-validator';
 
 export class VerifyPasswordBodyDto {
   @IsUUID()
@@ -11,6 +6,6 @@ export class VerifyPasswordBodyDto {
   readonly userId: string;
   @IsString()
   @IsNotEmpty()
-  @IsStrongPassword()
+  @MinLength(6)
   readonly password: string;
 }
