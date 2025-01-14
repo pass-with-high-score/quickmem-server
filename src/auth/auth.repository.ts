@@ -249,16 +249,13 @@ export class AuthRepository extends Repository<UserEntity> {
           expiresIn: '7d',
         });
         const isPremium = await this.isUserPremium(user.id);
-        await this.sendEmailQueue.add('send-login-email', {
-          fullName: user.fullName,
-          email: user.email,
-          from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
-        });
-        await this.sendEmailQueue.add('send-login-email', {
-          fullName: user.fullName,
-          email: user.email,
-          from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
-        });
+        if (user.isVerified && user.userStatus !== UserStatusEnum.BLOCKED) {
+          await this.sendEmailQueue.add('send-login-email', {
+            fullName: user.fullName,
+            email: user.email,
+            from: `QuickMem <${this.configService.get('MAILER_USER')}>`,
+          });
+        }
         return {
           id: user.id,
           username: user.username,
