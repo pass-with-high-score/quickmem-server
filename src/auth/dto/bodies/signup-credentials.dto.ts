@@ -3,9 +3,7 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
-  IsOptional,
   IsString,
-  IsStrongPassword,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -24,17 +22,8 @@ export class SignupCredentialsDto {
   @MaxLength(32, { message: 'Username must be at most 32 characters long' })
   username: string;
 
-  @IsOptional()
-  @IsStrongPassword(
-    {
-      minLength: 6,
-      minLowercase: 1,
-      minUppercase: 0,
-      minNumbers: 0,
-      minSymbols: 0,
-    },
-    { message: 'Password is too weak' },
-  )
+  @IsNotEmpty({ message: 'Password is required' })
+  @MinLength(6)
   password: string;
 
   @IsNotEmpty({ message: 'Name is required' })
