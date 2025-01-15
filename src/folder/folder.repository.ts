@@ -35,6 +35,7 @@ import { TrueFalseStatusEnum } from '../flashcard/enums/true-false-status.enum';
 import { WriteStatusEnum } from '../flashcard/enums/write-status.enum';
 import { QuizFlashcardStatusEnum } from '../flashcard/enums/quiz-flashcard-status.enum';
 import { FlashcardEntity } from '../flashcard/entities/flashcard.entity';
+import { DeleteAllFoldersByUserIdParamDto } from './dto/params/delete-all-folders-by-user-id-param.dto';
 
 @Injectable()
 export class FolderRepository extends Repository<FolderEntity> {
@@ -520,5 +521,22 @@ export class FolderRepository extends Repository<FolderEntity> {
         );
       }
     }
+  }
+
+  async deleteAllFoldersOfUser(
+    deleteAllFoldersByUserIdParamDto: DeleteAllFoldersByUserIdParamDto,
+  ): Promise<void> {
+    const { userId } = deleteAllFoldersByUserIdParamDto;
+    const folders = await this.find({
+      where: { owner: { id: userId } },
+    });
+
+    await Promise.all(
+      folders.map(async (folder) => {
+        if (folder.id) {
+          await this.remove(folder);
+        }
+      }),
+    );
   }
 }

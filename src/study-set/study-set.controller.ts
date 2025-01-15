@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  Request,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -46,6 +47,7 @@ import { GetStudySetsByUserIdDto } from './dto/params/get-study-sets-by-user-Id.
 import { CreateWriteHintBodyDto } from './dto/bodies/create-write-hint-body.dto';
 import { CreateWriteHintResponseInterface } from './interfaces/create-write-hint-response.interface';
 import { CacheInterceptor } from '@nestjs/cache-manager';
+import { DeleteAllStudySetByUserIdParamDto } from './dto/params/delete-all-study-set-by-user-id-param.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -228,8 +230,18 @@ export class StudySetController {
     return this.studySetService.removeInvalidStudySets();
   }
 
+  @Delete('/user')
+  async deleteAllStudySetsOfUser(@Request() req): Promise<void> {
+    const deleteAllStudySetByUserIdParamDto =
+      new DeleteAllStudySetByUserIdParamDto();
+    deleteAllStudySetByUserIdParamDto.userId = req.user.id;
+    return this.studySetService.deleteAllStudySetsOfUser(
+      deleteAllStudySetByUserIdParamDto,
+    );
+  }
+
   @Delete('/:id')
-  @HttpCode(HttpStatus.OK) // can change to 204 (No Content) but it will not return any response
+  @HttpCode(HttpStatus.OK)
   async deleteStudySetById(
     @Param() deleteStudySetByIdParamDto: DeleteStudySetByIdParamDto,
   ): Promise<DeleteStudySetResponseInterface> {

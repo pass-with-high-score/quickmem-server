@@ -43,6 +43,7 @@ import { NotificationService } from '../notification/notification.service';
 import { NotificationTypeEnum } from '../notification/enums/notification-type.enum';
 import { CreateNotificationBodyDto } from '../notification/dto/bodies/create-notification-body.dto';
 import { InviteStatusEnum } from './enums/invite-status.enum';
+import { DeleteAllClassByUserIdParamDto } from './dto/params/delete-all-class-by-user-id-param.dto';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -1091,6 +1092,43 @@ export class ClassRepository extends Repository<ClassEntity> {
       throw new InternalServerErrorException(
         'Error inviting user to join class',
       );
+    }
+  }
+
+  async deleteAndExitAllClassesOfUser(
+    deleteAllClassByUserIdParamDto: DeleteAllClassByUserIdParamDto,
+  ): Promise<void> {
+    const { userId } = deleteAllClassByUserIdParamDto;
+    const classes = await this.find({
+      where: [
+        { owner: { id: userId } },
+        { members: { id: userId } },
+        { folders: { owner: { id: userId } } },
+        { studySets: { owner: { id: userId } } },
+      ],
+      relations: [
+        'owner',
+        'members',
+        'folders',
+        'studySets',
+        'folders.studySets',
+        'folders.owner',
+        'studySets.owner',
+        'studySets.flashcards',
+      ],
+    });
+
+    if (!classes) {
+      throw new NotFoundException('No classes found for the user');
+    }
+
+    for (const classEntity of classes) {
+      try {
+        await this.remove(classEntity);
+      } catch (error) {
+        logger.error('Error deleting class:', error);
+        throw new InternalServerErrorException('Error deleting class');
+      }
     }
   }
 }

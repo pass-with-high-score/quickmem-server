@@ -60,6 +60,7 @@ import { AnalyzeStudySetDto } from './dto/bodies/analyze-study-set.dto';
 import { LearnModeEnum } from '../flashcard/enums/learn-mode.enum';
 import { CreateWriteHintBodyDto } from './dto/bodies/create-write-hint-body.dto';
 import { CreateWriteHintResponseInterface } from './interfaces/create-write-hint-response.interface';
+import { DeleteAllStudySetByUserIdParamDto } from './dto/params/delete-all-study-set-by-user-id-param.dto';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -1369,5 +1370,14 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       },
       required: ['hint', 'isViolent', 'message'],
     };
+  }
+
+  async deleteAllStudySetsOfUser(
+    deleteAllStudySetByUserIdParamDto: DeleteAllStudySetByUserIdParamDto,
+  ): Promise<void> {
+    const { userId } = deleteAllStudySetByUserIdParamDto;
+    await this.dataSource
+      .getRepository(StudySetEntity)
+      .delete({ owner: { id: userId } });
   }
 }

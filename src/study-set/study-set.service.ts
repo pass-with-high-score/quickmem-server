@@ -30,6 +30,7 @@ import { UpdateRecentStudySetDto } from './dto/bodies/update-recent-study-set-bo
 import { GetStudySetsByUserIdDto } from './dto/params/get-study-sets-by-user-Id.dto';
 import { CreateWriteHintBodyDto } from './dto/bodies/create-write-hint-body.dto';
 import { CreateWriteHintResponseInterface } from './interfaces/create-write-hint-response.interface';
+import { DeleteAllStudySetByUserIdParamDto } from './dto/params/delete-all-study-set-by-user-id-param.dto';
 
 @Injectable()
 export class StudySetService {
@@ -178,6 +179,14 @@ export class StudySetService {
   ): Promise<CreateWriteHintResponseInterface> {
     return this.studySetRepository.createHintFromAIForFlashcard(
       createWriteHintBodyDto,
+    );
+  }
+
+  async deleteAllStudySetsOfUser(
+    deleteAllStudySetByUserIdParamDto: DeleteAllStudySetByUserIdParamDto,
+  ): Promise<void> {
+    return this.studySetRepository.deleteAllStudySetsOfUser(
+      deleteAllStudySetByUserIdParamDto,
     );
   }
 }

@@ -18,6 +18,7 @@ import { GetFoldersByUserIdDto } from './dto/params/get-folders-by-user-Id.dto';
 import { ResetFlashcardProgressInFolderParamDto } from './dto/params/reset-flashcard-progress-in-folder-param.dto';
 import { ResetFlashcardProgressInFolderQueryDto } from './dto/queries/reset-flashcard-progress-in-folder-query.dto';
 import { ResetFlashcardProgressResponseInterface } from '../study-set/interfaces/reset-flashcard-progress-response.interface';
+import { DeleteAllFoldersByUserIdParamDto } from './dto/params/delete-all-folders-by-user-id-param.dto';
 
 @Injectable()
 export class FolderService {
@@ -107,5 +108,13 @@ export class FolderService {
 
   async removeInvalidFolders() {
     return this.folderRepository.removeInvalidFolders();
+  }
+
+  async deleteAllFoldersOfUser(
+    deleteAllFoldersByUserIdParamDto: DeleteAllFoldersByUserIdParamDto,
+  ): Promise<void> {
+    return this.folderRepository.deleteAllFoldersOfUser(
+      deleteAllFoldersByUserIdParamDto,
+    );
   }
 }

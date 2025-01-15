@@ -10,6 +10,7 @@ import {
   Post,
   Put,
   Query,
+  Request,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -35,6 +36,7 @@ import { ResetFlashcardProgressInFolderParamDto } from './dto/params/reset-flash
 import { ResetFlashcardProgressInFolderQueryDto } from './dto/queries/reset-flashcard-progress-in-folder-query.dto';
 import { ResetFlashcardProgressResponseInterface } from '../study-set/interfaces/reset-flashcard-progress-response.interface';
 import { CacheInterceptor } from '@nestjs/cache-manager';
+import { DeleteAllFoldersByUserIdParamDto } from './dto/params/delete-all-folders-by-user-id-param.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -143,6 +145,17 @@ export class FolderController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async removeInvalidFolders() {
     return this.folderService.removeInvalidFolders();
+  }
+
+  @Delete('/user')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteAllFoldersOfUser(@Request() req): Promise<void> {
+    const deleteAllFoldersByUserIdParamDto =
+      new DeleteAllFoldersByUserIdParamDto();
+    deleteAllFoldersByUserIdParamDto.userId = req.user.id;
+    return this.folderService.deleteAllFoldersOfUser(
+      deleteAllFoldersByUserIdParamDto,
+    );
   }
 
   @Delete('/:id')

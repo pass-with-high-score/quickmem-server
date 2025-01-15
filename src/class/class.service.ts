@@ -23,6 +23,7 @@ import { RemoveFolderByClassIdBodyDto } from './dto/bodies/remove-folder-by-clas
 import { UpdateRecentClassBodyDto } from './dto/bodies/update-recent-class-body.dto';
 import { InviteUserJoinClassBodyDto } from './dto/bodies/invite-user-join-class-body.dto';
 import { InviteUserJoinClassResponseInterface } from './interfaces/invite-user-join-class-response.interface';
+import { DeleteAllClassByUserIdParamDto } from './dto/params/delete-all-class-by-user-id-param.dto';
 
 @Injectable()
 export class ClassService {
@@ -146,5 +147,13 @@ export class ClassService {
     inviteUserJoinClassBodyDto: InviteUserJoinClassBodyDto,
   ): Promise<InviteUserJoinClassResponseInterface> {
     return this.classRepository.inviteUserJoinClass(inviteUserJoinClassBodyDto);
+  }
+
+  async deleteAndExitAllClassesOfUser(
+    deleteAllClassByUserIdParamDto: DeleteAllClassByUserIdParamDto,
+  ): Promise<void> {
+    return this.classRepository.deleteAndExitAllClassesOfUser(
+      deleteAllClassByUserIdParamDto,
+    );
   }
 }

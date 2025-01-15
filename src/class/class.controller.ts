@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  Request,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -39,6 +40,7 @@ import { UpdateRecentClassBodyDto } from './dto/bodies/update-recent-class-body.
 import { InviteUserJoinClassBodyDto } from './dto/bodies/invite-user-join-class-body.dto';
 import { InviteUserJoinClassResponseInterface } from './interfaces/invite-user-join-class-response.interface';
 import { CacheInterceptor } from '@nestjs/cache-manager';
+import { DeleteAllClassByUserIdParamDto } from './dto/params/delete-all-class-by-user-id-param.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -188,6 +190,16 @@ export class ClassController {
     @Body() inviteUserJoinClassBodyDto: InviteUserJoinClassBodyDto,
   ): Promise<InviteUserJoinClassResponseInterface> {
     return this.classService.inviteUserJoinClass(inviteUserJoinClassBodyDto);
+  }
+
+  @Delete('/user')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteAndExitAllClassesOfUser(@Request() req): Promise<void> {
+    const deleteAllClassByUserIdParamDto = new DeleteAllClassByUserIdParamDto();
+    deleteAllClassByUserIdParamDto.userId = req.user.id;
+    return this.classService.deleteAndExitAllClassesOfUser(
+      deleteAllClassByUserIdParamDto,
+    );
   }
 
   @Delete('/:id')
