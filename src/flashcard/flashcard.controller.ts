@@ -33,7 +33,10 @@ import { UpdateFlashcardQuizStatusDto } from './dto/bodies/update-flashcard-quiz
 import { UpdateFlashcardTrueFalseStatusDto } from './dto/bodies/update-flashcard-true-false-status.dto';
 import { UpdateFlashcardWriteStatusDto } from './dto/bodies/update-flashcard-write-status.dto';
 import { GetFlashcardsByFolderIdDto } from './dto/params/get-flashcards-by-folder-id.dto';
-import { CacheInterceptor } from '@nestjs/cache-manager';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { GetLanguagesResponseInterface } from './interface/get-languages-response.interface';
+import { GetVoicesByLanguageCodeParamDto } from './dto/params/get-voices-by-language-code-param.dto';
+import { GetVoicesByLanguageCodeResponseInterface } from './interface/get-voices-by-language-code-response.interface';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -41,6 +44,28 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
 @UseInterceptors(CacheInterceptor)
 export class FlashcardController {
   constructor(private readonly flashcardService: FlashcardService) {}
+
+  @Get('/languages')
+  @HttpCode(HttpStatus.OK)
+  @CacheKey('languages')
+  @CacheTTL(60 * 60 * 24)
+  async getLanguagesAvailable(): Promise<GetLanguagesResponseInterface> {
+    return this.flashcardService.getLanguagesAvailable();
+  }
+
+  @Get('/voices/:languageCode')
+  @HttpCode(HttpStatus.OK)
+  async getVoicesByLanguageCode(
+    @Param() getVoicesByLanguageCodeParamDto: GetVoicesByLanguageCodeParamDto,
+  ): Promise<GetVoicesByLanguageCodeResponseInterface> {
+    console.log(
+      'getVoicesByLanguageCodeParamDto',
+      getVoicesByLanguageCodeParamDto,
+    );
+    return this.flashcardService.getVoicesByLanguageCode(
+      getVoicesByLanguageCodeParamDto,
+    );
+  }
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)

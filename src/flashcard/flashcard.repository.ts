@@ -31,10 +31,20 @@ import { UpdateFlashcardTrueFalseStatusDto } from './dto/bodies/update-flashcard
 import { UpdateFlashcardWriteStatusDto } from './dto/bodies/update-flashcard-write-status.dto';
 import { WriteStatusEnum } from './enums/write-status.enum';
 import { GetFlashcardsByFolderIdDto } from './dto/params/get-flashcards-by-folder-id.dto';
+import { GetLanguagesResponseInterface } from './interface/get-languages-response.interface';
+import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
+import { GetVoicesByLanguageCodeParamDto } from './dto/params/get-voices-by-language-code-param.dto';
+import { GetVoicesByLanguageCodeResponseInterface } from './interface/get-voices-by-language-code-response.interface';
 
 @Injectable()
 export class FlashcardRepository extends Repository<FlashcardEntity> {
-  constructor(private dataSource: DataSource) {
+  constructor(
+    private dataSource: DataSource,
+    private readonly configService: ConfigService,
+    private readonly httpService: HttpService,
+  ) {
     super(FlashcardEntity, dataSource.createEntityManager());
   }
 
@@ -544,5 +554,47 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       createdAt: flashcard.createdAt,
       updatedAt: flashcard.updatedAt,
     };
+  }
+
+  async getLanguagesAvailable(): Promise<GetLanguagesResponseInterface> {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.get(
+          `${this.configService.get<string>('TTS_API_URL')}/v1/languages`,
+          {
+            headers: {
+              Authorization: `Bearer ${this.configService.get<string>('TTS_API_KEY')}`,
+            },
+          },
+        ),
+      );
+      return response.data;
+    } catch (error) {
+      console.log('error', error);
+      throw new InternalServerErrorException('Error fetching languages');
+    }
+  }
+
+  async getVoicesByLanguageCode(
+    getVoicesByLanguageCodeParamDto: GetVoicesByLanguageCodeParamDto,
+  ): Promise<GetVoicesByLanguageCodeResponseInterface> {
+    try {
+      const { languageCode } = getVoicesByLanguageCodeParamDto;
+      const response = await lastValueFrom(
+        this.httpService.get(
+          `${this.configService.get<string>('TTS_API_URL')}/v1/voices/${languageCode}`,
+          {
+            headers: {
+              Authorization: `Bearer ${this.configService.get<string>('TTS_API_KEY')}`,
+            },
+          },
+        ),
+      );
+      console.log(response.data);
+      return response.data;
+    } catch (error) {
+      console.log('error', error);
+      throw new InternalServerErrorException('Error fetching voices');
+    }
   }
 }

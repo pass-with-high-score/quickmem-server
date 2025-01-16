@@ -17,4 +17,6 @@ export const configValidationSchema = Joi.object({
   GOOGLE_CLIENT_ID: Joi.string().required(),
   SCRAPER_API_KEY: Joi.string().required(),
   GEMINI_API_KEY: Joi.string().required(),
+  TTS_API_KEY: Joi.string().required(),
+  TTS_API_URL: Joi.string().required(),
 });

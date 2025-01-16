@@ -17,6 +17,9 @@ import { UpdateFlashcardQuizStatusDto } from './dto/bodies/update-flashcard-quiz
 import { UpdateFlashcardTrueFalseStatusDto } from './dto/bodies/update-flashcard-true-false-status.dto';
 import { UpdateFlashcardWriteStatusDto } from './dto/bodies/update-flashcard-write-status.dto';
 import { GetFlashcardsByFolderIdDto } from './dto/params/get-flashcards-by-folder-id.dto';
+import { GetLanguagesResponseInterface } from './interface/get-languages-response.interface';
+import { GetVoicesByLanguageCodeParamDto } from './dto/params/get-voices-by-language-code-param.dto';
+import { GetVoicesByLanguageCodeResponseInterface } from './interface/get-voices-by-language-code-response.interface';
 
 @Injectable()
 export class FlashcardService {
@@ -129,6 +132,18 @@ export class FlashcardService {
     return this.flashcardRepository.getFlashcardsByFolderId(
       getFlashcardsByFolderIdDto,
       getFlashcardByIdParam,
+    );
+  }
+
+  async getLanguagesAvailable(): Promise<GetLanguagesResponseInterface> {
+    return this.flashcardRepository.getLanguagesAvailable();
+  }
+
+  async getVoicesByLanguageCode(
+    getVoicesByLanguageCodeParamDto: GetVoicesByLanguageCodeParamDto,
+  ): Promise<GetVoicesByLanguageCodeResponseInterface> {
+    return this.flashcardRepository.getVoicesByLanguageCode(
+      getVoicesByLanguageCodeParamDto,
     );
   }
 }
