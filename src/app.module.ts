@@ -76,6 +76,10 @@ import { PixabayModule } from './pixabay/pixabay.module';
       rootPath: join(__dirname, '..'),
       renderPath: '/public',
     }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..'),
+      renderPath: '.well-known',
+    }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
