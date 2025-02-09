@@ -23,6 +23,9 @@ export class FlashcardEntity {
   @Column()
   term: string;
 
+  @Column({ nullable: true })
+  termImageURL: string;
+
   @Column()
   definition: string;
 
@@ -89,6 +92,12 @@ export class FlashcardEntity {
 
   @Column({ nullable: true, default: false })
   isAIGenerated: boolean;
+
+  @Column({ nullable: true, default: 'en-US-AvaMultilingualNeural' })
+  termVoiceCode: string;
+
+  @Column({ nullable: true, default: 'en-US-AvaMultilingualNeural' })
+  definitionVoiceCode: string;
 
   @CreateDateColumn()
   createdAt: Date;

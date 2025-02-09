@@ -20,6 +20,7 @@ import { GetFlashcardsByFolderIdDto } from './dto/params/get-flashcards-by-folde
 import { GetLanguagesResponseInterface } from './interface/get-languages-response.interface';
 import { GetVoicesByLanguageCodeParamDto } from './dto/params/get-voices-by-language-code-param.dto';
 import { GetVoicesByLanguageCodeResponseInterface } from './interface/get-voices-by-language-code-response.interface';
+import { GetSpeechQueryDto } from './dto/queries/get-speech-query.dto';
 
 @Injectable()
 export class FlashcardService {
@@ -145,5 +146,9 @@ export class FlashcardService {
     return this.flashcardRepository.getVoicesByLanguageCode(
       getVoicesByLanguageCodeParamDto,
     );
+  }
+
+  async getSpeech(getSpeechQueryDto: GetSpeechQueryDto): Promise<Buffer> {
+    return this.flashcardRepository.getSpeech(getSpeechQueryDto);
   }
 }

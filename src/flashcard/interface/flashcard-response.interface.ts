@@ -14,6 +14,8 @@ export class FlashcardResponseInterface {
   quizStatus?: string;
   trueFalseStatus?: string;
   writeStatus?: string;
+  termVoiceCode?: string;
+  definitionVoiceCode?: string;
   createdAt: Date;
   updatedAt: Date;
 }

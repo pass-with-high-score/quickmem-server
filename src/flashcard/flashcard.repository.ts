@@ -34,9 +34,11 @@ import { GetFlashcardsByFolderIdDto } from './dto/params/get-flashcards-by-folde
 import { GetLanguagesResponseInterface } from './interface/get-languages-response.interface';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
-import { lastValueFrom } from 'rxjs';
+import { catchError, lastValueFrom, throwError } from 'rxjs';
 import { GetVoicesByLanguageCodeParamDto } from './dto/params/get-voices-by-language-code-param.dto';
 import { GetVoicesByLanguageCodeResponseInterface } from './interface/get-voices-by-language-code-response.interface';
+import { GetSpeechQueryDto } from './dto/queries/get-speech-query.dto';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class FlashcardRepository extends Repository<FlashcardEntity> {
@@ -125,7 +127,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         );
       }
       if (String(isGetAll) === 'false') {
-        console.log('isGetAll', isGetAll);
         filteredFlashcards = filteredFlashcards.slice(0, 10);
       }
 
@@ -149,11 +150,14 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
   ): Promise<FlashcardResponseInterface> {
     const {
       term,
+      termImageURL,
       definition,
       definitionImageURL,
       hint,
       explanation,
       studySetId,
+      termVoiceCode,
+      definitionVoiceCode,
     } = createFlashcardDto;
 
     try {
@@ -171,11 +175,14 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
 
       const flashcard = new FlashcardEntity();
       flashcard.term = term;
+      flashcard.termImageURL = termImageURL;
       flashcard.definition = definition;
       flashcard.definitionImageURL = definitionImageURL;
       flashcard.hint = hint;
       flashcard.explanation = explanation;
       flashcard.studySet = studySet;
+      flashcard.termVoiceCode = termVoiceCode;
+      flashcard.definitionVoiceCode = definitionVoiceCode;
 
       const savedFlashcard = await this.save(flashcard);
 
@@ -183,10 +190,8 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         const image = await this.dataSource.getRepository(ImageEntity).findOne({
           where: { url: definitionImageURL },
         });
-        console.log('image', image);
         if (image) {
           image.flashcard = savedFlashcard;
-          console.log('image', image.flashcard);
           await this.dataSource
             .getRepository(ImageEntity)
             .update(image.id, image);
@@ -236,15 +241,25 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         throw new NotFoundException(`Flashcard with ID ${id} not found`);
       }
 
-      const { term, definition, definitionImageURL, hint, explanation } =
-        updateFlashcardDto;
+      const {
+        term,
+        termImageURL,
+        definition,
+        definitionImageURL,
+        hint,
+        explanation,
+        termVoiceCode,
+        definitionVoiceCode,
+      } = updateFlashcardDto;
       flashcard.term = term || flashcard.term;
+      flashcard.termImageURL = termImageURL || flashcard.termImageURL;
       flashcard.definition = definition || flashcard.definition;
       flashcard.definitionImageURL =
         definitionImageURL || flashcard.definitionImageURL;
       flashcard.hint = hint;
       flashcard.explanation = explanation;
-      console.log('flashcard', flashcard);
+      flashcard.termVoiceCode = termVoiceCode || flashcard.termVoiceCode;
+      flashcard.definitionVoiceCode = definitionVoiceCode;
 
       await this.save(flashcard);
       return this.mapFlashcardEntityToResponseInterface(flashcard);
@@ -539,9 +554,13 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       id: flashcard.id,
       studySetId: flashcard.studySet.id,
       term: isSwap ? flashcard.definition : flashcard.term,
-      termImageURL: isSwap ? flashcard.definitionImageURL : undefined,
+      termImageURL: isSwap
+        ? flashcard.definitionImageURL
+        : flashcard.termImageURL,
       definition: isSwap ? flashcard.term : flashcard.definition,
-      definitionImageURL: isSwap ? undefined : flashcard.definitionImageURL,
+      definitionImageURL: isSwap
+        ? flashcard.termImageURL
+        : flashcard.definitionImageURL,
       hint: isSwap ? flashcard.explanation : flashcard.hint,
       isAIGenerated: flashcard.isAIGenerated,
       explanation: isSwap ? flashcard.hint : flashcard.explanation,
@@ -551,6 +570,8 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       flipStatus: flashcard.flipStatus,
       writeStatus: flashcard.writeStatus,
       trueFalseStatus: flashcard.trueFalseStatus,
+      termVoiceCode: flashcard.termVoiceCode,
+      definitionVoiceCode: flashcard.definitionVoiceCode,
       createdAt: flashcard.createdAt,
       updatedAt: flashcard.updatedAt,
     };
@@ -594,6 +615,45 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
     } catch (error) {
       console.log('error', error);
       throw new InternalServerErrorException('Error fetching voices');
+    }
+  }
+
+  async getSpeech(getSpeechQueryDto: GetSpeechQueryDto): Promise<Buffer> {
+    const { input, voiceCode } = getSpeechQueryDto;
+
+    try {
+      const response = await lastValueFrom(
+        this.httpService
+          .post(
+            `${this.configService.get<string>('TTS_API_URL')}/v1/audio/speech`,
+            {
+              input: input,
+              voice: voiceCode,
+              response_format: 'mp3',
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${this.configService.get<string>('TTS_API_KEY')}`,
+                Accept: 'audio/mpeg', // Yêu cầu trả về file audio
+              },
+              responseType: 'arraybuffer', // Nhận dữ liệu dưới dạng arraybuffer
+            },
+          )
+          .pipe(
+            // Chỉ lấy phần dữ liệu trả về
+            map((res) => res.data),
+            catchError((error) => {
+              console.error('Error when calling audio API:', error);
+              return throwError(() => error);
+            }),
+          ),
+      );
+
+      // Chuyển đổi arraybuffer thành Buffer
+      return Buffer.from(response);
+    } catch (error) {
+      console.error('Error in getSpeech:', error);
+      throw error;
     }
   }
 }

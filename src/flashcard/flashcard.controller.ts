@@ -37,6 +37,7 @@ import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import { GetLanguagesResponseInterface } from './interface/get-languages-response.interface';
 import { GetVoicesByLanguageCodeParamDto } from './dto/params/get-voices-by-language-code-param.dto';
 import { GetVoicesByLanguageCodeResponseInterface } from './interface/get-voices-by-language-code-response.interface';
+import { GetSpeechQueryDto } from './dto/queries/get-speech-query.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -65,6 +66,13 @@ export class FlashcardController {
     return this.flashcardService.getVoicesByLanguageCode(
       getVoicesByLanguageCodeParamDto,
     );
+  }
+
+  @Get('speech')
+  async getSpeech(
+    @Query() getSpeechQueryDto: GetSpeechQueryDto,
+  ): Promise<Buffer> {
+    return this.flashcardService.getSpeech(getSpeechQueryDto);
   }
 
   @Get('/:id')
@@ -104,7 +112,6 @@ export class FlashcardController {
   async createFlashcard(
     @Body() createFlashcardDto: CreateFlashcardDto,
   ): Promise<FlashcardResponseInterface> {
-    console.log('createFlashcardDto', createFlashcardDto);
     return await this.flashcardService.createFlashcard(createFlashcardDto);
   }
 

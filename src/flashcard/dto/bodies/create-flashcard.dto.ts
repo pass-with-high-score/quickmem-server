@@ -11,6 +11,11 @@ export class CreateFlashcardDto {
   @IsString()
   term: string;
 
+  @IsOptional()
+  @IsUrl()
+  @IsString()
+  termImageURL: string;
+
   @IsNotEmpty()
   @IsString()
   definition: string;
@@ -31,4 +36,12 @@ export class CreateFlashcardDto {
   @IsNotEmpty()
   @IsUUID()
   studySetId: string;
+
+  @IsOptional()
+  @IsString()
+  termVoiceCode: string;
+
+  @IsOptional()
+  @IsString()
+  definitionVoiceCode: string;
 }

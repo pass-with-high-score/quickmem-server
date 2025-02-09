@@ -74,12 +74,14 @@ export class StudySetController {
     return await this.studySetService.getStudySetByCode(getClassByCodeParamDto);
   }
 
-  @Get('/owner/:ownerId')
+  @Get('/owner')
   @HttpCode(HttpStatus.OK)
   async getStudySetsByOwnerId(
-    @Param() getStudySetsByOwnerIdDto: GetStudySetsByOwnerIdDto,
+    @Request() req,
     @Query() getStudySetsByOwnerIdParamDto: GetStudySetsByOwnerIdQueryDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
+    const getStudySetsByOwnerIdDto = new GetStudySetsByOwnerIdDto();
+    getStudySetsByOwnerIdDto.ownerId = req.user.id;
     return await this.studySetService.getStudySetsByOwnerId(
       getStudySetsByOwnerIdDto,
       getStudySetsByOwnerIdParamDto,

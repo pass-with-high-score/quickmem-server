@@ -7,6 +7,10 @@ export class UpdateFlashcardDto {
 
   @IsOptional()
   @IsString()
+  termImageURL?: string;
+
+  @IsOptional()
+  @IsString()
   definition?: string;
 
   @IsOptional()
@@ -20,4 +24,12 @@ export class UpdateFlashcardDto {
   @IsOptional()
   @IsString()
   explanation?: string;
+
+  @IsOptional()
+  @IsString()
+  termVoiceCode?: string;
+
+  @IsOptional()
+  @IsString()
+  definitionVoiceCode?: string;
 }
