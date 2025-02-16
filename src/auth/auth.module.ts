@@ -14,6 +14,7 @@ import { GoogleStrategy } from './strategy/google.strategy';
 import { FacebookStrategy } from './strategy/facebook.strategy';
 import { DefaultImageEntity } from './entities/default-image.entity';
 import { UploadModule } from '../cloudinary/upload.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { UploadModule } from '../cloudinary/upload.module';
     BullModule.registerQueue({
       name: 'send-email',
     }),
+    HttpModule,
   ],
   providers: [
     AuthService,

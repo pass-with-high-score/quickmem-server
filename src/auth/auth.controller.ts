@@ -60,6 +60,8 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
 import { GetAvatarsResponseInterface } from './interfaces/get-avatars-response.interface';
 import { SocialSignupCredentialBodyDto } from './dto/bodies/social-signup-credential-body.dto';
 import { SocialLoginCredentialBodyDto } from './dto/bodies/social-login-credential-body.dto';
+import { CheckEmailQueryDto } from './dto/queries/check-email.query.dto';
+import { CheckEmailResponseInterface } from './interfaces/check-email.response.interface';
 
 @Controller('auth')
 @UseInterceptors(CacheInterceptor)
@@ -386,14 +388,13 @@ export class AuthController {
     return this.authService.resetPassword(resetPasswordDto);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @SkipThrottle()
   @HttpCode(HttpStatus.OK)
-  @Patch('/user/avatar/:id')
-  async updateAvatar(
-    @Param() updateAvatarParamDto: UpdateAvatarParamDto,
-    @Body() updateAvatarDto: UpdateAvatarDto,
-  ): Promise<UpdateAvatarInterface> {
-    return this.authService.updateAvatar(updateAvatarParamDto, updateAvatarDto);
+  @Post('/check-email')
+  async checkEmail(
+    @Query() checkEmailQueryDto: CheckEmailQueryDto,
+  ): Promise<CheckEmailResponseInterface> {
+    return this.authService.checkEmail(checkEmailQueryDto);
   }
 
   @Throttle({ default: { limit: 3, ttl: 60000 } })
@@ -413,5 +414,15 @@ export class AuthController {
     @Body() updateCoinDto: UpdateCoinDto,
   ): Promise<UpdateCoinResponseInterface> {
     return this.authService.updateCoin(updateCoinDto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  @Patch('/user/avatar/:id')
+  async updateAvatar(
+    @Param() updateAvatarParamDto: UpdateAvatarParamDto,
+    @Body() updateAvatarDto: UpdateAvatarDto,
+  ): Promise<UpdateAvatarInterface> {
+    return this.authService.updateAvatar(updateAvatarParamDto, updateAvatarDto);
   }
 }

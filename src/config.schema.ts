@@ -19,4 +19,5 @@ export const configValidationSchema = Joi.object({
   GEMINI_API_KEY: Joi.string().required(),
   TTS_API_KEY: Joi.string().required(),
   TTS_API_URL: Joi.string().required(),
+  CHECK_EMAIL_BASE_URL: Joi.string().required(),
 });

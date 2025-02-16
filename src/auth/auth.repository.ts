@@ -62,6 +62,10 @@ import { DefaultImageEntity } from './entities/default-image.entity';
 import { CloudinaryProvider } from '../cloudinary/cloudinary.provider';
 import { SocialSignupCredentialBodyDto } from './dto/bodies/social-signup-credential-body.dto';
 import { SocialLoginCredentialBodyDto } from './dto/bodies/social-login-credential-body.dto';
+import { HttpService } from '@nestjs/axios';
+import { CheckEmailQueryDto } from './dto/queries/check-email.query.dto';
+import { CheckEmailResponseInterface } from './interfaces/check-email.response.interface';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -72,6 +76,7 @@ export class AuthRepository extends Repository<UserEntity> {
     private readonly configService: ConfigService,
     @Inject(CloudinaryProvider)
     private readonly cloudinaryProvider: CloudinaryProvider,
+    private readonly httpService: HttpService,
   ) {
     super(UserEntity, dataSource.createEntityManager());
   }
@@ -1272,6 +1277,30 @@ export class AuthRepository extends Repository<UserEntity> {
       throw new InternalServerErrorException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Failed to validate user',
+      });
+    }
+  }
+
+  async checkEmail(
+    checkEmailQueryDto: CheckEmailQueryDto,
+  ): Promise<CheckEmailResponseInterface> {
+    const { email } = checkEmailQueryDto;
+    try {
+      const response = await lastValueFrom(
+        this.httpService.post(
+          this.configService.get<string>('CHECK_EMAIL_BASE_URL'),
+          {
+            email,
+          },
+        ),
+      );
+
+      return response.data;
+    } catch (error) {
+      logger.error(error);
+      throw new InternalServerErrorException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Failed to check email',
       });
     }
   }

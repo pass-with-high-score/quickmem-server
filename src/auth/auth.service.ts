@@ -38,6 +38,8 @@ import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-respons
 import { GetAvatarsResponseInterface } from './interfaces/get-avatars-response.interface';
 import { SocialSignupCredentialBodyDto } from './dto/bodies/social-signup-credential-body.dto';
 import { SocialLoginCredentialBodyDto } from './dto/bodies/social-login-credential-body.dto';
+import { CheckEmailQueryDto } from './dto/queries/check-email.query.dto';
+import { CheckEmailResponseInterface } from './interfaces/check-email.response.interface';
 
 @Injectable()
 export class AuthService {
@@ -182,5 +184,11 @@ export class AuthService {
     socialLoginCredentialBodyDto: SocialLoginCredentialBodyDto,
   ): Promise<AuthResponseInterface> {
     return this.usersRepository.loginGoogle(socialLoginCredentialBodyDto);
+  }
+
+  async checkEmail(
+    checkEmailQueryDto: CheckEmailQueryDto,
+  ): Promise<CheckEmailResponseInterface> {
+    return this.usersRepository.checkEmail(checkEmailQueryDto);
   }
 }
