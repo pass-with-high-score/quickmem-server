@@ -629,7 +629,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
             {
               input: input,
               voice: voiceCode,
-              response_format: 'mp3',
+              response_format: 'wav',
               speed: 0.9,
             },
             {
