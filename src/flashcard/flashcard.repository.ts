@@ -630,17 +630,17 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
               input: input,
               voice: voiceCode,
               response_format: 'mp3',
+              speed: 0.9,
             },
             {
               headers: {
                 Authorization: `Bearer ${this.configService.get<string>('TTS_API_KEY')}`,
-                Accept: 'audio/mpeg', // Yêu cầu trả về file audio
+                Accept: 'audio/mpeg',
               },
-              responseType: 'arraybuffer', // Nhận dữ liệu dưới dạng arraybuffer
+              responseType: 'arraybuffer',
             },
           )
           .pipe(
-            // Chỉ lấy phần dữ liệu trả về
             map((res) => res.data),
             catchError((error) => {
               console.error('Error when calling audio API:', error);
@@ -649,7 +649,6 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
           ),
       );
 
-      // Chuyển đổi arraybuffer thành Buffer
       return Buffer.from(response);
     } catch (error) {
       console.error('Error in getSpeech:', error);
