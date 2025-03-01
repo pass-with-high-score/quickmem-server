@@ -187,7 +187,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
       const studySet = await this.dataSource
         .getRepository(StudySetEntity)
         .findOne({
-          where: { id }, // Filter by study set ID
+          where: { id },
           relations: ['owner', 'subject', 'color', 'flashcards'],
         });
 
@@ -758,6 +758,8 @@ export class StudySetRepository extends Repository<StudySetEntity> {
           }
         : undefined,
       flashcardCount: studySet.flashcards ? studySet.flashcards.length : 0,
+      previousDefinitionVoiceCode: studySet.previousDefinitionVoiceCode,
+      previousTermVoiceCode: studySet.previousTermVoiceCode,
       flashcards: getFlashcards ? studySet.flashcards : [],
     };
   }

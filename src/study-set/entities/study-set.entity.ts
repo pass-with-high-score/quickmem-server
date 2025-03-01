@@ -79,6 +79,12 @@ export class StudySetEntity {
   @Column({ type: 'simple-array', nullable: true })
   bestLearnModes?: LearnModeEnum[];
 
+  @Column({ nullable: true, default: 'en-US-AvaMultilingualNeural' })
+  previousTermVoiceCode: string;
+
+  @Column({ nullable: true, default: 'en-US-AvaMultilingualNeural' })
+  previousDefinitionVoiceCode: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -184,6 +184,13 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
       flashcard.termVoiceCode = termVoiceCode;
       flashcard.definitionVoiceCode = definitionVoiceCode;
 
+      studySet.previousTermVoiceCode = termVoiceCode;
+      studySet.previousDefinitionVoiceCode = definitionVoiceCode;
+
+      await this.dataSource
+        .getRepository(StudySetEntity)
+        .update(studySet.id, studySet);
+
       const savedFlashcard = await this.save(flashcard);
 
       if (definitionImageURL) {
@@ -251,6 +258,7 @@ export class FlashcardRepository extends Repository<FlashcardEntity> {
         termVoiceCode,
         definitionVoiceCode,
       } = updateFlashcardDto;
+
       flashcard.term = term || flashcard.term;
       flashcard.termImageURL = termImageURL || flashcard.termImageURL;
       flashcard.definition = definition || flashcard.definition;

@@ -25,6 +25,8 @@ export interface GetAllStudySetResponseInterface {
     name: string;
     hexValue: string;
   };
+  previousTermVoiceCode?: string;
+  previousDefinitionVoiceCode?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
