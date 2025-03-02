@@ -938,12 +938,12 @@ export class ClassRepository extends Repository<ClassEntity> {
     updateRecentClassBodyDto: UpdateRecentClassParamDto,
     userId: string,
   ) {
-    const { classId } = updateRecentClassBodyDto;
+    const { id } = updateRecentClassBodyDto;
 
     const recentClass = await this.dataSource
       .getRepository(RecentClassEntity)
       .findOne({
-        where: { user: { id: userId }, classEntity: { id: classId } },
+        where: { user: { id: userId }, classEntity: { id } },
       });
 
     if (recentClass) {
@@ -960,7 +960,7 @@ export class ClassRepository extends Repository<ClassEntity> {
     }
 
     const classEntity = await this.findOne({
-      where: { id: classId },
+      where: { id: id },
     });
     if (!classEntity) {
       throw new NotFoundException('Class not found');
