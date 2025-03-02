@@ -64,6 +64,7 @@ import { HttpService } from '@nestjs/axios';
 import { CheckEmailQueryDto } from './dto/queries/check-email.query.dto';
 import { CheckEmailResponseInterface } from './interfaces/check-email.response.interface';
 import { lastValueFrom } from 'rxjs';
+import { GetNewTokenResponseInterface } from './interfaces/get-new-token.response.interface';
 
 @Injectable()
 export class AuthRepository extends Repository<UserEntity> {
@@ -250,7 +251,7 @@ export class AuthRepository extends Repository<UserEntity> {
         };
         const access_token: string = this.jwtService.sign(payload);
         const refresh_token: string = this.jwtService.sign(payload, {
-          expiresIn: '7d',
+          expiresIn: '30d',
         });
         const isPremium = await this.isUserPremium(user.id);
         if (user.isVerified && user.userStatus !== UserStatusEnum.BLOCKED) {
@@ -339,7 +340,7 @@ export class AuthRepository extends Repository<UserEntity> {
 
   async createAccessTokenFromRefreshToken(
     refreshToken: string,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<GetNewTokenResponseInterface> {
     try {
       const payload = this.jwtService.verify(refreshToken);
       const user = await this.findOne({
@@ -357,7 +358,15 @@ export class AuthRepository extends Repository<UserEntity> {
         email: payload.email,
         id: user.id,
       });
-      return { accessToken };
+      const newRefreshToken = this.jwtService.sign(
+        { email: payload.email, id: user.id },
+        { expiresIn: '30d' },
+      );
+
+      return {
+        accessToken,
+        refreshToken: newRefreshToken,
+      };
     } catch (error) {
       logger.error(error);
       throw new UnauthorizedException({

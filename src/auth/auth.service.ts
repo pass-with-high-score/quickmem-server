@@ -38,6 +38,7 @@ import { SocialSignupCredentialBodyDto } from './dto/bodies/social-signup-creden
 import { SocialLoginCredentialBodyDto } from './dto/bodies/social-login-credential-body.dto';
 import { CheckEmailQueryDto } from './dto/queries/check-email.query.dto';
 import { CheckEmailResponseInterface } from './interfaces/check-email.response.interface';
+import { GetNewTokenResponseInterface } from './interfaces/get-new-token.response.interface';
 
 @Injectable()
 export class AuthService {
@@ -63,7 +64,9 @@ export class AuthService {
     return await this.usersRepository.validateUser(authCredentialsDto);
   }
 
-  async refreshToken(refreshToken: string): Promise<{ accessToken: string }> {
+  async refreshToken(
+    refreshToken: string,
+  ): Promise<GetNewTokenResponseInterface> {
     return await this.usersRepository.createAccessTokenFromRefreshToken(
       refreshToken,
     );

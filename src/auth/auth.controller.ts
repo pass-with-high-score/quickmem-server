@@ -61,6 +61,7 @@ import { SocialSignupCredentialBodyDto } from './dto/bodies/social-signup-creden
 import { SocialLoginCredentialBodyDto } from './dto/bodies/social-login-credential-body.dto';
 import { CheckEmailQueryDto } from './dto/queries/check-email.query.dto';
 import { CheckEmailResponseInterface } from './interfaces/check-email.response.interface';
+import { GetNewTokenResponseInterface } from './interfaces/get-new-token.response.interface';
 
 @Controller('auth')
 @UseInterceptors(CacheInterceptor)
@@ -363,7 +364,7 @@ export class AuthController {
   @Post('/refresh-token')
   async refreshToken(
     @Body('refreshToken') refreshToken: string,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<GetNewTokenResponseInterface> {
     return this.authService.refreshToken(refreshToken);
   }
 
