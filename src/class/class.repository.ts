@@ -16,7 +16,6 @@ import { GetClassResponseInterface } from './interfaces/get-class-response.inter
 import { UpdateClassByIdDto } from './dto/bodies/update-class-by-id.dto';
 import { UpdateClassByIdParamDto } from './dto/params/update-class-by-id-param.dto';
 import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.dto';
-import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassesByTitleQueryDto } from './dto/queries/search-classes-by-title-query.dto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
@@ -29,10 +28,9 @@ import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-clas
 import { UpdateItemInClassResponseInterface } from './interfaces/update-item-in-class-response.interface';
 import { GetClassByUserIdQueryDto } from './dto/queries/get-class-by-user-Id-query.dto';
 import { GetClassByJoinTokenParamDto } from './dto/params/get-class-by-join-token.param.dto';
-import { GetClassByJoinTokenQueryDto } from './dto/queries/get-class-by-join-token.query.dto';
 import { RemoveStudySetByClassIdBodyDto } from './dto/bodies/remove-study-set-by-class-id-body.dto';
 import { RemoveFolderByClassIdBodyDto } from './dto/bodies/remove-folder-by-class-id-body.dto';
-import { UpdateRecentClassBodyDto } from './dto/bodies/update-recent-class-body.dto';
+import { UpdateRecentClassParamDto } from './dto/params/update-recent-class.param.dto';
 import { RecentClassEntity } from './entities/recent-class.entity';
 import { InviteUserJoinClassBodyDto } from './dto/bodies/invite-user-join-class-body.dto';
 import { InviteUserJoinClassResponseInterface } from './interfaces/invite-user-join-class-response.interface';
@@ -43,7 +41,6 @@ import { NotificationService } from '../notification/notification.service';
 import { NotificationTypeEnum } from '../notification/enums/notification-type.enum';
 import { CreateNotificationBodyDto } from '../notification/dto/bodies/create-notification-body.dto';
 import { InviteStatusEnum } from './enums/invite-status.enum';
-import { DeleteAllClassByUserIdParamDto } from './dto/params/delete-all-class-by-user-id-param.dto';
 
 @Injectable()
 export class ClassRepository extends Repository<ClassEntity> {
@@ -125,10 +122,9 @@ export class ClassRepository extends Repository<ClassEntity> {
 
   // Get classes by user id (if they are member or owner of class)
   async getClassesByUserId(
-    getClassesByUserIdDto: GetClassesByUserIdDto,
+    userId: string,
     getClassByUserIdQueryDto: GetClassByUserIdQueryDto,
   ): Promise<GetClassResponseInterface[]> {
-    const { userId } = getClassesByUserIdDto;
     const { studySetId, folderId } = getClassByUserIdQueryDto;
     const classes = await this.find({
       where: [
@@ -186,8 +182,9 @@ export class ClassRepository extends Repository<ClassEntity> {
   // Create class
   async createClass(
     createClassDto: CreateClassDto,
+    ownerId: string,
   ): Promise<CreateClassResponseInterface> {
-    const { title, description, ownerId } = createClassDto;
+    const { title, description } = createClassDto;
 
     // Find owner
     const owner = await this.dataSource
@@ -228,9 +225,10 @@ export class ClassRepository extends Repository<ClassEntity> {
   async updateClass(
     updateClassByIdParamDto: UpdateClassByIdParamDto,
     updateClassByIdDto: UpdateClassByIdDto,
+    ownerId: string,
   ): Promise<CreateClassResponseInterface> {
     const { id } = updateClassByIdParamDto;
-    const { title, description, ownerId } = updateClassByIdDto;
+    const { title, description } = updateClassByIdDto;
 
     // Find class
     const classEntity = await this.findOne({
@@ -351,8 +349,9 @@ export class ClassRepository extends Repository<ClassEntity> {
 
   async joinClassByJoinToken(
     joinClassByTokenDto: JoinClassByTokenDto,
+    userId: string,
   ): Promise<UpdateItemInClassResponseInterface> {
-    const { joinToken, userId, classId } = joinClassByTokenDto;
+    const { joinToken, classId } = joinClassByTokenDto;
 
     const classEntity = await this.findClassAndValidatePermissions(classId, [
       'owner',
@@ -400,8 +399,8 @@ export class ClassRepository extends Repository<ClassEntity> {
     }
   }
 
-  async exitClass(exitClassDto: ExitClassDto): Promise<void> {
-    const { userId, classId } = exitClassDto;
+  async exitClass(exitClassDto: ExitClassDto, userId: string): Promise<void> {
+    const { classId } = exitClassDto;
 
     const classEntity = await this.findClassAndValidatePermissions(classId, [
       'members',
@@ -426,8 +425,9 @@ export class ClassRepository extends Repository<ClassEntity> {
 
   async updateClassFolders(
     updateFoldersInClassDto: UpdateFoldersInClassDto,
+    userId: string,
   ): Promise<UpdateItemInClassResponseInterface> {
-    const { classId, userId, folderIds } = updateFoldersInClassDto;
+    const { classId, folderIds } = updateFoldersInClassDto;
 
     const classEntity = await this.findClassAndValidatePermissions(classId, [
       'owner',
@@ -508,8 +508,9 @@ export class ClassRepository extends Repository<ClassEntity> {
 
   async updateStudySetsInClass(
     updateStudySetsInClassDto: UpdateStudySetsInClassDto,
+    userId: string,
   ): Promise<UpdateItemInClassResponseInterface> {
-    const { classId, userId, studySetIds } = updateStudySetsInClassDto;
+    const { classId, studySetIds } = updateStudySetsInClassDto;
 
     const classEntity = await this.findClassAndValidatePermissions(classId, [
       'owner',
@@ -595,8 +596,9 @@ export class ClassRepository extends Repository<ClassEntity> {
 
   async removeMembersFromClass(
     removeMembersFromClassDto: RemoveMembersFromClassDto,
+    userId: string,
   ): Promise<GetClassResponseInterface> {
-    const { classId, userId, memberIds } = removeMembersFromClassDto;
+    const { classId, memberIds } = removeMembersFromClassDto;
 
     // Find class
     const classEntity = await this.findClassAndValidatePermissions(classId, [
@@ -668,12 +670,9 @@ export class ClassRepository extends Repository<ClassEntity> {
 
   async getClassByJoinToken(
     getClassByJoinTokenParamDto: GetClassByJoinTokenParamDto,
-    getClassByJoinTokenQueryDto: GetClassByJoinTokenQueryDto,
+    userId: string,
   ): Promise<GetClassResponseInterface> {
-    console.log(getClassByJoinTokenParamDto);
-    console.log(getClassByJoinTokenQueryDto);
     const { joinToken } = getClassByJoinTokenParamDto;
-    const { userId } = getClassByJoinTokenQueryDto;
     const classEntity = await this.findOne({
       where: { joinToken },
       relations: ['owner', 'members'],
@@ -811,8 +810,9 @@ export class ClassRepository extends Repository<ClassEntity> {
 
   async removeStudySetByClassId(
     removeStudySetByClassIdBodyDto: RemoveStudySetByClassIdBodyDto,
+    userId: string,
   ): Promise<GetClassResponseInterface> {
-    const { userId, classId, studySetId } = removeStudySetByClassIdBodyDto;
+    const { classId, studySetId } = removeStudySetByClassIdBodyDto;
 
     // Find class
     const classEntity = await this.findClassAndValidatePermissions(classId, [
@@ -874,8 +874,9 @@ export class ClassRepository extends Repository<ClassEntity> {
 
   async removeFolderByClassId(
     removeFolderByClassIdBodyDto: RemoveFolderByClassIdBodyDto,
+    userId: string,
   ): Promise<GetClassResponseInterface> {
-    const { userId, classId, folderId } = removeFolderByClassIdBodyDto;
+    const { classId, folderId } = removeFolderByClassIdBodyDto;
 
     // Find class
     const classEntity = await this.findClassAndValidatePermissions(classId, [
@@ -933,8 +934,11 @@ export class ClassRepository extends Repository<ClassEntity> {
     }
   }
 
-  async updateRecentClass(updateRecentClassBodyDto: UpdateRecentClassBodyDto) {
-    const { userId, classId } = updateRecentClassBodyDto;
+  async updateRecentClass(
+    updateRecentClassBodyDto: UpdateRecentClassParamDto,
+    userId: string,
+  ) {
+    const { classId } = updateRecentClassBodyDto;
 
     const recentClass = await this.dataSource
       .getRepository(RecentClassEntity)
@@ -972,9 +976,8 @@ export class ClassRepository extends Repository<ClassEntity> {
   }
 
   async getRecentClassesByUserId(
-    getClassesByUserIdDto: GetClassesByUserIdDto,
+    userId: string,
   ): Promise<GetClassResponseInterface[]> {
-    const { userId } = getClassesByUserIdDto;
     try {
       const recentClasses = await this.dataSource
         .getRepository(RecentClassEntity)
@@ -1095,10 +1098,7 @@ export class ClassRepository extends Repository<ClassEntity> {
     }
   }
 
-  async deleteAndExitAllClassesOfUser(
-    deleteAllClassByUserIdParamDto: DeleteAllClassByUserIdParamDto,
-  ): Promise<void> {
-    const { userId } = deleteAllClassByUserIdParamDto;
+  async deleteAndExitAllClassesOfUser(userId: string): Promise<void> {
     const classes = await this.find({
       where: [
         { owner: { id: userId } },

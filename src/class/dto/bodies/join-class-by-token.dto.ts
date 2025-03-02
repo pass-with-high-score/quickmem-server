@@ -7,9 +7,5 @@ export class JoinClassByTokenDto {
 
   @IsNotEmpty()
   @IsUUID()
-  userId: string;
-
-  @IsNotEmpty()
-  @IsUUID()
   classId: string;
 }

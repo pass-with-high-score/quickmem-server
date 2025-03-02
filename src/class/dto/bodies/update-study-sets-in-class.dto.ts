@@ -5,10 +5,6 @@ export class UpdateStudySetsInClassDto {
   @IsNotEmpty()
   classId: string;
 
-  @IsUUID()
-  @IsNotEmpty()
-  userId: string;
-
   @IsArray()
   @IsUUID('4', { each: true })
   studySetIds: string[];

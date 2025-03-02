@@ -5,10 +5,6 @@ export class RemoveMembersFromClassDto {
   @IsNotEmpty()
   classId: string;
 
-  @IsUUID()
-  @IsNotEmpty()
-  userId: string;
-
   @IsUUID(4, { each: true })
   memberIds: string[];
 }

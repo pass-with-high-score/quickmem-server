@@ -7,7 +7,6 @@ import { GetClassResponseInterface } from './interfaces/get-class-response.inter
 import { UpdateClassByIdParamDto } from './dto/params/update-class-by-id-param.dto';
 import { UpdateClassByIdDto } from './dto/bodies/update-class-by-id.dto';
 import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.dto';
-import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassesByTitleQueryDto } from './dto/queries/search-classes-by-title-query.dto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
@@ -17,13 +16,11 @@ import { UpdateItemInClassResponseInterface } from './interfaces/update-item-in-
 import { UpdateFoldersInClassDto } from './dto/bodies/update-folders-in-class.dto';
 import { GetClassByUserIdQueryDto } from './dto/queries/get-class-by-user-Id-query.dto';
 import { GetClassByJoinTokenParamDto } from './dto/params/get-class-by-join-token.param.dto';
-import { GetClassByJoinTokenQueryDto } from './dto/queries/get-class-by-join-token.query.dto';
 import { RemoveStudySetByClassIdBodyDto } from './dto/bodies/remove-study-set-by-class-id-body.dto';
 import { RemoveFolderByClassIdBodyDto } from './dto/bodies/remove-folder-by-class-id-body.dto';
-import { UpdateRecentClassBodyDto } from './dto/bodies/update-recent-class-body.dto';
+import { UpdateRecentClassParamDto } from './dto/params/update-recent-class.param.dto';
 import { InviteUserJoinClassBodyDto } from './dto/bodies/invite-user-join-class-body.dto';
 import { InviteUserJoinClassResponseInterface } from './interfaces/invite-user-join-class-response.interface';
-import { DeleteAllClassByUserIdParamDto } from './dto/params/delete-all-class-by-user-id-param.dto';
 
 @Injectable()
 export class ClassService {
@@ -31,8 +28,9 @@ export class ClassService {
 
   async createClass(
     createClassDto: CreateClassDto,
+    ownerId: string,
   ): Promise<CreateClassResponseInterface> {
-    return this.classRepository.createClass(createClassDto);
+    return this.classRepository.createClass(createClassDto, ownerId);
   }
 
   async getClassById(
@@ -42,11 +40,11 @@ export class ClassService {
   }
 
   async getClassesByUserId(
-    getClassesByUserIdDto: GetClassesByUserIdDto,
+    userId: string,
     getClassByUserIdQueryDto: GetClassByUserIdQueryDto,
   ): Promise<GetClassResponseInterface[]> {
     return this.classRepository.getClassesByUserId(
-      getClassesByUserIdDto,
+      userId,
       getClassByUserIdQueryDto,
     );
   }
@@ -54,10 +52,12 @@ export class ClassService {
   async updateClass(
     updateClassByIdParamDto: UpdateClassByIdParamDto,
     updateClassByIdDto: UpdateClassByIdDto,
+    ownerId: string,
   ): Promise<CreateClassResponseInterface> {
     return this.classRepository.updateClass(
       updateClassByIdParamDto,
       updateClassByIdDto,
+      ownerId,
     );
   }
 
@@ -77,70 +77,92 @@ export class ClassService {
 
   async joinClassByJoinToken(
     joinClassByTokenDto: JoinClassByTokenDto,
+    userId: string,
   ): Promise<UpdateItemInClassResponseInterface> {
-    return this.classRepository.joinClassByJoinToken(joinClassByTokenDto);
+    return this.classRepository.joinClassByJoinToken(
+      joinClassByTokenDto,
+      userId,
+    );
   }
 
-  async exitClass(exitClassDto: ExitClassDto): Promise<void> {
-    return this.classRepository.exitClass(exitClassDto);
+  async exitClass(exitClassDto: ExitClassDto, userId: string): Promise<void> {
+    return this.classRepository.exitClass(exitClassDto, userId);
   }
 
   async updateClassFolders(
     updateFoldersInClassDto: UpdateFoldersInClassDto,
+    userId: string,
   ): Promise<UpdateItemInClassResponseInterface> {
-    return this.classRepository.updateClassFolders(updateFoldersInClassDto);
+    return this.classRepository.updateClassFolders(
+      updateFoldersInClassDto,
+      userId,
+    );
   }
 
   async updateStudySetsInClass(
     updateStudySetsInClassDto: UpdateStudySetsInClassDto,
+    userId: string,
   ): Promise<UpdateItemInClassResponseInterface> {
     return this.classRepository.updateStudySetsInClass(
       updateStudySetsInClassDto,
+      userId,
     );
   }
 
   async removeMembersFromClass(
     removeMembersFromClassDto: RemoveMembersFromClassDto,
+    userId: string,
   ): Promise<GetClassResponseInterface> {
     return this.classRepository.removeMembersFromClass(
       removeMembersFromClassDto,
+      userId,
     );
   }
 
   async getClassByJoinToken(
     getClassByJoinTokenParamDto: GetClassByJoinTokenParamDto,
-    getClassByJoinTokenQueryDto: GetClassByJoinTokenQueryDto,
+    userId: string,
   ): Promise<GetClassResponseInterface> {
     return this.classRepository.getClassByJoinToken(
       getClassByJoinTokenParamDto,
-      getClassByJoinTokenQueryDto,
+      userId,
     );
   }
 
   async removeStudySetByClassId(
     removeStudySetByClassIdBodyDto: RemoveStudySetByClassIdBodyDto,
+    userId: string,
   ): Promise<GetClassResponseInterface> {
     return this.classRepository.removeStudySetByClassId(
       removeStudySetByClassIdBodyDto,
+      userId,
     );
   }
 
   async removeFolderByClassId(
     removeFolderByClassIdBodyDto: RemoveFolderByClassIdBodyDto,
+    userId: string,
   ): Promise<GetClassResponseInterface> {
     return this.classRepository.removeFolderByClassId(
       removeFolderByClassIdBodyDto,
+      userId,
     );
   }
 
-  async updateRecentClass(updateRecentClassBodyDto: UpdateRecentClassBodyDto) {
-    return this.classRepository.updateRecentClass(updateRecentClassBodyDto);
+  async updateRecentClass(
+    updateRecentClassBodyDto: UpdateRecentClassParamDto,
+    userId: string,
+  ) {
+    return this.classRepository.updateRecentClass(
+      updateRecentClassBodyDto,
+      userId,
+    );
   }
 
   async getRecentClassesByUserId(
-    getClassesByUserIdDto: GetClassesByUserIdDto,
+    userId: string,
   ): Promise<GetClassResponseInterface[]> {
-    return this.classRepository.getRecentClassesByUserId(getClassesByUserIdDto);
+    return this.classRepository.getRecentClassesByUserId(userId);
   }
 
   async inviteUserJoinClass(
@@ -149,11 +171,7 @@ export class ClassService {
     return this.classRepository.inviteUserJoinClass(inviteUserJoinClassBodyDto);
   }
 
-  async deleteAndExitAllClassesOfUser(
-    deleteAllClassByUserIdParamDto: DeleteAllClassByUserIdParamDto,
-  ): Promise<void> {
-    return this.classRepository.deleteAndExitAllClassesOfUser(
-      deleteAllClassByUserIdParamDto,
-    );
+  async deleteAndExitAllClassesOfUser(userId: string): Promise<void> {
+    return this.classRepository.deleteAndExitAllClassesOfUser(userId);
   }
 }

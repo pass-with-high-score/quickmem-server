@@ -1,10 +1,4 @@
-import {
-  IsBoolean,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateClassDto {
   @IsNotEmpty()
@@ -20,8 +14,4 @@ export class CreateClassDto {
 
   @IsBoolean()
   allowMemberManagement: boolean;
-
-  @IsNotEmpty()
-  @IsUUID()
-  ownerId: string;
 }

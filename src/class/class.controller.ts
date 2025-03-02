@@ -23,7 +23,6 @@ import { GetClassResponseInterface } from './interfaces/get-class-response.inter
 import { UpdateClassByIdParamDto } from './dto/params/update-class-by-id-param.dto';
 import { UpdateClassByIdDto } from './dto/bodies/update-class-by-id.dto';
 import { DeleteClassByIdParamDto } from './dto/params/delete-class-by-id-param.dto';
-import { GetClassesByUserIdDto } from './dto/params/get-classes-by-user-id.dto';
 import { SearchClassesByTitleQueryDto } from './dto/queries/search-classes-by-title-query.dto';
 import { JoinClassByTokenDto } from './dto/bodies/join-class-by-token.dto';
 import { ExitClassDto } from './dto/bodies/exit-class.dto';
@@ -33,14 +32,12 @@ import { RemoveMembersFromClassDto } from './dto/bodies/remove-members-from-clas
 import { UpdateItemInClassResponseInterface } from './interfaces/update-item-in-class-response.interface';
 import { GetClassByUserIdQueryDto } from './dto/queries/get-class-by-user-Id-query.dto';
 import { GetClassByJoinTokenParamDto } from './dto/params/get-class-by-join-token.param.dto';
-import { GetClassByJoinTokenQueryDto } from './dto/queries/get-class-by-join-token.query.dto';
 import { RemoveStudySetByClassIdBodyDto } from './dto/bodies/remove-study-set-by-class-id-body.dto';
 import { RemoveFolderByClassIdBodyDto } from './dto/bodies/remove-folder-by-class-id-body.dto';
-import { UpdateRecentClassBodyDto } from './dto/bodies/update-recent-class-body.dto';
+import { UpdateRecentClassParamDto } from './dto/params/update-recent-class.param.dto';
 import { InviteUserJoinClassBodyDto } from './dto/bodies/invite-user-join-class-body.dto';
 import { InviteUserJoinClassResponseInterface } from './interfaces/invite-user-join-class-response.interface';
 import { CacheInterceptor } from '@nestjs/cache-manager';
-import { DeleteAllClassByUserIdParamDto } from './dto/params/delete-all-class-by-user-id-param.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -52,12 +49,13 @@ export class ClassController {
   @Get('/token/:joinToken')
   @HttpCode(HttpStatus.OK)
   async getClassByJoinToken(
+    @Request() req,
     @Param() getClassByJoinTokenParamDto: GetClassByJoinTokenParamDto,
-    @Query() getClassByJoinTokenQueryDto: GetClassByJoinTokenQueryDto,
   ): Promise<GetClassResponseInterface> {
+    const userId = req.user.id;
     return this.classService.getClassByJoinToken(
       getClassByJoinTokenParamDto,
-      getClassByJoinTokenQueryDto,
+      userId,
     );
   }
 
@@ -69,12 +67,13 @@ export class ClassController {
     return this.classService.searchClassByTitle(searchClassesByTitleQueryDto);
   }
 
-  @Get('/recent/:userId')
+  @Get('/recent')
   @HttpCode(HttpStatus.OK)
   async getRecentClassesByUserId(
-    @Param() getClassesByUserIdDto: GetClassesByUserIdDto,
+    @Request() req,
   ): Promise<GetClassResponseInterface[]> {
-    return this.classService.getRecentClassesByUserId(getClassesByUserIdDto);
+    const userId = req.user.id;
+    return this.classService.getRecentClassesByUserId(userId);
   }
 
   @Get('/:id')
@@ -85,14 +84,15 @@ export class ClassController {
     return this.classService.getClassById(getClassByIdParamDto);
   }
 
-  @Get('/user/:userId')
+  @Get('/user')
   @HttpCode(HttpStatus.OK)
   async getClassesByUserId(
-    @Param() getClassesByUserIdDto: GetClassesByUserIdDto,
+    @Request() req,
     @Query() getClassByUserIdQueryDto: GetClassByUserIdQueryDto,
   ): Promise<GetClassResponseInterface[]> {
+    const userId = req.user.id;
     return this.classService.getClassesByUserId(
-      getClassesByUserIdDto,
+      userId,
       getClassByUserIdQueryDto,
     );
   }
@@ -100,88 +100,124 @@ export class ClassController {
   @Put('/:id')
   @HttpCode(HttpStatus.OK)
   async updateClass(
+    @Request() req,
     @Param() updateClassByIdParamDto: UpdateClassByIdParamDto,
     @Body() updateClassByIdDto: UpdateClassByIdDto,
   ): Promise<CreateClassResponseInterface> {
-    console.log('updateClassByIdParamDto', updateClassByIdParamDto);
+    const ownerId = req.user.id;
     return this.classService.updateClass(
       updateClassByIdParamDto,
       updateClassByIdDto,
+      ownerId,
     );
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createClass(
+    @Request() req,
     @Body() createClassDto: CreateClassDto,
   ): Promise<CreateClassResponseInterface> {
-    return this.classService.createClass(createClassDto);
+    const ownerId = req.user.id;
+    return this.classService.createClass(createClassDto, ownerId);
   }
 
   @Post('/join')
   @HttpCode(HttpStatus.OK)
   async joinClassByJoinToken(
+    @Request() req,
     @Body() joinClassByTokenDto: JoinClassByTokenDto,
   ): Promise<UpdateItemInClassResponseInterface> {
-    return this.classService.joinClassByJoinToken(joinClassByTokenDto);
+    const userId = req.user.id;
+    return this.classService.joinClassByJoinToken(joinClassByTokenDto, userId);
   }
 
   @Post('/exit')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async exitClass(@Body() exitClassDto: ExitClassDto): Promise<void> {
-    return this.classService.exitClass(exitClassDto);
+  async exitClass(
+    @Request() req,
+    @Body() exitClassDto: ExitClassDto,
+  ): Promise<void> {
+    const userId = req.user.id;
+    return this.classService.exitClass(exitClassDto, userId);
   }
 
   @Post('/folders')
   @HttpCode(HttpStatus.CREATED)
   async updateClassFolders(
+    @Request() req,
     @Body() updateFoldersInClassDto: UpdateFoldersInClassDto,
   ): Promise<UpdateItemInClassResponseInterface> {
-    return this.classService.updateClassFolders(updateFoldersInClassDto);
+    const userId = req.user.id;
+    return this.classService.updateClassFolders(
+      updateFoldersInClassDto,
+      userId,
+    );
   }
 
   @Post('/remove-folder')
   @HttpCode(HttpStatus.OK)
   async removeFolderByClassId(
+    @Request() req,
     @Body() removeFolderByClassIdBodyDto: RemoveFolderByClassIdBodyDto,
   ): Promise<GetClassResponseInterface> {
+    const userId = req.user.id;
     return this.classService.removeFolderByClassId(
       removeFolderByClassIdBodyDto,
+      userId,
     );
   }
 
   @Post('/study-sets')
   @HttpCode(HttpStatus.CREATED)
   async updateStudySetsInClass(
+    @Request() req,
     @Body() updateStudySetsInClassDto: UpdateStudySetsInClassDto,
   ): Promise<UpdateItemInClassResponseInterface> {
-    return this.classService.updateStudySetsInClass(updateStudySetsInClassDto);
+    const userId = req.user.id;
+    return this.classService.updateStudySetsInClass(
+      updateStudySetsInClassDto,
+      userId,
+    );
   }
 
   @Post('/remove-study-set')
   @HttpCode(HttpStatus.OK)
   async removeStudySetByClassId(
+    @Request() req,
     @Body() removeStudySetByClassIdBodyDto: RemoveStudySetByClassIdBodyDto,
   ): Promise<GetClassResponseInterface> {
+    const userId = req.user.id;
     return this.classService.removeStudySetByClassId(
       removeStudySetByClassIdBodyDto,
+      userId,
     );
   }
 
   @Post('/members')
   @HttpCode(HttpStatus.CREATED)
   async removeMembersFromClass(
+    @Request() req,
     @Body() removeMembersFromClassDto: RemoveMembersFromClassDto,
   ): Promise<GetClassResponseInterface> {
-    return this.classService.removeMembersFromClass(removeMembersFromClassDto);
+    const userId = req.user.id;
+    return this.classService.removeMembersFromClass(
+      removeMembersFromClassDto,
+      userId,
+    );
   }
 
-  @Post('/recent')
+  @Post('/recent/:id')
   @HttpCode(HttpStatus.CREATED)
   async updateRecentClass(
-    @Body() updateRecentClassBodyDto: UpdateRecentClassBodyDto,
+    @Request() req,
+    @Param() updateRecentClassBodyDto: UpdateRecentClassParamDto,
   ) {
-    return this.classService.updateRecentClass(updateRecentClassBodyDto);
+    const userId = req.user.id;
+    return this.classService.updateRecentClass(
+      updateRecentClassBodyDto,
+      userId,
+    );
   }
 
   @Post('/invite')
@@ -195,11 +231,8 @@ export class ClassController {
   @Delete('/user')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteAndExitAllClassesOfUser(@Request() req): Promise<void> {
-    const deleteAllClassByUserIdParamDto = new DeleteAllClassByUserIdParamDto();
-    deleteAllClassByUserIdParamDto.userId = req.user.id;
-    return this.classService.deleteAndExitAllClassesOfUser(
-      deleteAllClassByUserIdParamDto,
-    );
+    const userId = req.user.id;
+    return this.classService.deleteAndExitAllClassesOfUser(userId);
   }
 
   @Delete('/:id')

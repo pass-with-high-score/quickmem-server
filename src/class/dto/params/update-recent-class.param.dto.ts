@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsUUID } from 'class-validator';
 
-export class DeleteAllClassByUserIdParamDto {
+export class UpdateRecentClassParamDto {
   @IsUUID()
   @IsNotEmpty()
-  userId: string;
+  classId: string;
 }
