@@ -10,7 +10,6 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
-  Param,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryProvider } from './cloudinary.provider';
@@ -19,10 +18,9 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { ImageService } from './image.service';
 import { DeleteImageDto } from './dto/bodies/delete-image.dto';
-import { UploadAvatarParamDto } from './dto/bodies/upload-avatar-param.dto';
 import { AuthService } from '../auth/auth.service';
-import { UpdateAvatarParamDto } from '../auth/dto/params/update-avatar-param.dto';
 import { UpdateAvatarDto } from '../auth/dto/bodies/update-avatar.dto';
+import { Request as ReqUser } from '@nestjs/common/decorators/http/route-params.decorator';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -62,21 +60,19 @@ export class UploadController {
     FileInterceptor('avatar', { ...multerConfig, limits: { files: 1 } }),
   ) // Limit to 1 file
   async uploadAvatar(
+    @ReqUser() req,
     @UploadedFile() file: Express.Multer.File,
-    @Param() uploadAvatarParamDto: UploadAvatarParamDto,
   ) {
     try {
       if (!file || !file.buffer) {
         throw new BadRequestException('Empty file');
       }
       const result = await this.cloudinaryProvider.uploadAvatar(file);
-      const params: UpdateAvatarParamDto = {
-        id: uploadAvatarParamDto.userId,
-      };
       const body: UpdateAvatarDto = {
         avatar: result.url,
       };
-      await this.authService.updateAvatar(params, body);
+      const userId = req.user.id;
+      await this.authService.updateAvatar(userId, body);
       return {
         message: 'Upload successful!',
         url: result.url,

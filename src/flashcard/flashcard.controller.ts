@@ -68,7 +68,7 @@ export class FlashcardController {
     );
   }
 
-  @Get('speech')
+  @Get('/speech')
   async getSpeech(
     @Query() getSpeechQueryDto: GetSpeechQueryDto,
   ): Promise<Buffer> {
@@ -113,14 +113,6 @@ export class FlashcardController {
     @Body() createFlashcardDto: CreateFlashcardDto,
   ): Promise<FlashcardResponseInterface> {
     return await this.flashcardService.createFlashcard(createFlashcardDto);
-  }
-
-  @Delete('/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteFlashcardById(
-    @Param() deleteFlashcardParamDto: DeleteFlashcardParamDto,
-  ): Promise<void> {
-    return this.flashcardService.deleteFlashcardById(deleteFlashcardParamDto);
   }
 
   @Put('/:id')
@@ -206,5 +198,13 @@ export class FlashcardController {
       updateFlashcardParamDto,
       starredFlashcardDto,
     );
+  }
+
+  @Delete('/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteFlashcardById(
+    @Param() deleteFlashcardParamDto: DeleteFlashcardParamDto,
+  ): Promise<void> {
+    return this.flashcardService.deleteFlashcardById(deleteFlashcardParamDto);
   }
 }

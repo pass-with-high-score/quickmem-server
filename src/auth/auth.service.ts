@@ -16,7 +16,6 @@ import { UpdateFullnameDto } from './dto/bodies/update-fullname.dto';
 import { UpdateFullnameResponseInterfaceDto } from './interfaces/update-fullname-response.interface.dto';
 import { UpdateCoinDto } from './dto/bodies/update-coin.dto';
 import { UpdateCoinResponseInterface } from './interfaces/update-coin-response.interface';
-import { UpdateAvatarParamDto } from './dto/params/update-avatar-param.dto';
 import { UpdateAvatarDto } from './dto/bodies/update-avatar.dto';
 import { UpdateAvatarInterface } from './interfaces/update-avatar.interface';
 import { GetUserDetailQueryDto } from './dto/queries/get-user-detail-query.dto';
@@ -31,7 +30,6 @@ import { ChangeUsernameBodyDto } from './dto/bodies/change-username-body.dto';
 import { ChangePasswordResponseInterface } from './interfaces/change-password-response.interface';
 import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-username-query.dto';
 import { UserResponseInterface } from './interfaces/user-response.interface';
-import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto';
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
 import { UpdateRoleDto } from './dto/bodies/update-role.dto';
 import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
@@ -53,8 +51,9 @@ export class AuthService {
 
   async updateFullname(
     updateFullnameDto: UpdateFullnameDto,
+    userId: string,
   ): Promise<UpdateFullnameResponseInterfaceDto> {
-    return await this.usersRepository.updateFullname(updateFullnameDto);
+    return await this.usersRepository.updateFullname(updateFullnameDto, userId);
   }
 
   async login(
@@ -88,8 +87,9 @@ export class AuthService {
 
   async setNewPassword(
     setNewPasswordDto: SetNewPasswordDto,
+    email: string,
   ): Promise<SetNewPasswordResponseInterface> {
-    return this.usersRepository.setNewPassword(setNewPasswordDto);
+    return this.usersRepository.setNewPassword(setNewPasswordDto, email);
   }
 
   async resendVerificationEmail(
@@ -100,18 +100,16 @@ export class AuthService {
 
   async updateCoin(
     updateCoinDto: UpdateCoinDto,
+    userId: string,
   ): Promise<UpdateCoinResponseInterface> {
-    return this.usersRepository.updateCoin(updateCoinDto);
+    return this.usersRepository.updateCoin(updateCoinDto, userId);
   }
 
   async updateAvatar(
-    updateAvatarParamDto: UpdateAvatarParamDto,
+    userId: string,
     updateAvatarDto: UpdateAvatarDto,
   ): Promise<UpdateAvatarInterface> {
-    return this.usersRepository.updateAvatar(
-      updateAvatarParamDto,
-      updateAvatarDto,
-    );
+    return this.usersRepository.updateAvatar(updateAvatarDto, userId);
   }
 
   async getUserProfileDetail(
@@ -126,14 +124,16 @@ export class AuthService {
 
   async verifyPassword(
     verifyPasswordDto: VerifyPasswordBodyDto,
+    userId: string,
   ): Promise<VerifyPasswordResponseInterface> {
-    return this.usersRepository.verifyPassword(verifyPasswordDto);
+    return this.usersRepository.verifyPassword(verifyPasswordDto, userId);
   }
 
   async updateEmail(
     updateEmailDto: UpdateEmailDto,
+    userId: string,
   ): Promise<UpdateEmailResponseInterfaceDto> {
-    return this.usersRepository.updateEmail(updateEmailDto);
+    return this.usersRepository.updateEmail(updateEmailDto, userId);
   }
 
   async verifyEmail(
@@ -144,8 +144,9 @@ export class AuthService {
 
   async changeUsername(
     changeUsernameBodyDto: ChangeUsernameBodyDto,
+    userId: string,
   ): Promise<ChangePasswordResponseInterface> {
-    return this.usersRepository.changeUsername(changeUsernameBodyDto);
+    return this.usersRepository.changeUsername(changeUsernameBodyDto, userId);
   }
 
   async searchUserByUsername(
@@ -157,15 +158,16 @@ export class AuthService {
   }
 
   async getUserProfileById(
-    getUserProfileParamDto: GetUserProfileParamDto,
+    userId: string,
   ): Promise<GetUserProfileResponseInterface> {
-    return this.usersRepository.getUserProfileById(getUserProfileParamDto);
+    return this.usersRepository.getUserProfileById(userId);
   }
 
   async updateRole(
     updateRoleDto: UpdateRoleDto,
+    userId: string,
   ): Promise<UpdateRoleResponseInterfaceDto> {
-    return this.usersRepository.updateRole(updateRoleDto);
+    return this.usersRepository.updateRole(updateRoleDto, userId);
   }
 
   async getAvatars(): Promise<GetAvatarsResponseInterface[]> {

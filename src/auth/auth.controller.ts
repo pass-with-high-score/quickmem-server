@@ -12,6 +12,7 @@ import {
   Res,
   UseGuards,
   UseInterceptors,
+  Request as ReqUser,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupCredentialsDto } from './dto/bodies/signup-credentials.dto';
@@ -35,7 +36,6 @@ import { FacebookAuthGuard } from './guard/facebook-auth.guard';
 import { AuthProviderEnum } from './enums/auth-provider.enum';
 import { UpdateCoinDto } from './dto/bodies/update-coin.dto';
 import { UpdateCoinResponseInterface } from './interfaces/update-coin-response.interface';
-import { UpdateAvatarParamDto } from './dto/params/update-avatar-param.dto';
 import { UpdateAvatarDto } from './dto/bodies/update-avatar.dto';
 import { UpdateAvatarInterface } from './interfaces/update-avatar.interface';
 import { AuthGuard } from '@nestjs/passport';
@@ -51,7 +51,6 @@ import { ChangeUsernameBodyDto } from './dto/bodies/change-username-body.dto';
 import { ChangePasswordResponseInterface } from './interfaces/change-password-response.interface';
 import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-username-query.dto';
 import { UserResponseInterface } from './interfaces/user-response.interface';
-import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto';
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
 import { UpdateRoleDto } from './dto/bodies/update-role.dto';
 import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
@@ -115,20 +114,23 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.OK)
   async getUserProfileDetail(
-    @Query() getUserDetailQueryDto: GetUserDetailQueryDto,
+    @ReqUser() req,
     @Param() getUserDetailParamDto: GetUserDetailParamDto,
   ): Promise<UserDetailResponseInterface> {
+    const getUserDetailQueryDto = new GetUserDetailQueryDto();
+    getUserDetailQueryDto.isOwner = req.user.id === getUserDetailParamDto.id;
     return this.authService.getUserProfileDetail(
       getUserDetailQueryDto,
       getUserDetailParamDto,
     );
   }
 
-  @Get('/profile/:id')
+  @Get('/profile')
   async getUserProfileById(
-    @Param() getUserProfileParamDto: GetUserProfileParamDto,
+    @ReqUser() req,
   ): Promise<GetUserProfileResponseInterface> {
-    return this.authService.getUserProfileById(getUserProfileParamDto);
+    const userId = req.user.id;
+    return this.authService.getUserProfileById(userId);
   }
 
   @Get('/verify-email')
@@ -285,27 +287,33 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Patch('/user/fullname')
   async updateFullname(
+    @ReqUser() req,
     @Body() updateFullnameDto: UpdateFullnameDto,
   ): Promise<UpdateFullnameResponseInterfaceDto> {
-    return await this.authService.updateFullname(updateFullnameDto);
+    const userId = req.user.id;
+    return await this.authService.updateFullname(updateFullnameDto, userId);
   }
 
   @UseGuards(OwnershipGuard)
   @HttpCode(HttpStatus.OK)
   @Patch('/user/email')
   async updateEmail(
+    @ReqUser() req,
     @Body() updateEmailDto: UpdateEmailDto,
   ): Promise<UpdateEmailResponseInterfaceDto> {
-    return await this.authService.updateEmail(updateEmailDto);
+    const userId = req.user.id;
+    return await this.authService.updateEmail(updateEmailDto, userId);
   }
 
   @UseGuards(OwnershipGuard)
   @HttpCode(HttpStatus.OK)
   @Patch('/user/username')
   async changeUsername(
+    @ReqUser() req,
     @Body() changeUsernameBodyDto: ChangeUsernameBodyDto,
   ): Promise<ChangePasswordResponseInterface> {
-    return this.authService.changeUsername(changeUsernameBodyDto);
+    const userId = req.user.id;
+    return this.authService.changeUsername(changeUsernameBodyDto, userId);
   }
 
   @UseGuards(OwnershipGuard)
@@ -313,9 +321,11 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Patch('/user/password')
   async setNewPassword(
+    @ReqUser() req,
     @Body() setNewPasswordDto: SetNewPasswordDto,
   ): Promise<SetNewPasswordResponseInterface> {
-    return this.authService.setNewPassword(setNewPasswordDto);
+    const email = req.user.email;
+    return this.authService.setNewPassword(setNewPasswordDto, email);
   }
 
   @UseGuards(OwnershipGuard)
@@ -323,9 +333,11 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Patch('/user/role')
   async updateRole(
+    @ReqUser() req,
     @Body() updateRoleDto: UpdateRoleDto,
   ): Promise<UpdateRoleResponseInterfaceDto> {
-    return this.authService.updateRole(updateRoleDto);
+    const userId = req.user.id;
+    return this.authService.updateRole(updateRoleDto, userId);
   }
 
   @SkipThrottle()
@@ -365,9 +377,11 @@ export class AuthController {
   @Post('/verify-password')
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   async verifyPassword(
+    @ReqUser() req,
     @Body() verifyPasswordDto: VerifyPasswordBodyDto,
   ): Promise<VerifyPasswordResponseInterface> {
-    return this.authService.verifyPassword(verifyPasswordDto);
+    const userId = req.user.id;
+    return this.authService.verifyPassword(verifyPasswordDto, userId);
   }
 
   @Throttle({ default: { limit: 3, ttl: 60000 } })
@@ -411,18 +425,21 @@ export class AuthController {
   @Post('/coin')
   @HttpCode(HttpStatus.OK)
   async updateCoin(
+    @ReqUser() req,
     @Body() updateCoinDto: UpdateCoinDto,
   ): Promise<UpdateCoinResponseInterface> {
-    return this.authService.updateCoin(updateCoinDto);
+    const userId = req.user.id;
+    return this.authService.updateCoin(updateCoinDto, userId);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.OK)
-  @Patch('/user/avatar/:id')
+  @Patch('/user/avatar')
   async updateAvatar(
-    @Param() updateAvatarParamDto: UpdateAvatarParamDto,
+    @ReqUser() req,
     @Body() updateAvatarDto: UpdateAvatarDto,
   ): Promise<UpdateAvatarInterface> {
-    return this.authService.updateAvatar(updateAvatarParamDto, updateAvatarDto);
+    const userId = req.user.id;
+    return this.authService.updateAvatar(userId, updateAvatarDto);
   }
 }

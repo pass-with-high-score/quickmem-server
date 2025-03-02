@@ -34,7 +34,6 @@ import { UpdateCoinDto } from './dto/bodies/update-coin.dto';
 import { UpdateCoinResponseInterface } from './interfaces/update-coin-response.interface';
 import { logger } from '../winston-logger.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { UpdateAvatarParamDto } from './dto/params/update-avatar-param.dto';
 import { UpdateAvatarDto } from './dto/bodies/update-avatar.dto';
 import { UpdateAvatarInterface } from './interfaces/update-avatar.interface';
 import { UserDetailResponseInterface } from './interfaces/user-detail-response.interface';
@@ -52,7 +51,6 @@ import { ChangeUsernameBodyDto } from './dto/bodies/change-username-body.dto';
 import { ChangePasswordResponseInterface } from './interfaces/change-password-response.interface';
 import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-username-query.dto';
 import { UserResponseInterface } from './interfaces/user-response.interface';
-import { GetUserProfileParamDto } from './dto/params/get-user-profile.param.dto';
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
 import { UpdateRoleDto } from './dto/bodies/update-role.dto';
 import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
@@ -83,8 +81,9 @@ export class AuthRepository extends Repository<UserEntity> {
 
   async updateCoin(
     updateCoinDto: UpdateCoinDto,
+    userId: string,
   ): Promise<UpdateCoinResponseInterface> {
-    const { userId, coin, action } = updateCoinDto;
+    const { coin, action } = updateCoinDto;
 
     const user = await this.findOne({ where: { id: userId } });
 
@@ -301,8 +300,9 @@ export class AuthRepository extends Repository<UserEntity> {
 
   async updateFullname(
     updateFullnameDto: UpdateFullnameDto,
+    userId: string,
   ): Promise<UpdateFullnameResponseInterfaceDto> {
-    const { userId, fullname } = updateFullnameDto;
+    const { fullname } = updateFullnameDto;
     const user = await this.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException({
@@ -505,8 +505,9 @@ export class AuthRepository extends Repository<UserEntity> {
 
   async setNewPassword(
     setNewPasswordDto: SetNewPasswordDto,
+    email: string,
   ): Promise<SetNewPasswordResponseInterface> {
-    const { email, oldPassword, newPassword } = setNewPasswordDto;
+    const { oldPassword, newPassword } = setNewPasswordDto;
     const user = await this.findOne({ where: { email } });
 
     if (!user) {
@@ -625,14 +626,13 @@ export class AuthRepository extends Repository<UserEntity> {
   }
 
   async updateAvatar(
-    updateAvatarParamDto: UpdateAvatarParamDto,
     updateAvatarDto: UpdateAvatarDto,
+    userId: string,
   ): Promise<UpdateAvatarInterface> {
-    const { id } = updateAvatarParamDto;
     const { avatar } = updateAvatarDto;
 
     try {
-      const user = await this.findOne({ where: { id } });
+      const user = await this.findOne({ where: { id: userId } });
       if (!user) {
         throw new NotFoundException({
           statusCode: HttpStatus.NOT_FOUND,
@@ -658,7 +658,7 @@ export class AuthRepository extends Repository<UserEntity> {
       };
     } catch (error) {
       logger.error(
-        `Failed to update avatar for user ID ${id}: ${error.message}`,
+        `Failed to update avatar for user ID ${userId}: ${error.message}`,
       );
       if (error instanceof NotFoundException) {
         throw error;
@@ -802,8 +802,9 @@ export class AuthRepository extends Repository<UserEntity> {
 
   async verifyPassword(
     verifyPasswordDto: VerifyPasswordBodyDto,
+    userId: string,
   ): Promise<VerifyPasswordResponseInterface> {
-    const { userId, password } = verifyPasswordDto;
+    const { password } = verifyPasswordDto;
     const user = await this.findOne({ where: { id: userId } });
 
     if (!user) {
@@ -824,9 +825,10 @@ export class AuthRepository extends Repository<UserEntity> {
 
   async updateEmail(
     updateEmailDto: UpdateEmailDto,
+    userId: string,
   ): Promise<UpdateEmailResponseInterfaceDto> {
     console.log(updateEmailDto);
-    const { userId, email } = updateEmailDto;
+    const { email } = updateEmailDto;
 
     const user = await this.findOne({ where: { id: userId } });
     if (!user) {
@@ -921,8 +923,9 @@ export class AuthRepository extends Repository<UserEntity> {
 
   async changeUsername(
     changeUsernameBodyDto: ChangeUsernameBodyDto,
+    userId: string,
   ): Promise<ChangePasswordResponseInterface> {
-    const { userId, newUsername } = changeUsernameBodyDto;
+    const { newUsername } = changeUsernameBodyDto;
     const user = await this.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException({
@@ -1008,17 +1011,16 @@ export class AuthRepository extends Repository<UserEntity> {
   }
 
   async getUserProfileById(
-    getUserProfileParamDto: GetUserProfileParamDto,
+    userId: string,
   ): Promise<GetUserProfileResponseInterface> {
-    const { id } = getUserProfileParamDto;
-    const user = await this.findOne({ where: { id } });
+    const user = await this.findOne({ where: { id: userId } });
     const studySetCount = await this.dataSource
       .getRepository(StudySetEntity)
-      .count({ where: { owner: { id } } });
+      .count({ where: { owner: { id: userId } } });
 
     const folderCount = await this.dataSource
       .getRepository(FolderEntity)
-      .count({ where: { owner: { id } } });
+      .count({ where: { owner: { id: userId } } });
 
     if (!user) {
       throw new NotFoundException({
@@ -1047,8 +1049,9 @@ export class AuthRepository extends Repository<UserEntity> {
 
   async updateRole(
     updateRoleDto: UpdateRoleDto,
+    userId: string,
   ): Promise<UpdateRoleResponseInterfaceDto> {
-    const { userId, role } = updateRoleDto;
+    const { role } = updateRoleDto;
 
     const user = await this.findOne({ where: { id: userId } });
     if (!user) {
