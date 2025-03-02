@@ -88,9 +88,6 @@ export class UserEntity {
   facebookId: string;
 
   @Column({ nullable: true })
-  refreshToken: string;
-
-  @Column({ nullable: true })
   resetPasswordToken: string;
 
   @Column({ nullable: true })

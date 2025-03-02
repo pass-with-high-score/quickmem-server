@@ -11,6 +11,7 @@ import * as jwt from 'jsonwebtoken'; // Import jsonwebtoken library
 interface JwtPayload {
   userId: string;
   email: string;
+  type: string;
 }
 
 @Injectable()
@@ -33,6 +34,11 @@ export class OwnershipGuard implements CanActivate {
     } catch (err) {
       console.log('err', err);
       throw new ForbiddenException('Invalid token');
+    }
+
+    const type = decoded.type; // Extract the token type from the decoded token
+    if (type === 'refresh') {
+      throw new ForbiddenException('Invalid token type');
     }
 
     const userId = decoded.userId; // Extract user ID from the decoded token

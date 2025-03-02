@@ -245,12 +245,16 @@ export class AuthRepository extends Repository<UserEntity> {
             provider: user.provider,
           });
         }
-        const payload: { email: string; userId: string } = {
+        const accessTokenPayload = {
           email,
           userId: user.id,
         };
-        const access_token: string = this.jwtService.sign(payload);
-        const refresh_token: string = this.jwtService.sign(payload, {
+        const refreshTokenPayload = {
+          userId: user.id,
+          type: 'refresh',
+        };
+        const accessToken: string = this.jwtService.sign(accessTokenPayload);
+        const refreshToken: string = this.jwtService.sign(refreshTokenPayload, {
           expiresIn: '30d',
         });
         const isPremium = await this.isUserPremium(user.id);
@@ -268,12 +272,12 @@ export class AuthRepository extends Repository<UserEntity> {
           fullName: user.fullName,
           avatarUrl: user.avatarUrl,
           role: user.role,
-          accessToken: access_token,
+          accessToken: accessToken,
           isPremium,
           provider: user.provider,
           coin: user.coins,
           isVerified: user.isVerified,
-          refreshToken: refresh_token,
+          refreshToken: refreshToken,
           birthday: user.birthday,
           bannedAt: user.bannedAt,
           userStatus: user.userStatus,
@@ -343,8 +347,9 @@ export class AuthRepository extends Repository<UserEntity> {
   ): Promise<GetNewTokenResponseInterface> {
     try {
       const payload = this.jwtService.verify(refreshToken);
+      console.log(payload);
       const user = await this.findOne({
-        where: { username: payload.username, refreshToken },
+        where: { email: payload.email, id: payload.id },
       });
 
       if (!user) {
@@ -354,15 +359,19 @@ export class AuthRepository extends Repository<UserEntity> {
         });
       }
 
-      const accessToken = this.jwtService.sign({
+      const accessTokenPayload = {
         email: payload.email,
-        id: user.id,
-      });
-      const newRefreshToken = this.jwtService.sign(
-        { email: payload.email, id: user.id },
-        { expiresIn: '30d' },
-      );
+        userId: user.id,
+      };
+      const refreshTokenPayload = {
+        userId: user.id,
+        type: 'refresh',
+      };
 
+      const accessToken = this.jwtService.sign(accessTokenPayload);
+      const newRefreshToken = this.jwtService.sign(refreshTokenPayload, {
+        expiresIn: '30d',
+      });
       return {
         accessToken,
         refreshToken: newRefreshToken,
@@ -391,15 +400,18 @@ export class AuthRepository extends Repository<UserEntity> {
     user.otpExpires = null;
     user.isVerified = true;
     await this.save(user);
-
-    const payload: { email: string; userId: string } = {
-      email,
+    const refreshTokenPayload = {
+      userId: user.id,
+      type: 'refresh',
+    };
+    const accessTokenPayload = {
+      email: user.email,
       userId: user.id,
     };
-    const accessToken = this.jwtService.sign(payload);
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-    user.refreshToken = refreshToken;
-    await this.save(user);
+    const accessToken = this.jwtService.sign(accessTokenPayload);
+    const refreshToken = this.jwtService.sign(refreshTokenPayload, {
+      expiresIn: '30d',
+    });
     await this.sendEmailQueue.add('send-signup-email', {
       fullName: user.fullName,
       email: user.email,
@@ -490,7 +502,6 @@ export class AuthRepository extends Repository<UserEntity> {
       user.resetPasswordExpires = null;
       user.otp = null;
       user.otpExpires = null;
-      user.refreshToken = null;
       await this.save(user);
       await this.sendEmailQueue.add('reset-password-success', {
         fullName: user.fullName,

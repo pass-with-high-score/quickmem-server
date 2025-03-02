@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 class JwtPayloadInterface {
   userId: string;
   iat: number;
+  type: string;
 }
 
 @Injectable()
@@ -23,7 +24,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayloadInterface): Promise<UserEntity> {
-    const { userId, iat } = payload;
+    const { userId, iat, type } = payload;
+    if (type === 'refresh') {
+      throw new UnauthorizedException('Invalid token type');
+    }
 
     const user: UserEntity = await this.usersRepository.findOne({
       where: { id: userId },
