@@ -76,14 +76,6 @@ export class ClassController {
     return this.classService.getRecentClassesByUserId(userId);
   }
 
-  @Get('/:id')
-  @HttpCode(HttpStatus.OK)
-  async getClassById(
-    @Param() getClassByIdParamDto: GetClassByIdParamDto,
-  ): Promise<GetClassResponseInterface> {
-    return this.classService.getClassById(getClassByIdParamDto);
-  }
-
   @Get('/user')
   @HttpCode(HttpStatus.OK)
   async getClassesByUserId(
@@ -95,6 +87,14 @@ export class ClassController {
       userId,
       getClassByUserIdQueryDto,
     );
+  }
+
+  @Get('/:id')
+  @HttpCode(HttpStatus.OK)
+  async getClassById(
+    @Param() getClassByIdParamDto: GetClassByIdParamDto,
+  ): Promise<GetClassResponseInterface> {
+    return this.classService.getClassById(getClassByIdParamDto);
   }
 
   @Put('/:id')
