@@ -8,9 +8,7 @@ import { UpdateIsReadResponseInterface } from './interfaces/update-is-read-respo
 import { DeleteNotificationParamDto } from './dto/params/delete-notification-param.dto';
 import { GetNotificationByIdParamDto } from './dto/params/get-notification-by-id-param.dto';
 import { GetNotificationByIdResponseInterface } from './interfaces/get-notification-by-id-response.interface';
-import { GetNotificationByUserIdParamDto } from './dto/params/get-notification-by-user-id-param.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ClearAllNotificationParamDto } from './dto/params/clear-all-notification-param.dto';
 
 @Injectable()
 export class NotificationService {
@@ -53,11 +51,9 @@ export class NotificationService {
   }
 
   async getNotificationsByUserId(
-    getNotificationByUserIdParamDto: GetNotificationByUserIdParamDto,
+    userId: string,
   ): Promise<GetNotificationByIdResponseInterface[]> {
-    return this.notificationRepository.getNotificationsByUserId(
-      getNotificationByUserIdParamDto,
-    );
+    return this.notificationRepository.getNotificationsByUserId(userId);
   }
 
   // automatically delete old notifications every day at midnight
@@ -66,11 +62,7 @@ export class NotificationService {
     return this.notificationRepository.deleteOldNotifications();
   }
 
-  async clearAllNotification(
-    clearAllNotificationBodyDto: ClearAllNotificationParamDto,
-  ): Promise<void> {
-    return this.notificationRepository.clearAllNotification(
-      clearAllNotificationBodyDto,
-    );
+  async clearAllNotification(userId: string): Promise<void> {
+    return this.notificationRepository.clearAllNotification(userId);
   }
 }

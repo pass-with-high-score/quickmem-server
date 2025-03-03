@@ -1,4 +1,11 @@
-import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { NotificationTypeEnum } from '../../enums/notification-type.enum';
 
 export class CreateNotificationBodyDto {

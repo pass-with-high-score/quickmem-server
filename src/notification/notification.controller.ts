@@ -18,7 +18,6 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { GetNotificationByIdParamDto } from './dto/params/get-notification-by-id-param.dto';
 import { GetNotificationByIdResponseInterface } from './interfaces/get-notification-by-id-response.interface';
-import { GetNotificationByUserIdParamDto } from './dto/params/get-notification-by-user-id-param.dto';
 import { CreateNotificationBodyDto } from './dto/bodies/create-notification-body.dto';
 import { CreateNotificationResponseInterface } from './interfaces/create-notification-response.interface';
 import { UpdateIsReadBodyDto } from './dto/bodies/update-is-read-body.dto';
@@ -27,7 +26,6 @@ import { UpdateIsReadResponseInterface } from './interfaces/update-is-read-respo
 import { DeleteNotificationParamDto } from './dto/params/delete-notification-param.dto';
 import { RegisterDeviceTokenBodyDto } from './dto/bodies/register-device-token-body.dto';
 import { CacheInterceptor } from '@nestjs/cache-manager';
-import { ClearAllNotificationParamDto } from './dto/params/clear-all-notification-param.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -49,14 +47,13 @@ export class NotificationController {
     );
   }
 
-  @Get('/user/:id')
+  @Get('/user')
   @HttpCode(HttpStatus.OK)
   async getNotificationsByUserId(
-    @Param() getNotificationByUserIdParamDto: GetNotificationByUserIdParamDto,
+    @Request() req,
   ): Promise<GetNotificationByIdResponseInterface[]> {
-    return this.notificationService.getNotificationsByUserId(
-      getNotificationByUserIdParamDto,
-    );
+    const userId = req.user.id;
+    return this.notificationService.getNotificationsByUserId(userId);
   }
 
   @Patch('/:id/read')
@@ -83,10 +80,12 @@ export class NotificationController {
 
   @Post('register')
   async registerDevice(
+    @Request() req,
     @Body() registerDeviceTokenBodyDto: RegisterDeviceTokenBodyDto,
   ): Promise<void> {
+    const userId = req.user.id;
     return this.messagingService.registerDeviceToken(
-      registerDeviceTokenBodyDto.userId,
+      userId,
       registerDeviceTokenBodyDto.deviceToken,
     );
   }
@@ -94,11 +93,8 @@ export class NotificationController {
   @Post('clear')
   @HttpCode(HttpStatus.NO_CONTENT)
   async clearAllNotification(@Request() req): Promise<void> {
-    const clearAllNotificationBodyDto = new ClearAllNotificationParamDto();
-    clearAllNotificationBodyDto.userId = req.user.id;
-    return this.notificationService.clearAllNotification(
-      clearAllNotificationBodyDto,
-    );
+    const userId = req.user.id;
+    return this.notificationService.clearAllNotification(userId);
   }
 
   @Delete('/:id')

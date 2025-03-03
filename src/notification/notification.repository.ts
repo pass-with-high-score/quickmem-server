@@ -15,11 +15,9 @@ import { UpdateIsReadResponseInterface } from './interfaces/update-is-read-respo
 import { DeleteNotificationParamDto } from './dto/params/delete-notification-param.dto';
 import { GetNotificationByIdParamDto } from './dto/params/get-notification-by-id-param.dto';
 import { GetNotificationByIdResponseInterface } from './interfaces/get-notification-by-id-response.interface';
-import { GetNotificationByUserIdParamDto } from './dto/params/get-notification-by-user-id-param.dto';
 import { MessagingService } from '../firebase/messaging.service';
 import { IMessaginToTokensParams } from '../firebase/imessaging.interface';
 import { DeviceEntity } from '../firebase/entities/device.entity';
-import { ClearAllNotificationParamDto } from './dto/params/clear-all-notification-param.dto';
 
 @Injectable()
 export class NotificationRepository extends Repository<NotificationEntity> {
@@ -166,11 +164,10 @@ export class NotificationRepository extends Repository<NotificationEntity> {
 
   // get notifications by user id
   async getNotificationsByUserId(
-    getNotificationByUserIdParamDto: GetNotificationByUserIdParamDto,
+    userId: string,
   ): Promise<GetNotificationByIdResponseInterface[]> {
-    const { id } = getNotificationByUserIdParamDto;
     const notifications = await this.find({
-      where: { user: { id: id } },
+      where: { user: { id: userId } },
       relations: ['user'],
       order: { createdAt: 'DESC' },
     });
@@ -289,10 +286,7 @@ export class NotificationRepository extends Repository<NotificationEntity> {
     }
   }
 
-  async clearAllNotification(
-    clearAllNotificationBodyDto: ClearAllNotificationParamDto,
-  ): Promise<void> {
-    const { userId } = clearAllNotificationBodyDto;
+  async clearAllNotification(userId: string): Promise<void> {
     try {
       await this.delete({ user: { id: userId } });
     } catch (error) {
