@@ -9,7 +9,6 @@ import { FolderEntity } from './entities/folder.entity';
 import { CreateFolderDto } from './dto/bodies/create-folder.dto';
 import { FolderResponseInterface } from './interfaces/folder-response.interface';
 import { UserEntity } from '../auth/entities/user.entity';
-import { GetFoldersByOwnerIdDto } from './dto/params/get-folders-by-owner-id.dto';
 import { GetFolderResponseInterface } from './interfaces/get-folder-response.interface';
 import { GetFoldersByIdDto } from './dto/params/get-folders-by-id.dto';
 import { UpdateStudySetsInFolderDto } from './dto/bodies/update-study-sets-in-folder.dto';
@@ -25,7 +24,6 @@ import { GetFolderByCodeParamDto } from './dto/params/get-folder-by-code.param.d
 import { RecentStudySetEntity } from '../study-set/entities/recent-study-set.entity';
 import { UpdateRecentFolderBodyDto } from './dto/bodies/update-recent-folder-body.dto';
 import { RecentFolderEntity } from './entities/recent-folder.entity';
-import { GetFoldersByUserIdDto } from './dto/params/get-folders-by-user-Id.dto';
 import { ResetFlashcardProgressInFolderParamDto } from './dto/params/reset-flashcard-progress-in-folder-param.dto';
 import { ResetFlashcardProgressInFolderQueryDto } from './dto/queries/reset-flashcard-progress-in-folder-query.dto';
 import { ResetFlashcardProgressResponseInterface } from '../study-set/interfaces/reset-flashcard-progress-response.interface';
@@ -35,7 +33,6 @@ import { TrueFalseStatusEnum } from '../flashcard/enums/true-false-status.enum';
 import { WriteStatusEnum } from '../flashcard/enums/write-status.enum';
 import { QuizFlashcardStatusEnum } from '../flashcard/enums/quiz-flashcard-status.enum';
 import { FlashcardEntity } from '../flashcard/entities/flashcard.entity';
-import { DeleteAllFoldersByUserIdParamDto } from './dto/params/delete-all-folders-by-user-id-param.dto';
 
 @Injectable()
 export class FolderRepository extends Repository<FolderEntity> {
@@ -45,8 +42,9 @@ export class FolderRepository extends Repository<FolderEntity> {
 
   async createFolder(
     createFolderDto: CreateFolderDto,
+    ownerId: string,
   ): Promise<FolderResponseInterface> {
-    const { title, description, isPublic, ownerId } = createFolderDto;
+    const { title, description, isPublic } = createFolderDto;
 
     const owner = await this.dataSource
       .getRepository(UserEntity)
@@ -112,10 +110,9 @@ export class FolderRepository extends Repository<FolderEntity> {
   }
 
   async getFolderByOwnerId(
-    getFoldersByOwnerIdDto: GetFoldersByOwnerIdDto,
+    ownerId: string,
     getFolderByOwnerIdQueryDto: GetFolderByOwnerIdQueryDto,
   ): Promise<GetFolderResponseInterface[]> {
-    const { ownerId } = getFoldersByOwnerIdDto;
     const { studySetId, classId } = getFolderByOwnerIdQueryDto;
     try {
       const folders = await this.find({
@@ -373,8 +370,9 @@ export class FolderRepository extends Repository<FolderEntity> {
 
   async updateRecentFolder(
     updateRecentFolderBodyDto: UpdateRecentFolderBodyDto,
+    userId: string,
   ) {
-    const { userId, folderId } = updateRecentFolderBodyDto;
+    const { folderId } = updateRecentFolderBodyDto;
 
     const recentFolder = await this.dataSource
       .getRepository(RecentFolderEntity)
@@ -414,9 +412,8 @@ export class FolderRepository extends Repository<FolderEntity> {
   }
 
   async getRecentFoldersByUserId(
-    getFoldersByUserIdDto: GetFoldersByUserIdDto,
+    userId: string,
   ): Promise<GetFolderResponseInterface[]> {
-    const { userId } = getFoldersByUserIdDto;
     try {
       const recentFolders = await this.dataSource
         .getRepository(RecentFolderEntity)
@@ -523,10 +520,7 @@ export class FolderRepository extends Repository<FolderEntity> {
     }
   }
 
-  async deleteAllFoldersOfUser(
-    deleteAllFoldersByUserIdParamDto: DeleteAllFoldersByUserIdParamDto,
-  ): Promise<void> {
-    const { userId } = deleteAllFoldersByUserIdParamDto;
+  async deleteAllFoldersOfUser(userId: string): Promise<void> {
     const folders = await this.find({
       where: { owner: { id: userId } },
     });

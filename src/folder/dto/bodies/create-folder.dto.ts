@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateFolderDto {
   @IsString()
@@ -12,8 +12,4 @@ export class CreateFolderDto {
   @IsBoolean()
   @IsNotEmpty()
   isPublic: boolean;
-
-  @IsUUID()
-  @IsNotEmpty()
-  ownerId: string;
 }
