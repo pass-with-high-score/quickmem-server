@@ -37,6 +37,15 @@ export class NotificationController {
     private readonly notificationService: NotificationService,
   ) {}
 
+  @Get('/user')
+  @HttpCode(HttpStatus.OK)
+  async getNotificationsByUserId(
+    @Request() req,
+  ): Promise<GetNotificationByIdResponseInterface[]> {
+    const userId = req.user.id;
+    return this.notificationService.getNotificationsByUserId(userId);
+  }
+
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
   async getNotificationById(
@@ -45,15 +54,6 @@ export class NotificationController {
     return this.notificationService.getNotificationById(
       getNotificationByIdParamDto,
     );
-  }
-
-  @Get('/user')
-  @HttpCode(HttpStatus.OK)
-  async getNotificationsByUserId(
-    @Request() req,
-  ): Promise<GetNotificationByIdResponseInterface[]> {
-    const userId = req.user.id;
-    return this.notificationService.getNotificationsByUserId(userId);
   }
 
   @Patch('/:id/read')
