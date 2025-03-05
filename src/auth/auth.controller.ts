@@ -124,6 +124,7 @@ export class AuthController {
     );
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('/profile')
   async getUserProfileById(
     @ReqUser() req,
