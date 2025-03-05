@@ -4,7 +4,6 @@ export interface GetUserProfileResponseInterface {
   fullname: string;
   email: string;
   avatarUrl: string;
-  role: string;
   coin: number;
   userStatus: string;
   bannedAt: Date;

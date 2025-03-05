@@ -7,7 +7,6 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { UserRoleEnum } from '../../enums/user-role.enum';
 import { AuthProviderEnum } from '../../enums/auth-provider.enum';
 
 export class SignupCredentialsDto {
@@ -37,10 +36,6 @@ export class SignupCredentialsDto {
   @IsNotEmpty({ message: 'Avatar URL is required' })
   @IsString({ message: 'Avatar URL must be a string' })
   avatarUrl: string;
-
-  @IsEnum(UserRoleEnum)
-  @IsNotEmpty({ message: 'Role is required' })
-  role: UserRoleEnum;
 
   @IsEnum(AuthProviderEnum)
   @IsNotEmpty({ message: 'Provider is required' })

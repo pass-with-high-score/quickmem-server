@@ -7,7 +7,6 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { UserRoleEnum } from '../../enums/user-role.enum';
 import { AuthProviderEnum } from '../../enums/auth-provider.enum';
 
 export class SocialSignupCredentialBodyDto {
@@ -36,10 +35,6 @@ export class SocialSignupCredentialBodyDto {
   @IsNotEmpty()
   @IsString()
   photoUrl: string;
-
-  @IsEnum(UserRoleEnum)
-  @IsNotEmpty()
-  role: UserRoleEnum;
 
   @IsEnum(AuthProviderEnum)
   @IsNotEmpty()

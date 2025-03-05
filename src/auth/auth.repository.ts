@@ -52,8 +52,6 @@ import { ChangePasswordResponseInterface } from './interfaces/change-password-re
 import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-username-query.dto';
 import { UserResponseInterface } from './interfaces/user-response.interface';
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
-import { UpdateRoleDto } from './dto/bodies/update-role.dto';
-import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
 import { UserStatusEnum } from './enums/user-status.enum';
 import { GetAvatarsResponseInterface } from './interfaces/get-avatars-response.interface';
 import { DefaultImageEntity } from './entities/default-image.entity';
@@ -130,7 +128,6 @@ export class AuthRepository extends Repository<UserEntity> {
       password,
       fullName,
       avatarUrl,
-      role,
       birthday,
       provider,
     } = authCredentialsDto;
@@ -191,7 +188,6 @@ export class AuthRepository extends Repository<UserEntity> {
       fullName: fullName,
       avatarUrl: defaultImage.url,
       coins: 5,
-      role,
       birthday,
       otp,
       isVerified,
@@ -271,7 +267,6 @@ export class AuthRepository extends Repository<UserEntity> {
           email,
           fullName: user.fullName,
           avatarUrl: user.avatarUrl,
-          role: user.role,
           accessToken: accessToken,
           isPremium,
           provider: user.provider,
@@ -424,7 +419,6 @@ export class AuthRepository extends Repository<UserEntity> {
       email: user.email,
       fullName: user.fullName,
       avatarUrl: user.avatarUrl,
-      role: user.role,
       coin: user.coins,
       provider: user.provider,
       isVerified: user.isVerified,
@@ -702,7 +696,7 @@ export class AuthRepository extends Repository<UserEntity> {
 
     const userPromise = this.findOne({
       where: { id },
-      select: ['id', 'username', 'fullName', 'role', 'avatarUrl'],
+      select: ['id', 'username', 'fullName', 'avatarUrl'],
     });
 
     const studySetsPromise = this.dataSource
@@ -760,7 +754,6 @@ export class AuthRepository extends Repository<UserEntity> {
         id: studySet.owner.id,
         username: studySet.owner.username,
         avatarUrl: studySet.owner.avatarUrl,
-        role: studySet.owner.role,
       },
       color: {
         id: studySet.color.id,
@@ -786,7 +779,6 @@ export class AuthRepository extends Repository<UserEntity> {
         id: folder.owner.id,
         username: folder.owner.username,
         avatarUrl: folder.owner.avatarUrl,
-        role: folder.owner.role,
       },
       createdAt: folder.createdAt,
       updatedAt: folder.updatedAt,
@@ -799,7 +791,6 @@ export class AuthRepository extends Repository<UserEntity> {
       description: classItem.description,
       owner: {
         id: classItem.owner.id,
-        role: classItem.owner.role,
         username: classItem.owner.username,
         avatarUrl: classItem.owner.avatarUrl,
       },
@@ -812,7 +803,6 @@ export class AuthRepository extends Repository<UserEntity> {
       id: user.id,
       username: user.username,
       fullname: user.fullName,
-      role: user.role,
       avatarUrl: user.avatarUrl,
       studySets: formattedStudySets,
       folders: formattedFolders,
@@ -994,7 +984,7 @@ export class AuthRepository extends Repository<UserEntity> {
         isVerified: true,
         userStatus: UserStatusEnum.ACTIVE,
       },
-      select: ['id', 'username', 'avatarUrl', 'role'],
+      select: ['id', 'username', 'avatarUrl'],
       relations: ['subscriptions'],
       take: size,
       skip: (page - 1) * size,
@@ -1004,7 +994,6 @@ export class AuthRepository extends Repository<UserEntity> {
       id: user.id,
       username: user.username,
       avatarUrl: user.avatarUrl,
-      role: user.role,
     }));
   }
 
@@ -1055,7 +1044,6 @@ export class AuthRepository extends Repository<UserEntity> {
       fullname: user.fullName,
       email: user.email,
       avatarUrl: user.avatarUrl,
-      role: user.role,
       coin: user.coins,
       studySetCount,
       folderCount,
@@ -1065,52 +1053,6 @@ export class AuthRepository extends Repository<UserEntity> {
       userStatus: user.userStatus,
       bannedReason: user.bannedReason,
     };
-  }
-
-  async updateRole(
-    updateRoleDto: UpdateRoleDto,
-    userId: string,
-  ): Promise<UpdateRoleResponseInterfaceDto> {
-    const { role } = updateRoleDto;
-
-    const user = await this.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new NotFoundException({
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'User not found',
-      });
-    }
-
-    if (!user.isVerified) {
-      throw new UnauthorizedException({
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: 'User is not verified',
-      });
-    }
-
-    if (user.role === role) {
-      throw new ConflictException({
-        statusCode: HttpStatus.CONFLICT,
-        message: 'Role is the same as the old role',
-      });
-    }
-
-    user.role = role;
-
-    try {
-      await this.save(user);
-      return {
-        message: 'Role updated successfully',
-        role: user.role,
-        success: true,
-      };
-    } catch (error) {
-      logger.error(error);
-      throw new InternalServerErrorException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Failed to update role',
-      });
-    }
   }
 
   async getAvatars(): Promise<GetAvatarsResponseInterface[]> {
@@ -1130,7 +1072,6 @@ export class AuthRepository extends Repository<UserEntity> {
     const {
       email,
       id,
-      role,
       birthday,
       provider,
       username,
@@ -1177,7 +1118,6 @@ export class AuthRepository extends Repository<UserEntity> {
       username: currentUsername,
       fullName: displayName,
       avatarUrl: photoUrl,
-      role,
       birthday,
       provider: [provider],
       googleToken: idToken,
@@ -1205,7 +1145,6 @@ export class AuthRepository extends Repository<UserEntity> {
         email,
         fullName: user.fullName,
         avatarUrl: user.avatarUrl,
-        role: user.role,
         accessToken: access_token,
         isPremium: false,
         provider: user.provider,
@@ -1283,7 +1222,6 @@ export class AuthRepository extends Repository<UserEntity> {
         email,
         fullName: user.fullName,
         avatarUrl: user.avatarUrl,
-        role: user.role,
         accessToken: access_token,
         isPremium,
         provider: user.provider,

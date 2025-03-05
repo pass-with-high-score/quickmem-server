@@ -12,7 +12,6 @@ export interface GetFolderResponseInterface {
     id: string;
     username: string;
     avatarUrl: string;
-    role: string;
   };
   studySets?: GetAllStudySetResponseInterface[];
   createdAt?: Date;

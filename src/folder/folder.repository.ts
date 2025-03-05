@@ -291,7 +291,6 @@ export class FolderRepository extends Repository<FolderEntity> {
             id: folder.owner.id,
             username: folder.owner.username,
             avatarUrl: folder.owner.avatarUrl,
-            role: folder.owner.role,
           }
         : undefined,
       studySets: showFlashcards
@@ -317,7 +316,6 @@ export class FolderRepository extends Repository<FolderEntity> {
               id: studySet.owner.id,
               username: studySet.owner.username,
               avatarUrl: studySet.owner.avatarUrl,
-              role: studySet.owner.role,
             },
             color: studySet.color
               ? {

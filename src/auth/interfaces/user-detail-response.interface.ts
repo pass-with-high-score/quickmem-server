@@ -7,7 +7,6 @@ export interface UserDetailResponseInterface {
   username: string;
   fullname: string;
   avatarUrl: string;
-  role: string;
   studySets: GetAllStudySetResponseInterface[];
   folders: GetFolderResponseInterface[];
   classes: GetClassResponseInterface[];

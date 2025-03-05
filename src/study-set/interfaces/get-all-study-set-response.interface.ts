@@ -18,7 +18,6 @@ export interface GetAllStudySetResponseInterface {
     id: string;
     username: string;
     avatarUrl: string;
-    role: string;
   };
   color?: {
     id: number;

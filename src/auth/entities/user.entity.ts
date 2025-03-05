@@ -7,7 +7,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserRoleEnum } from '../enums/user-role.enum';
 import { StudySetEntity } from '../../study-set/entities/study-set.entity';
 import { AuthProviderEnum } from '../enums/auth-provider.enum';
 import { FolderEntity } from '../../folder/entities/folder.entity';
@@ -54,14 +53,6 @@ export class UserEntity {
 
   @Column({ nullable: true })
   avatarUrl: string;
-
-  @Column({
-    type: 'enum',
-    enum: UserRoleEnum,
-    enumName: 'user_role_enum',
-    default: UserRoleEnum.STUDENT,
-  })
-  role: UserRoleEnum;
 
   @Column({ type: 'date', nullable: true })
   birthday?: Date;

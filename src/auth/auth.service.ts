@@ -31,7 +31,6 @@ import { ChangePasswordResponseInterface } from './interfaces/change-password-re
 import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-username-query.dto';
 import { UserResponseInterface } from './interfaces/user-response.interface';
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
-import { UpdateRoleDto } from './dto/bodies/update-role.dto';
 import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
 import { GetAvatarsResponseInterface } from './interfaces/get-avatars-response.interface';
 import { SocialSignupCredentialBodyDto } from './dto/bodies/social-signup-credential-body.dto';
@@ -164,13 +163,6 @@ export class AuthService {
     userId: string,
   ): Promise<GetUserProfileResponseInterface> {
     return this.usersRepository.getUserProfileById(userId);
-  }
-
-  async updateRole(
-    updateRoleDto: UpdateRoleDto,
-    userId: string,
-  ): Promise<UpdateRoleResponseInterfaceDto> {
-    return this.usersRepository.updateRole(updateRoleDto, userId);
   }
 
   async getAvatars(): Promise<GetAvatarsResponseInterface[]> {

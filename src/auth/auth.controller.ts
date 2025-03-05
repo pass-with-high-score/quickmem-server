@@ -52,8 +52,6 @@ import { ChangePasswordResponseInterface } from './interfaces/change-password-re
 import { SearchUserByUsernameQueryDto } from './dto/queries/search-user-by-username-query.dto';
 import { UserResponseInterface } from './interfaces/user-response.interface';
 import { GetUserProfileResponseInterface } from './interfaces/get-user-profile-response.interface';
-import { UpdateRoleDto } from './dto/bodies/update-role.dto';
-import { UpdateRoleResponseInterfaceDto } from './interfaces/update-role-response.interface.dto';
 import { logger } from '../winston-logger.service';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { GetAvatarsResponseInterface } from './interfaces/get-avatars-response.interface';
@@ -327,18 +325,6 @@ export class AuthController {
   ): Promise<SetNewPasswordResponseInterface> {
     const email = req.user.email;
     return this.authService.setNewPassword(setNewPasswordDto, email);
-  }
-
-  @UseGuards(OwnershipGuard)
-  @SkipThrottle()
-  @HttpCode(HttpStatus.OK)
-  @Patch('/user/role')
-  async updateRole(
-    @ReqUser() req,
-    @Body() updateRoleDto: UpdateRoleDto,
-  ): Promise<UpdateRoleResponseInterfaceDto> {
-    const userId = req.user.id;
-    return this.authService.updateRole(updateRoleDto, userId);
   }
 
   @SkipThrottle()

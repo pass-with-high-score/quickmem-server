@@ -744,7 +744,6 @@ export class StudySetRepository extends Repository<StudySetEntity> {
         id: studySet.owner ? studySet.owner.id : undefined,
         username: studySet.owner ? studySet.owner.username : undefined,
         avatarUrl: studySet.owner ? studySet.owner.avatarUrl : undefined,
-        role: studySet.owner ? studySet.owner.role : undefined,
       },
       color: studySet.color
         ? {

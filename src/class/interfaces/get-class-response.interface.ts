@@ -12,7 +12,6 @@ export interface GetClassResponseInterface {
   isJoined?: boolean;
   owner: {
     id: string;
-    role: string;
     username: string;
     avatarUrl: string;
   };
@@ -24,7 +23,6 @@ export interface GetClassResponseInterface {
     username: string;
     avatarUrl: string;
     isOwner: boolean;
-    role: string;
   }[];
   studySets?: GetAllStudySetResponseInterface[];
   folders?: GetFolderResponseInterface[];
