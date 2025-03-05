@@ -19,7 +19,6 @@ import { StudySetService } from './study-set.service';
 import { CreateStudySetDto } from './dto/bodies/create-study-set.dto';
 import { CreateStudySetResponseInterface } from './interfaces/create-study-set-response.interface';
 import { GetAllStudySetResponseInterface } from './interfaces/get-all-study-set-response.interface';
-import { GetStudySetsByOwnerIdDto } from './dto/params/get-study-sets-by-ownerId.dto';
 import { GetStudySetByIdDto } from './dto/params/get-study-set-by-id.dto';
 import { UpdateStudySetByIdParamDto } from './dto/params/update-study-set-by-id-param.dto';
 import { UpdateStudySetByIdBodyDto } from './dto/bodies/update-study-set-by-id-body.dto';
@@ -30,7 +29,6 @@ import { SearchStudySetsQueryDto } from './dto/queries/search-study-sets-query.d
 import { ResetFlashcardProgressParamDto } from './dto/params/reset-flashcard-progress-param.dto';
 import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flashcard-progress-response.interface';
 import { ImportFlashcardDto } from './dto/bodies/import-flashcard.dto';
-import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcard-from-quizlet.param.dto';
 import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.dto';
 import { ResetFlashcardProgressParamsDto } from './dto/queries/reset-flashcard-progress-params.dto';
 import { GetStudySetsByOwnerIdQueryDto } from './dto/queries/get-study-sets-by-owner-Id-query.dto';
@@ -43,11 +41,9 @@ import { GetStudySetsBySubjectIdParamDto } from './dto/params/get-study-sets-by-
 import { GetStudySetsBySubjectIdQueryDto } from './dto/queries/get-study-sets-by-subject-id-query.dto';
 import { TopSubjectResponseInterface } from './interfaces/top-subject-response.interface';
 import { UpdateRecentStudySetDto } from './dto/bodies/update-recent-study-set-body.dto';
-import { GetStudySetsByUserIdDto } from './dto/params/get-study-sets-by-user-Id.dto';
 import { CreateWriteHintBodyDto } from './dto/bodies/create-write-hint-body.dto';
 import { CreateWriteHintResponseInterface } from './interfaces/create-write-hint-response.interface';
 import { CacheInterceptor } from '@nestjs/cache-manager';
-import { DeleteAllStudySetByUserIdParamDto } from './dto/params/delete-all-study-set-by-user-id-param.dto';
 
 @SkipThrottle()
 @UseGuards(AuthGuard('jwt'))
@@ -80,22 +76,20 @@ export class StudySetController {
     @Request() req,
     @Query() getStudySetsByOwnerIdParamDto: GetStudySetsByOwnerIdQueryDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
-    const getStudySetsByOwnerIdDto = new GetStudySetsByOwnerIdDto();
-    getStudySetsByOwnerIdDto.ownerId = req.user.id;
+    const userId = req.user.id;
     return await this.studySetService.getStudySetsByOwnerId(
-      getStudySetsByOwnerIdDto,
+      userId,
       getStudySetsByOwnerIdParamDto,
     );
   }
 
-  @Get('/recent/:userId')
+  @Get('/recent')
   @HttpCode(HttpStatus.OK)
   async getStudySetRecentByUserId(
-    @Param() getStudySetsByUserIdDto: GetStudySetsByUserIdDto,
+    @Request() req,
   ): Promise<GetAllStudySetResponseInterface[]> {
-    return await this.studySetService.getStudySetRecentByUserId(
-      getStudySetsByUserIdDto,
-    );
+    const userId = req.user.id;
+    return await this.studySetService.getStudySetRecentByUserId(userId);
   }
 
   @Get('/subject/:subjectId')
@@ -154,38 +148,46 @@ export class StudySetController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createStudySet(
+    @Request() req,
     @Body() createStudySetDto: CreateStudySetDto,
   ): Promise<CreateStudySetResponseInterface> {
-    console.log('createStudySetDto', createStudySetDto);
-    return await this.studySetService.createStudySet(createStudySetDto);
+    const userId = req.user.id;
+    return await this.studySetService.createStudySet(createStudySetDto, userId);
   }
 
   @Post('/duplicate')
   @HttpCode(HttpStatus.CREATED)
   async duplicateStudySet(
+    @Request() req,
     @Body() duplicateStudySet: DuplicateStudySetDto,
   ): Promise<GetAllStudySetResponseInterface> {
-    return await this.studySetService.duplicateStudySet(duplicateStudySet);
+    const userId = req.user.id;
+    return await this.studySetService.duplicateStudySet(
+      duplicateStudySet,
+      userId,
+    );
   }
 
-  @Post('/import/:userId')
+  @Post('/import/quizlet')
   async importFromUrl(
     @Body() importFlashcardDto: ImportFlashcardDto,
-    @Param()
-    importFlashcardFromQuizletParamDto: ImportFlashcardFromQuizletParamDto,
+    @Request() req,
   ): Promise<GetAllStudySetResponseInterface> {
-    return this.studySetService.importFromUrl(
-      importFlashcardDto,
-      importFlashcardFromQuizletParamDto,
-    );
+    const userId = req.user.id;
+    return this.studySetService.importFromUrl(importFlashcardDto, userId);
   }
 
   @Post('/ai')
   @HttpCode(HttpStatus.CREATED)
   async createStudySetFromAI(
+    @Request() req,
     @Body() createStudySetFromAiDto: CreateStudySetFromAiDto,
   ): Promise<GetAllStudySetResponseInterface> {
-    return this.studySetService.createStudySetFromAI(createStudySetFromAiDto);
+    const userId = req.user.id;
+    return this.studySetService.createStudySetFromAI(
+      createStudySetFromAiDto,
+      userId,
+    );
   }
 
   @Post('/folders')
@@ -211,9 +213,14 @@ export class StudySetController {
   @Post('/recent')
   @HttpCode(HttpStatus.CREATED)
   async updateRecentStudySet(
+    @Request() req,
     @Body() updateRecentStudySetDto: UpdateRecentStudySetDto,
   ) {
-    return this.studySetService.updateRecentStudySet(updateRecentStudySetDto);
+    const userId = req.user.id;
+    return this.studySetService.updateRecentStudySet(
+      updateRecentStudySetDto,
+      userId,
+    );
   }
 
   @Post('/ai/write-hint')
@@ -234,12 +241,8 @@ export class StudySetController {
 
   @Delete('/user')
   async deleteAllStudySetsOfUser(@Request() req): Promise<void> {
-    const deleteAllStudySetByUserIdParamDto =
-      new DeleteAllStudySetByUserIdParamDto();
-    deleteAllStudySetByUserIdParamDto.userId = req.user.id;
-    return this.studySetService.deleteAllStudySetsOfUser(
-      deleteAllStudySetByUserIdParamDto,
-    );
+    const userId = req.user.id;
+    return this.studySetService.deleteAllStudySetsOfUser(userId);
   }
 
   @Delete('/:id')

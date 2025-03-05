@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { StreakRepository } from './streak.repository';
-import { GetStreaksByUserIdParamDto } from './dto/params/get-streaks-by-user-id.param.dto';
 import { GetStreaksResponseInterface } from './interfaces/get-streaks-response.interface';
-import { IncrementStreakDto } from './dto/bodies/increment-streak.dto';
 import { StreakInterface } from './interfaces/streak.interface';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { logger } from '../winston-logger.service';
@@ -14,15 +12,13 @@ export class StreakService {
   constructor(private readonly streakRepository: StreakRepository) {}
 
   async getStreaksByUserId(
-    getStreaksByUserIdParamDto: GetStreaksByUserIdParamDto,
+    userId: string,
   ): Promise<GetStreaksResponseInterface> {
-    return this.streakRepository.getStreaksByUserId(getStreaksByUserIdParamDto);
+    return this.streakRepository.getStreaksByUserId(userId);
   }
 
-  async incrementStreak(
-    incrementStreakDto: IncrementStreakDto,
-  ): Promise<StreakInterface> {
-    return this.streakRepository.incrementStreak(incrementStreakDto);
+  async incrementStreak(userId: string): Promise<StreakInterface> {
+    return this.streakRepository.incrementStreak(userId);
   }
 
   async getTopUsers(
@@ -37,9 +33,7 @@ export class StreakService {
     try {
       const users = await this.streakRepository.getAllUsers();
       for (const user of users) {
-        const streaks = await this.streakRepository.getStreaksByUserId({
-          userId: user.id,
-        });
+        const streaks = await this.streakRepository.getStreaksByUserId(user.id);
         const lastStreak = streaks.streaks[streaks.streaks.length - 1];
         const currentDate = new Date();
         const yesterday = new Date();

@@ -4,16 +4,11 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUUID,
 } from 'class-validator';
 import { DifficultyLevel } from '../../enums/difficult-level.enum';
 import { QuestionType } from '../../enums/question-type.enum';
 
 export class CreateStudySetFromAiDto {
-  @IsUUID()
-  @IsNotEmpty()
-  userId: string;
-
   @IsString()
   @IsNotEmpty()
   title: string;

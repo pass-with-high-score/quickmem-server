@@ -4,10 +4,6 @@ import { LearnModeEnum } from '../../../flashcard/enums/learn-mode.enum';
 export class CreateStudyTimeDto {
   @IsUUID()
   @IsNotEmpty()
-  userId: string;
-
-  @IsUUID()
-  @IsNotEmpty()
   studySetId: string;
 
   @IsInt()

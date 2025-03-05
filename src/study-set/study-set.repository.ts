@@ -14,7 +14,6 @@ import { CreateStudySetResponseInterface } from './interfaces/create-study-set-r
 import { SubjectEntity } from './entities/subject.entity';
 import { ColorEntity } from './entities/color.entity';
 import { GetAllStudySetResponseInterface } from './interfaces/get-all-study-set-response.interface';
-import { GetStudySetsByOwnerIdDto } from './dto/params/get-study-sets-by-ownerId.dto';
 import { GetStudySetByIdDto } from './dto/params/get-study-set-by-id.dto';
 import { UpdateStudySetByIdBodyDto } from './dto/bodies/update-study-set-by-id-body.dto';
 import { UpdateStudySetByIdParamDto } from './dto/params/update-study-set-by-id-param.dto';
@@ -29,7 +28,6 @@ import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flas
 import { FlipFlashcardStatus } from '../flashcard/enums/flip-flashcard-status';
 import { ImportFlashcardDto } from './dto/bodies/import-flashcard.dto';
 import axios from 'axios';
-import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcard-from-quizlet.param.dto';
 import { ConfigService } from '@nestjs/config';
 import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.dto';
 import { ResetFlashcardProgressParamsDto } from './dto/queries/reset-flashcard-progress-params.dto';
@@ -54,13 +52,11 @@ import { TrueFalseStatusEnum } from '../flashcard/enums/true-false-status.enum';
 import { WriteStatusEnum } from '../flashcard/enums/write-status.enum';
 import { UpdateRecentStudySetDto } from './dto/bodies/update-recent-study-set-body.dto';
 import { RecentStudySetEntity } from './entities/recent-study-set.entity';
-import { GetStudySetsByUserIdDto } from './dto/params/get-study-sets-by-user-Id.dto';
 import { UserStatusEnum } from '../auth/enums/user-status.enum';
 import { AnalyzeStudySetDto } from './dto/bodies/analyze-study-set.dto';
 import { LearnModeEnum } from '../flashcard/enums/learn-mode.enum';
 import { CreateWriteHintBodyDto } from './dto/bodies/create-write-hint-body.dto';
 import { CreateWriteHintResponseInterface } from './interfaces/create-write-hint-response.interface';
-import { DeleteAllStudySetByUserIdParamDto } from './dto/params/delete-all-study-set-by-user-id-param.dto';
 
 @Injectable()
 export class StudySetRepository extends Repository<StudySetEntity> {
@@ -73,6 +69,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
   async createStudySet(
     createStudySetDto: CreateStudySetDto,
+    ownerId: string,
   ): Promise<CreateStudySetResponseInterface> {
     const studySet = new StudySetEntity();
     studySet.title = createStudySetDto.title;
@@ -82,7 +79,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     try {
       const owner = await this.dataSource
         .getRepository(UserEntity)
-        .findOneBy({ id: createStudySetDto.ownerId });
+        .findOneBy({ id: ownerId });
 
       if (!owner) {
         throw new NotFoundException('User not found or username is missing');
@@ -143,10 +140,9 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
   // get all by owner id
   async getStudySetsByOwnerId(
-    getStudySetsByOwnerIdDto: GetStudySetsByOwnerIdDto,
+    ownerId: string,
     getStudySetsByOwnerIdQueryDto: GetStudySetsByOwnerIdQueryDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
-    const { ownerId } = getStudySetsByOwnerIdDto;
     const { folderId, classId } = getStudySetsByOwnerIdQueryDto;
     try {
       const studySets = await this.dataSource
@@ -309,8 +305,9 @@ export class StudySetRepository extends Repository<StudySetEntity> {
   // duplicate study set by id
   async duplicateStudySet(
     duplicateStudySet: DuplicateStudySetDto,
+    newOwnerId: string,
   ): Promise<GetAllStudySetResponseInterface> {
-    const { studySetId, newOwnerId } = duplicateStudySet;
+    const { studySetId } = duplicateStudySet;
     const studySet = await this.findOne({
       where: { id: studySetId },
       relations: ['flashcards', 'subject', 'color'],
@@ -502,9 +499,8 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
   async importFromUrl(
     importFlashcardDto: ImportFlashcardDto,
-    importFlashcardFromQuizletParamDto: ImportFlashcardFromQuizletParamDto,
+    userId: string,
   ): Promise<GetAllStudySetResponseInterface> {
-    const { userId } = importFlashcardFromQuizletParamDto;
     const { url } = importFlashcardDto;
     try {
       console.log(url);
@@ -766,9 +762,9 @@ export class StudySetRepository extends Repository<StudySetEntity> {
 
   async createStudySetFromAI(
     createStudySetFromAiDto: CreateStudySetFromAiDto,
+    userId: string,
   ): Promise<GetAllStudySetResponseInterface> {
     const {
-      userId,
       title,
       description,
       numberOfFlashcards = 10,
@@ -1156,8 +1152,11 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     }
   }
 
-  async updateRecentStudySet(updateRecentStudySetDto: UpdateRecentStudySetDto) {
-    const { userId, studySetId } = updateRecentStudySetDto;
+  async updateRecentStudySet(
+    updateRecentStudySetDto: UpdateRecentStudySetDto,
+    userId: string,
+  ) {
+    const { studySetId } = updateRecentStudySetDto;
 
     const recentStudySet = await this.dataSource
       .getRepository(RecentStudySetEntity)
@@ -1197,9 +1196,8 @@ export class StudySetRepository extends Repository<StudySetEntity> {
   }
 
   async getStudySetRecentByUserId(
-    getStudySetsByUserIdDto: GetStudySetsByUserIdDto,
+    userId: string,
   ): Promise<GetAllStudySetResponseInterface[]> {
-    const { userId } = getStudySetsByUserIdDto;
     try {
       const studySets = await this.dataSource
         .getRepository(RecentStudySetEntity)
@@ -1374,10 +1372,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     };
   }
 
-  async deleteAllStudySetsOfUser(
-    deleteAllStudySetByUserIdParamDto: DeleteAllStudySetByUserIdParamDto,
-  ): Promise<void> {
-    const { userId } = deleteAllStudySetByUserIdParamDto;
+  async deleteAllStudySetsOfUser(userId: string): Promise<void> {
     await this.dataSource
       .getRepository(StudySetEntity)
       .delete({ owner: { id: userId } });

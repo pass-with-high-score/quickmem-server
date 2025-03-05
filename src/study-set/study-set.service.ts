@@ -3,7 +3,6 @@ import { StudySetRepository } from './study-set.repository';
 import { CreateStudySetDto } from './dto/bodies/create-study-set.dto';
 import { CreateStudySetResponseInterface } from './interfaces/create-study-set-response.interface';
 import { GetAllStudySetResponseInterface } from './interfaces/get-all-study-set-response.interface';
-import { GetStudySetsByOwnerIdDto } from './dto/params/get-study-sets-by-ownerId.dto';
 import { GetStudySetByIdDto } from './dto/params/get-study-set-by-id.dto';
 import { UpdateStudySetByIdParamDto } from './dto/params/update-study-set-by-id-param.dto';
 import { UpdateStudySetByIdBodyDto } from './dto/bodies/update-study-set-by-id-body.dto';
@@ -14,7 +13,6 @@ import { SearchStudySetsQueryDto } from './dto/queries/search-study-sets-query.d
 import { ResetFlashcardProgressParamDto } from './dto/params/reset-flashcard-progress-param.dto';
 import { ResetFlashcardProgressResponseInterface } from './interfaces/reset-flashcard-progress-response.interface';
 import { ImportFlashcardDto } from './dto/bodies/import-flashcard.dto';
-import { ImportFlashcardFromQuizletParamDto } from './dto/params/import-flashcard-from-quizlet.param.dto';
 import { CreateStudySetFromAiDto } from './dto/bodies/create-study-set-from-ai.dto';
 import { ResetFlashcardProgressParamsDto } from './dto/queries/reset-flashcard-progress-params.dto';
 import { GetStudySetsByOwnerIdQueryDto } from './dto/queries/get-study-sets-by-owner-Id-query.dto';
@@ -27,10 +25,8 @@ import { GetStudySetsBySubjectIdParamDto } from './dto/params/get-study-sets-by-
 import { GetStudySetsBySubjectIdQueryDto } from './dto/queries/get-study-sets-by-subject-id-query.dto';
 import { TopSubjectResponseInterface } from './interfaces/top-subject-response.interface';
 import { UpdateRecentStudySetDto } from './dto/bodies/update-recent-study-set-body.dto';
-import { GetStudySetsByUserIdDto } from './dto/params/get-study-sets-by-user-Id.dto';
 import { CreateWriteHintBodyDto } from './dto/bodies/create-write-hint-body.dto';
 import { CreateWriteHintResponseInterface } from './interfaces/create-write-hint-response.interface';
-import { DeleteAllStudySetByUserIdParamDto } from './dto/params/delete-all-study-set-by-user-id-param.dto';
 
 @Injectable()
 export class StudySetService {
@@ -38,16 +34,20 @@ export class StudySetService {
 
   async createStudySet(
     createStudySetDto: CreateStudySetDto,
+    ownerId: string,
   ): Promise<CreateStudySetResponseInterface> {
-    return await this.studySetRepository.createStudySet(createStudySetDto);
+    return await this.studySetRepository.createStudySet(
+      createStudySetDto,
+      ownerId,
+    );
   }
 
   async getStudySetsByOwnerId(
-    getStudySetsByOwnerIdDto: GetStudySetsByOwnerIdDto,
+    ownerId: string,
     getStudySetsByOwnerIdParamDto: GetStudySetsByOwnerIdQueryDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
     return await this.studySetRepository.getStudySetsByOwnerId(
-      getStudySetsByOwnerIdDto,
+      ownerId,
       getStudySetsByOwnerIdParamDto,
     );
   }
@@ -78,8 +78,12 @@ export class StudySetService {
 
   async duplicateStudySet(
     duplicateStudySet: DuplicateStudySetDto,
+    newOwnerId: string,
   ): Promise<GetAllStudySetResponseInterface> {
-    return await this.studySetRepository.duplicateStudySet(duplicateStudySet);
+    return await this.studySetRepository.duplicateStudySet(
+      duplicateStudySet,
+      newOwnerId,
+    );
   }
 
   async searchStudySetByTitle(
@@ -102,19 +106,18 @@ export class StudySetService {
 
   async importFromUrl(
     importFlashcardDto: ImportFlashcardDto,
-    importFlashcardFromQuizletParamDto: ImportFlashcardFromQuizletParamDto,
+    userId: string,
   ): Promise<GetAllStudySetResponseInterface> {
-    return this.studySetRepository.importFromUrl(
-      importFlashcardDto,
-      importFlashcardFromQuizletParamDto,
-    );
+    return this.studySetRepository.importFromUrl(importFlashcardDto, userId);
   }
 
   async createStudySetFromAI(
     createStudySetFromAiDto: CreateStudySetFromAiDto,
+    userId: string,
   ): Promise<GetAllStudySetResponseInterface> {
     return this.studySetRepository.createStudySetFromAI(
       createStudySetFromAiDto,
+      userId,
     );
   }
 
@@ -156,18 +159,20 @@ export class StudySetService {
     return this.studySetRepository.getTop5SubjectByStudySetCount();
   }
 
-  async updateRecentStudySet(updateRecentStudySetDto: UpdateRecentStudySetDto) {
+  async updateRecentStudySet(
+    updateRecentStudySetDto: UpdateRecentStudySetDto,
+    userId: string,
+  ) {
     return this.studySetRepository.updateRecentStudySet(
       updateRecentStudySetDto,
+      userId,
     );
   }
 
   async getStudySetRecentByUserId(
-    getStudySetsByUserIdDto: GetStudySetsByUserIdDto,
+    userId: string,
   ): Promise<GetAllStudySetResponseInterface[]> {
-    return this.studySetRepository.getStudySetRecentByUserId(
-      getStudySetsByUserIdDto,
-    );
+    return this.studySetRepository.getStudySetRecentByUserId(userId);
   }
 
   async removeInvalidStudySets() {
@@ -182,11 +187,7 @@ export class StudySetService {
     );
   }
 
-  async deleteAllStudySetsOfUser(
-    deleteAllStudySetByUserIdParamDto: DeleteAllStudySetByUserIdParamDto,
-  ): Promise<void> {
-    return this.studySetRepository.deleteAllStudySetsOfUser(
-      deleteAllStudySetByUserIdParamDto,
-    );
+  async deleteAllStudySetsOfUser(userId: string): Promise<void> {
+    return this.studySetRepository.deleteAllStudySetsOfUser(userId);
   }
 }

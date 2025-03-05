@@ -7,7 +7,6 @@ import { UpdateSubscriptionBodyDto } from './dto/bodies/update-subscription.body
 import { UpdateAutoRenewParamDto } from './dto/params/update-auto-renew.param.dto';
 import { UpdateAutoRenewBodyDto } from './dto/bodies/update-auto-renew.body.dto';
 import { GetSubscriptionByIdParamDto } from './dto/params/get-subscription-by-id.param.dto';
-import { GetSubscriptionByUserIdParamDto } from './dto/params/get-subscription-by-user-id.param.dto';
 
 @Injectable()
 export class SubscriptionService {
@@ -17,8 +16,12 @@ export class SubscriptionService {
 
   async createSubscription(
     createSubscription: CreateSubscriptionDto,
+    userId: string,
   ): Promise<SubscriptionInterface> {
-    return this.subscriptionRepository.createSubscription(createSubscription);
+    return this.subscriptionRepository.createSubscription(
+      createSubscription,
+      userId,
+    );
   }
 
   async updateSubscription(
@@ -50,10 +53,8 @@ export class SubscriptionService {
   }
 
   async getSubscriptionsByUserId(
-    getSubscriptionByUserIdParamDto: GetSubscriptionByUserIdParamDto,
+    userId: string,
   ): Promise<SubscriptionInterface[]> {
-    return this.subscriptionRepository.getSubscriptionsByUserId(
-      getSubscriptionByUserIdParamDto,
-    );
+    return this.subscriptionRepository.getSubscriptionsByUserId(userId);
   }
 }

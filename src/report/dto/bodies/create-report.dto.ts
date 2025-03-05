@@ -15,9 +15,5 @@ export class CreateReportDto {
 
   @IsUUID()
   @IsNotEmpty()
-  reporterId: string;
-
-  @IsUUID()
-  @IsNotEmpty()
   ownerOfReportedEntityId: string;
 }

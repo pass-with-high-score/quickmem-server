@@ -10,6 +10,7 @@ import {
   Put,
   UseGuards,
   UseInterceptors,
+  Request,
 } from '@nestjs/common';
 import { SubscriptionService } from './subscription.service';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -21,7 +22,6 @@ import { UpdateSubscriptionBodyDto } from './dto/bodies/update-subscription.body
 import { UpdateAutoRenewParamDto } from './dto/params/update-auto-renew.param.dto';
 import { UpdateAutoRenewBodyDto } from './dto/bodies/update-auto-renew.body.dto';
 import { GetSubscriptionByIdParamDto } from './dto/params/get-subscription-by-id.param.dto';
-import { GetSubscriptionByUserIdParamDto } from './dto/params/get-subscription-by-user-id.param.dto';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @SkipThrottle()
@@ -41,22 +41,26 @@ export class SubscriptionController {
     );
   }
 
-  @Get('/user/:id')
+  @Get('/user')
   @HttpCode(HttpStatus.OK)
   async getSubscriptionsByUserId(
-    @Param() getSubscriptionByUserIdParamDto: GetSubscriptionByUserIdParamDto,
+    @Request() req,
   ): Promise<SubscriptionInterface[]> {
-    return this.subscriptionService.getSubscriptionsByUserId(
-      getSubscriptionByUserIdParamDto,
-    );
+    const userId = req.user.id;
+    return this.subscriptionService.getSubscriptionsByUserId(userId);
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createSubscription(
+    @Request() req,
     @Body() createSubscription: CreateSubscriptionDto,
   ): Promise<SubscriptionInterface> {
-    return this.subscriptionService.createSubscription(createSubscription);
+    const userId = req.user.id;
+    return this.subscriptionService.createSubscription(
+      createSubscription,
+      userId,
+    );
   }
 
   @Patch('/:id/auto-renew')

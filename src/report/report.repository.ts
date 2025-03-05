@@ -12,7 +12,6 @@ import { UserEntity } from 'src/auth/entities/user.entity';
 import { UpdateStatusParamDto } from './dto/params/update-status-param.dto';
 import { UpdateStatusDto } from './dto/bodies/update-status.dto';
 import { ReportStatusEnum } from './enums/report-status.enum';
-import { GetReporterIdParamDto } from './dto/params/get-reporterId-param.dto';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { NotificationService } from '../notification/notification.service';
@@ -33,14 +32,10 @@ export class ReportRepository extends Repository<ReportEntity> {
 
   async createReport(
     createReportDto: CreateReportDto,
+    reporterId: string,
   ): Promise<ReportResponseInterface> {
-    const {
-      reason,
-      reportedEntityId,
-      reportedType,
-      reporterId,
-      ownerOfReportedEntityId,
-    } = createReportDto;
+    const { reason, reportedEntityId, reportedType, ownerOfReportedEntityId } =
+      createReportDto;
 
     const reporter = await this.dataSource.getRepository(UserEntity).findOne({
       where: { id: reporterId },
@@ -157,12 +152,11 @@ export class ReportRepository extends Repository<ReportEntity> {
   }
 
   async getReportsByReporter(
-    getReporterIdParamDto: GetReporterIdParamDto,
+    userId: string,
   ): Promise<ReportResponseInterface[]> {
-    const { id } = getReporterIdParamDto;
     try {
       const reports = await this.dataSource.getRepository(ReportEntity).find({
-        where: { reporter: { id: id } },
+        where: { reporter: { id: userId } },
         relations: ['reporter', 'ownerOfReportedEntity'],
       });
 

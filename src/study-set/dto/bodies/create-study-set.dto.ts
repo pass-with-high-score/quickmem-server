@@ -4,16 +4,12 @@ import {
   IsOptional,
   IsBoolean,
   IsInt,
-  IsUUID,
 } from 'class-validator';
 
 export class CreateStudySetDto {
   @IsString()
   @IsNotEmpty()
   title: string;
-
-  @IsUUID()
-  ownerId: string;
 
   @IsInt()
   @IsOptional()

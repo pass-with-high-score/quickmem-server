@@ -3,7 +3,6 @@ import { CreateStudyTimeDto } from './dto/bodies/create-study-time.dto';
 import { StudyTimeRepository } from './study-time.repository';
 import { CreateStudyTimeInterface } from './interfaces/create-study-time.interface';
 import { GetTotalByUserIdResponseInterface } from './interfaces/get-total-by-user-id-response.interface';
-import { GetTotalTimeByUserIdParamDto } from './dto/params/get-total-time-by-user-id-param.dto';
 import { GetTotalTimeByStudySetIdParamDto } from './dto/params/get-total-time-by-study-set-id-param.dto';
 import { GetTotalByStudySetIdResponseInterface } from './interfaces/get-total-by-study-set-id-response.interface';
 
@@ -13,14 +12,15 @@ export class StudyTimeService {
 
   async createStudyTime(
     createStudyTimeDto: CreateStudyTimeDto,
+    userId: string,
   ): Promise<CreateStudyTimeInterface> {
-    return this.studyTimeRepository.createStudyTime(createStudyTimeDto);
+    return this.studyTimeRepository.createStudyTime(createStudyTimeDto, userId);
   }
 
   async getTotalTimeByUserId(
-    getTotalTimeParamDto: GetTotalTimeByUserIdParamDto,
+    userId: string,
   ): Promise<GetTotalByUserIdResponseInterface> {
-    return this.studyTimeRepository.getTotalTimeByUserId(getTotalTimeParamDto);
+    return this.studyTimeRepository.getTotalTimeByUserId(userId);
   }
 
   async getTotalTimeByStudySetId(

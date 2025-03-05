@@ -9,6 +9,7 @@ import {
   HttpCode,
   Patch,
   UseInterceptors,
+  Request,
 } from '@nestjs/common';
 import { ReportService } from './report.service';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -17,7 +18,6 @@ import { CreateReportDto } from './dto/bodies/create-report.dto';
 import { ReportResponseInterface } from './interfaces/report-response.interface';
 import { UpdateStatusParamDto } from './dto/params/update-status-param.dto';
 import { UpdateStatusDto } from './dto/bodies/update-status.dto';
-import { GetReporterIdParamDto } from './dto/params/get-reporterId-param.dto';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @SkipThrottle()
@@ -33,6 +33,15 @@ export class ReportController {
     return await this.reportService.getReports();
   }
 
+  @Get('/reporter')
+  @HttpCode(HttpStatus.OK)
+  async getReportsByReporter(
+    @Request() req,
+  ): Promise<ReportResponseInterface[]> {
+    const userId = req.user.id;
+    return await this.reportService.getReportsByReporter(userId);
+  }
+
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
   async getReportById(
@@ -41,20 +50,14 @@ export class ReportController {
     return await this.reportService.getReportById(updateStatusParamDto);
   }
 
-  @Get('/:id/reporter')
-  @HttpCode(HttpStatus.OK)
-  async getReportsByReporter(
-    @Param() getReporterIdParamDto: GetReporterIdParamDto,
-  ): Promise<ReportResponseInterface[]> {
-    return await this.reportService.getReportsByReporter(getReporterIdParamDto);
-  }
-
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createReport(
+    @Request() req,
     @Body() createReportDto: CreateReportDto,
   ): Promise<ReportResponseInterface> {
-    return await this.reportService.createReport(createReportDto);
+    const userId = req.user.id;
+    return await this.reportService.createReport(createReportDto, userId);
   }
 
   @Patch('/:id/status')

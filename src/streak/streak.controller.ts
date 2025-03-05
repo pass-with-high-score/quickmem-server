@@ -1,21 +1,18 @@
 import {
-  Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
-  Param,
   Post,
   Query,
   UseGuards,
   UseInterceptors,
+  Request,
 } from '@nestjs/common';
 import { StreakService } from './streak.service';
 import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
-import { GetStreaksByUserIdParamDto } from './dto/params/get-streaks-by-user-id.param.dto';
 import { GetStreaksResponseInterface } from './interfaces/get-streaks-response.interface';
-import { IncrementStreakDto } from './dto/bodies/increment-streak.dto';
 import { StreakInterface } from './interfaces/streak.interface';
 import { GetTopStreakQueryDto } from './dto/queries/get-top-streak-query.dto';
 import { GetTopStreakResponseInterface } from './interfaces/get-top-streak-response.interface';
@@ -28,6 +25,15 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
 export class StreakController {
   constructor(private readonly streakService: StreakService) {}
 
+  @Get('/')
+  @HttpCode(HttpStatus.OK)
+  async getStreaksByUserId(
+    @Request() req,
+  ): Promise<GetStreaksResponseInterface> {
+    const userId = req.user.id;
+    return this.streakService.getStreaksByUserId(userId);
+  }
+
   @Get('/top')
   @HttpCode(HttpStatus.OK)
   async getTopUsers(
@@ -36,18 +42,9 @@ export class StreakController {
     return this.streakService.getTopUsers(getTopStreakQueryDto);
   }
 
-  @Get('/:userId')
-  @HttpCode(HttpStatus.OK)
-  async getStreaksByUserId(
-    @Param() getStreaksByUserIdParamDto: GetStreaksByUserIdParamDto,
-  ): Promise<GetStreaksResponseInterface> {
-    return this.streakService.getStreaksByUserId(getStreaksByUserIdParamDto);
-  }
-
   @Post()
-  async incrementStreak(
-    @Body() incrementStreakDto: IncrementStreakDto,
-  ): Promise<StreakInterface> {
-    return this.streakService.incrementStreak(incrementStreakDto);
+  async incrementStreak(@Request() req): Promise<StreakInterface> {
+    const userId = req.user.id;
+    return this.streakService.incrementStreak(userId);
   }
 }

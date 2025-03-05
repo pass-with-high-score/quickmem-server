@@ -7,11 +7,9 @@ import {
 } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { StreakEntity } from './entities/streak.entity';
-import { GetStreaksByUserIdParamDto } from './dto/params/get-streaks-by-user-id.param.dto';
 import { GetStreaksResponseInterface } from './interfaces/get-streaks-response.interface';
 import { logger } from '../winston-logger.service';
 import { UserEntity } from '../auth/entities/user.entity';
-import { IncrementStreakDto } from './dto/bodies/increment-streak.dto';
 import { StreakInterface } from './interfaces/streak.interface';
 import { GetTopStreakQueryDto } from './dto/queries/get-top-streak-query.dto';
 import { GetTopStreakResponseInterface } from './interfaces/get-top-streak-response.interface';
@@ -34,10 +32,8 @@ export class StreakRepository extends Repository<StreakEntity> {
   }
 
   async getStreaksByUserId(
-    getStreaksByUserIdParamDto: GetStreaksByUserIdParamDto,
+    userId: string,
   ): Promise<GetStreaksResponseInterface> {
-    const { userId } = getStreaksByUserIdParamDto;
-
     // Get current date and yesterday
     const currentDate = new Date();
     const yesterday = new Date();
@@ -120,10 +116,7 @@ export class StreakRepository extends Repository<StreakEntity> {
     }
   }
 
-  async incrementStreak(
-    incrementStreakDto: IncrementStreakDto,
-  ): Promise<StreakInterface> {
-    const { userId } = incrementStreakDto;
+  async incrementStreak(userId: string): Promise<StreakInterface> {
     const user = await this.dataSource
       .getRepository(UserEntity)
       .findOne({ where: { id: userId } });
@@ -264,9 +257,7 @@ export class StreakRepository extends Repository<StreakEntity> {
       eightHoursBeforeMidnight.setHours(16, 0, 0, 0); // 16:00 là 8 giờ trước nửa đêm
 
       for (const user of users) {
-        const streaks = await this.getStreaksByUserId({
-          userId: user.id,
-        });
+        const streaks = await this.getStreaksByUserId(user.id);
         const lastStreak = streaks.streaks[streaks.streaks.length - 1];
 
         // Kiểm tra nếu người dùng chưa nhận email hôm nay

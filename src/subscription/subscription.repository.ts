@@ -18,7 +18,6 @@ import { addDays } from 'date-fns';
 import { UpdateAutoRenewParamDto } from './dto/params/update-auto-renew.param.dto';
 import { UpdateAutoRenewBodyDto } from './dto/bodies/update-auto-renew.body.dto';
 import { GetSubscriptionByIdParamDto } from './dto/params/get-subscription-by-id.param.dto';
-import { GetSubscriptionByUserIdParamDto } from './dto/params/get-subscription-by-user-id.param.dto';
 
 @Injectable()
 export class SubscriptionRepository extends Repository<SubscriptionEntity> {
@@ -54,8 +53,9 @@ export class SubscriptionRepository extends Repository<SubscriptionEntity> {
   // Tạo đăng ký mới
   async createSubscription(
     createSubscription: CreateSubscriptionDto,
+    userId: string,
   ): Promise<SubscriptionInterface> {
-    const { userId, subscriptionType, trialForType } = createSubscription;
+    const { subscriptionType, trialForType } = createSubscription;
     const subscription = new SubscriptionEntity();
     const user = await this.dataSource
       .getRepository(UserEntity)
@@ -310,9 +310,8 @@ export class SubscriptionRepository extends Repository<SubscriptionEntity> {
 
   // Get subscriptions by user ID
   async getSubscriptionsByUserId(
-    getSubscriptionByUserIdParamDto: GetSubscriptionByUserIdParamDto,
+    userId: string,
   ): Promise<SubscriptionInterface[]> {
-    const userId = getSubscriptionByUserIdParamDto.id;
     const subscriptions = await this.dataSource
       .getRepository(SubscriptionEntity)
       .find({ where: { user: { id: userId } }, relations: ['user'] });

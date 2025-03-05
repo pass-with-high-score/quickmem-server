@@ -9,7 +9,6 @@ import {
 import { CreateStudyTimeDto } from './dto/bodies/create-study-time.dto';
 import { UserEntity } from '../auth/entities/user.entity';
 import { CreateStudyTimeInterface } from './interfaces/create-study-time.interface';
-import { GetTotalTimeByUserIdParamDto } from './dto/params/get-total-time-by-user-id-param.dto';
 import { GetTotalByUserIdResponseInterface } from './interfaces/get-total-by-user-id-response.interface';
 import { GetTotalByStudySetIdResponseInterface } from './interfaces/get-total-by-study-set-id-response.interface';
 import { GetTotalTimeByStudySetIdParamDto } from './dto/params/get-total-time-by-study-set-id-param.dto';
@@ -24,8 +23,9 @@ export class StudyTimeRepository extends Repository<StudyTimeEntity> {
 
   async createStudyTime(
     createStudyTimeDto: CreateStudyTimeDto,
+    userId: string,
   ): Promise<CreateStudyTimeInterface> {
-    const { userId, studySetId, timeSpent, learnMode } = createStudyTimeDto;
+    const { studySetId, timeSpent, learnMode } = createStudyTimeDto;
 
     const user = await this.dataSource
       .getRepository(UserEntity)
@@ -74,10 +74,8 @@ export class StudyTimeRepository extends Repository<StudyTimeEntity> {
   }
 
   async getTotalTimeByUserId(
-    getTotalTimeParamDto: GetTotalTimeByUserIdParamDto,
+    userId: string,
   ): Promise<GetTotalByUserIdResponseInterface> {
-    const { userId } = getTotalTimeParamDto;
-
     const studyTimes = await this.find({
       where: { user: { id: userId } },
     });
