@@ -30,7 +30,6 @@ import { SetNewPasswordDto } from './dto/bodies/set-new-password.dto';
 import { ResendVerificationEmailResponseInterface } from './interfaces/resend-verification-email-response.interface';
 import { UpdateFullnameDto } from './dto/bodies/update-fullname.dto';
 import { UpdateFullnameResponseInterfaceDto } from './interfaces/update-fullname-response.interface.dto';
-import { OwnershipGuard } from './guard/ownership.guard';
 import { Request, Response } from 'express';
 import { FacebookAuthGuard } from './guard/facebook-auth.guard';
 import { AuthProviderEnum } from './enums/auth-provider.enum';
@@ -283,18 +282,20 @@ export class AuthController {
     return this.authService.createUserWithGoogle(socialSignupCredentialBodyDto);
   }
 
-  @UseGuards(OwnershipGuard)
+  @SkipThrottle()
+  @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.OK)
   @Patch('/user/fullname')
   async updateFullname(
     @ReqUser() req,
     @Body() updateFullnameDto: UpdateFullnameDto,
   ): Promise<UpdateFullnameResponseInterfaceDto> {
+    console.log('asdasdasdasdasd');
     const userId = req.user.id;
     return await this.authService.updateFullname(updateFullnameDto, userId);
   }
 
-  @UseGuards(OwnershipGuard)
+  @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.OK)
   @Patch('/user/email')
   async updateEmail(
@@ -305,7 +306,7 @@ export class AuthController {
     return await this.authService.updateEmail(updateEmailDto, userId);
   }
 
-  @UseGuards(OwnershipGuard)
+  @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.OK)
   @Patch('/user/username')
   async changeUsername(
@@ -316,7 +317,7 @@ export class AuthController {
     return this.authService.changeUsername(changeUsernameBodyDto, userId);
   }
 
-  @UseGuards(OwnershipGuard)
+  @UseGuards(AuthGuard('jwt'))
   @SkipThrottle()
   @HttpCode(HttpStatus.OK)
   @Patch('/user/password')
@@ -408,7 +409,7 @@ export class AuthController {
     return this.authService.resendVerificationEmail(sendEmailDto);
   }
 
-  @UseGuards(OwnershipGuard)
+  @UseGuards(AuthGuard('jwt'))
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('/coin')
   @HttpCode(HttpStatus.OK)
