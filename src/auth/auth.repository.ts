@@ -340,22 +340,33 @@ export class AuthRepository extends Repository<UserEntity> {
   async createAccessTokenFromRefreshToken(
     refreshToken: string,
   ): Promise<GetNewTokenResponseInterface> {
+    console.log(refreshToken);
     try {
       const payload = this.jwtService.verify(refreshToken);
-      console.log(payload);
+
+      if (!payload.userId || payload.type !== 'refresh') {
+        throw new UnauthorizedException({
+          statusCode: HttpStatus.UNAUTHORIZED,
+          message: 'Invalid refresh token format',
+        });
+      }
+
+      console.log(payload.userId);
+
       const user = await this.findOne({
-        where: { email: payload.email, id: payload.id },
+        where: { id: payload.userId },
       });
+      console.log(user.email);
 
       if (!user) {
         throw new UnauthorizedException({
           statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Invalid refresh token',
+          message: 'User not found',
         });
       }
 
       const accessTokenPayload = {
-        email: payload.email,
+        email: user.email,
         userId: user.id,
       };
       const refreshTokenPayload = {
