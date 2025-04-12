@@ -8,11 +8,15 @@ import {
   MinLength,
 } from 'class-validator';
 import { AuthProviderEnum } from '../../enums/auth-provider.enum';
+import { IsStrictGmail } from '../utils/is-strict-gmail.validator';
 
 export class SignupCredentialsDto {
   @IsEmail({}, { message: 'Invalid email' })
   @IsNotEmpty({ message: 'Email is required' })
   @IsString({ message: 'Email must be a string' })
+  @IsStrictGmail({
+    message: 'Invalid Gmail/Google email. Aliases or tricks are not allowed.',
+  })
   email: string;
 
   @IsNotEmpty({ message: 'Username is required' })
