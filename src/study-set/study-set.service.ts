@@ -18,8 +18,6 @@ import { ResetFlashcardProgressParamsDto } from './dto/queries/reset-flashcard-p
 import { GetStudySetsByOwnerIdQueryDto } from './dto/queries/get-study-sets-by-owner-Id-query.dto';
 import { UpdateFoldersInStudySetDto } from './dto/bodies/update-folders-in-study-set.dto';
 import { UpdateFoldersInStudySetResponseInterface } from './interfaces/update-folders-in-study-set-response.interface';
-import { UpdateClassesInStudySetDto } from './dto/bodies/update-classes-in-study-set.dto';
-import { UpdateClassesInStudySetResponseInterface } from './interfaces/update-classes-in-study-set-response.interface';
 import { GetStudySetByCodeParamDto } from './dto/params/get-study-set-by-code.param.dto';
 import { GetStudySetsBySubjectIdParamDto } from './dto/params/get-study-sets-by-subject-id-param.dto';
 import { GetStudySetsBySubjectIdQueryDto } from './dto/queries/get-study-sets-by-subject-id-query.dto';
@@ -126,14 +124,6 @@ export class StudySetService {
   ): Promise<UpdateFoldersInStudySetResponseInterface> {
     return this.studySetRepository.updateFoldersInStudySet(
       updateFoldersInStudySetDto,
-    );
-  }
-
-  async updateClassesInStudySet(
-    updateClassesInStudySetDto: UpdateClassesInStudySetDto,
-  ): Promise<UpdateClassesInStudySetResponseInterface> {
-    return this.studySetRepository.updateClassesInStudySet(
-      updateClassesInStudySetDto,
     );
   }
 

@@ -13,7 +13,6 @@ import { UserEntity } from '../../auth/entities/user.entity';
 import { SubjectEntity } from './subject.entity';
 import { ColorEntity } from './color.entity';
 import { FlashcardEntity } from '../../flashcard/entities/flashcard.entity';
-import { ClassEntity } from '../../class/entities/class.entity';
 import { FolderEntity } from '../../folder/entities/folder.entity';
 import { StudyTimeEntity } from '../../study-time/entities/study-time.entity';
 import { RecentStudySetEntity } from './recent-study-set.entity';
@@ -44,14 +43,6 @@ export class StudySetEntity {
 
   @ManyToOne(() => UserEntity, (user) => user.studySets)
   owner: UserEntity;
-
-  @ManyToMany(() => ClassEntity, (classEntity) => classEntity.studySets)
-  @JoinTable({
-    name: 'class_study_sets',
-    joinColumn: { name: 'study_set_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'class_id', referencedColumnName: 'id' },
-  })
-  classes: ClassEntity[];
 
   @ManyToMany(() => FolderEntity, (folder) => folder.studySets)
   @JoinTable({

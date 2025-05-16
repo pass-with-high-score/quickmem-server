@@ -35,11 +35,9 @@ import { GetStudySetsByOwnerIdQueryDto } from './dto/queries/get-study-sets-by-o
 import { UpdateFoldersInStudySetResponseInterface } from './interfaces/update-folders-in-study-set-response.interface';
 import { UpdateFoldersInStudySetDto } from './dto/bodies/update-folders-in-study-set.dto';
 import { FolderEntity } from '../folder/entities/folder.entity';
-import { UpdateClassesInStudySetDto } from './dto/bodies/update-classes-in-study-set.dto';
-import { UpdateClassesInStudySetResponseInterface } from './interfaces/update-classes-in-study-set-response.interface';
-import { ClassEntity } from '../class/entities/class.entity';
 import {
   GoogleGenerativeAI,
+  ObjectSchema,
   ResponseSchema,
   SchemaType,
 } from '@google/generative-ai';
@@ -143,7 +141,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     ownerId: string,
     getStudySetsByOwnerIdQueryDto: GetStudySetsByOwnerIdQueryDto,
   ): Promise<GetAllStudySetResponseInterface[]> {
-    const { folderId, classId } = getStudySetsByOwnerIdQueryDto;
+    const { folderId } = getStudySetsByOwnerIdQueryDto;
     try {
       const studySets = await this.dataSource
         .getRepository(StudySetEntity)
@@ -155,14 +153,13 @@ export class StudySetRepository extends Repository<StudySetEntity> {
             'color',
             'flashcards',
             'folders',
-            'classes',
           ],
         });
 
       return studySets.map((studySet) => {
-        const isImported =
-          studySet.folders.some((folder) => folder.id === folderId) ||
-          studySet.classes.some((classItem) => classItem.id === classId);
+        const isImported = studySet.folders.some(
+          (folder) => folder.id === folderId,
+        );
         return {
           ...this.mapStudySetToResponse(studySet),
           isImported,
@@ -673,54 +670,6 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     }
   }
 
-  async updateClassesInStudySet(
-    updateClassesInStudySetDto: UpdateClassesInStudySetDto,
-  ): Promise<UpdateClassesInStudySetResponseInterface> {
-    const { classIds, studySetId } = updateClassesInStudySetDto;
-    const studySet = await this.findOne({
-      where: { id: studySetId },
-      relations: ['classes', 'owner'],
-    });
-
-    if (!studySet) {
-      throw new NotFoundException('Study set not found');
-    }
-
-    // Fetch all the classes corresponding to the provided IDs.
-    const classEntities = await this.dataSource
-      .getRepository(ClassEntity)
-      .find({
-        where: { id: In(classIds) },
-        relations: ['owner'],
-      });
-    if (classEntities.length !== classIds.length) {
-      throw new NotFoundException('One or more classes not found');
-    }
-
-    if (
-      classEntities.some(
-        (classItem) => classItem.owner.id !== studySet.owner.id,
-      )
-    ) {
-      throw new ConflictException('One or more classes do not belong to user');
-    }
-
-    // Update study set's classes based on the provided IDs
-    studySet.classes = classEntities;
-
-    try {
-      await this.save(studySet);
-      return {
-        success: true,
-        length: classEntities.length,
-        message: 'Classes updated in study set',
-      };
-    } catch (error) {
-      console.error('Error updating study set:', error);
-      throw new InternalServerErrorException('Error updating study set');
-    }
-  }
-
   private mapStudySetToResponse(
     studySet: StudySetEntity,
     getFlashcards: boolean = false,
@@ -817,7 +766,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     schema: ResponseSchema,
   ) {
     return genAI.getGenerativeModel({
-      model: 'gemini-1.5-pro',
+      model: 'gemini-2.0-flash',
       generationConfig: {
         responseMimeType: 'application/json',
         responseSchema: schema,
@@ -825,7 +774,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     });
   }
 
-  private createSchemaGenAll() {
+  private createSchemaGenAll(): ObjectSchema {
     return {
       description: 'Create a study set with flashcards',
       type: SchemaType.OBJECT,
@@ -858,7 +807,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     };
   }
 
-  private createSchemaGenTitleAndDescription() {
+  private createSchemaGenTitleAndDescription(): ObjectSchema {
     return {
       description: 'Create a study set with title and description',
       type: SchemaType.OBJECT,
@@ -1358,7 +1307,7 @@ export class StudySetRepository extends Repository<StudySetEntity> {
     };
   }
 
-  private createSchemaGenHint() {
+  private createSchemaGenHint(): ObjectSchema {
     return {
       description: 'Create a hint for a flashcard',
       type: SchemaType.OBJECT,

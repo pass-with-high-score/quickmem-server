@@ -39,7 +39,6 @@ import { UpdateAvatarInterface } from './interfaces/update-avatar.interface';
 import { UserDetailResponseInterface } from './interfaces/user-detail-response.interface';
 import { GetUserDetailParamDto } from './dto/params/get-user-detail-param.dto';
 import { GetUserDetailQueryDto } from './dto/queries/get-user-detail-query.dto';
-import { ClassEntity } from '../class/entities/class.entity';
 import { FolderEntity } from '../folder/entities/folder.entity';
 import { StudySetEntity } from '../study-set/entities/study-set.entity';
 import { VerifyPasswordBodyDto } from './dto/bodies/verify-password-body.dto';
@@ -713,40 +712,20 @@ export class AuthRepository extends Repository<UserEntity> {
     const studySetsPromise = this.dataSource
       .getRepository(StudySetEntity)
       .find({
-        where: { owner: { id }, isPublic: String(isOwner) === 'true' },
+        where: isOwner ? { owner: { id } } : { owner: { id }, isPublic: true },
         relations: ['color', 'subject', 'flashcards', 'owner'],
       });
 
     const foldersPromise = this.dataSource.getRepository(FolderEntity).find({
-      where: { owner: { id }, isPublic: String(isOwner) === 'true' },
+      where: isOwner ? { owner: { id } } : { owner: { id }, isPublic: true },
       relations: ['studySets', 'owner'],
     });
 
-    const classesPromise = this.dataSource.getRepository(ClassEntity).find({
-      where: [
-        { owner: { id: id } },
-        { members: { id: id } },
-        { folders: { owner: { id: id } } },
-        { studySets: { owner: { id: id } } },
-      ],
-      relations: [
-        'owner',
-        'members',
-        'folders',
-        'studySets',
-        'folders.studySets',
-        'folders.owner',
-        'studySets.owner',
-        'studySets.flashcards',
-      ],
-    });
-
     // Wait for all promises to resolve
-    const [user, studySets, folders, classes] = await Promise.all([
+    const [user, studySets, folders] = await Promise.all([
       userPromise,
       studySetsPromise,
       foldersPromise,
-      classesPromise,
     ]);
 
     if (!user) {
@@ -795,20 +774,8 @@ export class AuthRepository extends Repository<UserEntity> {
       updatedAt: folder.updatedAt,
     }));
 
-    const formattedClasses = classes.map((classItem) => ({
-      id: classItem.id,
-      title: classItem.title,
-      memberCount: classItem.members.length,
-      description: classItem.description,
-      owner: {
-        id: classItem.owner.id,
-        username: classItem.owner.username,
-        avatarUrl: classItem.owner.avatarUrl,
-      },
-      studySetCount: classItem.studySets.length,
-      createdAt: classItem.createdAt,
-      updatedAt: classItem.updatedAt,
-    }));
+    console.log(formattedStudySets);
+    console.log(formattedFolders);
 
     return {
       id: user.id,
@@ -817,7 +784,6 @@ export class AuthRepository extends Repository<UserEntity> {
       avatarUrl: user.avatarUrl,
       studySets: formattedStudySets,
       folders: formattedFolders,
-      classes: formattedClasses,
     };
   }
 

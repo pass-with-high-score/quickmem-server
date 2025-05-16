@@ -10,7 +10,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from '../../auth/entities/user.entity';
-import { ClassEntity } from '../../class/entities/class.entity';
 import { StudySetEntity } from '../../study-set/entities/study-set.entity';
 import { RecentFolderEntity } from './recent-folder.entity';
 
@@ -33,14 +32,6 @@ export class FolderEntity {
 
   @Column({ nullable: true })
   link: string;
-
-  @ManyToMany(() => ClassEntity, (classEntity) => classEntity.folders)
-  @JoinTable({
-    name: 'class_folders',
-    joinColumn: { name: 'folder_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'class_id', referencedColumnName: 'id' },
-  })
-  classes: ClassEntity[];
 
   @ManyToMany(() => StudySetEntity, (studySet) => studySet.folders)
   studySets: StudySetEntity[];

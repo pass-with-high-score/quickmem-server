@@ -58,7 +58,7 @@ export class FolderController {
     return this.folderService.getFolderByCode(getFolderByCodeParamDto);
   }
 
-  @Get('/owner')
+  @Get()
   @HttpCode(HttpStatus.OK)
   async getFolderByOwnerId(
     @Request() req,

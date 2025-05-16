@@ -2,7 +2,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -10,7 +9,6 @@ import {
 import { StudySetEntity } from '../../study-set/entities/study-set.entity';
 import { AuthProviderEnum } from '../enums/auth-provider.enum';
 import { FolderEntity } from '../../folder/entities/folder.entity';
-import { ClassEntity } from '../../class/entities/class.entity';
 import { ReportEntity } from '../../report/entities/report.entity';
 import { StreakEntity } from '../../streak/entities/streak.entity';
 import { NotificationEntity } from '../../notification/entities/notification.entity';
@@ -19,7 +17,6 @@ import { DeviceEntity } from '../../firebase/entities/device.entity';
 import { StudyTimeEntity } from '../../study-time/entities/study-time.entity';
 import { RecentStudySetEntity } from '../../study-set/entities/recent-study-set.entity';
 import { RecentFolderEntity } from '../../folder/entities/recent-folder.entity';
-import { RecentClassEntity } from '../../class/entities/recent-class.entity';
 import { UserStatusEnum } from '../enums/user-status.enum';
 
 @Entity('users')
@@ -93,9 +90,6 @@ export class UserEntity {
   @OneToMany(() => FolderEntity, (folder) => folder.owner)
   folders: FolderEntity[];
 
-  @OneToMany(() => ClassEntity, (classEntity) => classEntity.owner)
-  ownerClasses: ClassEntity[];
-
   @Column({ type: 'int', default: 5 })
   coins: number;
 
@@ -117,9 +111,6 @@ export class UserEntity {
   @OneToMany(() => DeviceEntity, (device) => device.user)
   devices: DeviceEntity[];
 
-  @ManyToMany(() => ClassEntity, (classEntity) => classEntity.members)
-  classes: ClassEntity[];
-
   @OneToMany(
     () => RecentStudySetEntity,
     (recentStudySet) => recentStudySet.user,
@@ -128,9 +119,6 @@ export class UserEntity {
 
   @OneToMany(() => RecentFolderEntity, (recentFolder) => recentFolder.user)
   recentFolders: RecentFolderEntity[];
-
-  @OneToMany(() => RecentClassEntity, (recentClass) => recentClass.user)
-  recentClasses: RecentFolderEntity[];
 
   @Column({ nullable: true })
   emailChangedAt: Date;

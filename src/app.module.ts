@@ -9,7 +9,6 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { FlashcardModule } from './flashcard/flashcard.module';
 import { StudySetModule } from './study-set/study-set.module';
 import { FolderModule } from './folder/folder.module';
-import { ClassModule } from './class/class.module';
 import { BullModule } from '@nestjs/bull';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
@@ -101,7 +100,6 @@ import { PixabayModule } from './pixabay/pixabay.module';
     FlashcardModule,
     StudySetModule,
     FolderModule,
-    ClassModule,
     UploadModule,
     ReportModule,
     StreakModule,

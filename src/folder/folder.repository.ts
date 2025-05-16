@@ -113,11 +113,11 @@ export class FolderRepository extends Repository<FolderEntity> {
     ownerId: string,
     getFolderByOwnerIdQueryDto: GetFolderByOwnerIdQueryDto,
   ): Promise<GetFolderResponseInterface[]> {
-    const { studySetId, classId } = getFolderByOwnerIdQueryDto;
+    const { studySetId } = getFolderByOwnerIdQueryDto;
     try {
       const folders = await this.find({
         where: { owner: { id: ownerId } },
-        relations: ['owner', 'studySets', 'classes'],
+        relations: ['owner', 'studySets'],
       });
 
       return Promise.all(
@@ -128,14 +128,6 @@ export class FolderRepository extends Repository<FolderEntity> {
               (studySet) => studySet.id === studySetId,
             );
             if (folder.studySets.length > 0) {
-              isImported = true;
-            }
-          }
-          if (classId) {
-            folder.classes = folder.classes.filter(
-              (classEntity) => classEntity.id === classId,
-            );
-            if (folder.classes.length > 0) {
               isImported = true;
             }
           }

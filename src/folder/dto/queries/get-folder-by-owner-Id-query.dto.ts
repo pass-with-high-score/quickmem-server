@@ -4,8 +4,4 @@ export class GetFolderByOwnerIdQueryDto {
   @IsOptional()
   @IsUUID()
   studySetId: string;
-
-  @IsOptional()
-  @IsUUID()
-  classId: string;
 }
