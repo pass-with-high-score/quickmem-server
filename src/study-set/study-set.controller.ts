@@ -68,7 +68,7 @@ export class StudySetController {
     return await this.studySetService.getStudySetByCode(getClassByCodeParamDto);
   }
 
-  @Get('/owner')
+  @Get()
   @HttpCode(HttpStatus.OK)
   async getStudySetsByOwnerId(
     @Request() req,
