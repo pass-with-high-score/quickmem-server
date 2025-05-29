@@ -1,4 +1,6 @@
 # QuickMem Server
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fpass-with-high-score%2Fquickmem-server.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fpass-with-high-score%2Fquickmem-server?ref=badge_shield)
+
 
 QuickMem Server is an API server built with NestJS for the QuickMem application. It provides authentication, email
 processing, and other functionalities.
@@ -83,3 +85,7 @@ variables.
 ## Contributing
 
 This is graduation project server for QuickMem application. Contributions are not accepted at this time.
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fpass-with-high-score%2Fquickmem-server.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fpass-with-high-score%2Fquickmem-server?ref=badge_large)
