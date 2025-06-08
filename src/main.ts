@@ -9,6 +9,7 @@ import * as passport from 'passport';
 import * as process from 'node:process';
 import { LoggingInterceptor } from './logging.interceptor';
 import { useApitally } from 'apitally/nestjs';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const logger = new Logger('bootstrap');
@@ -23,7 +24,19 @@ async function bootstrap() {
       secret: process.env.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
-      cookie: { secure: false }, // Set to true if using HTTPS
+      cookie: {
+        secure: process.env.NODE_ENV === 'prod',
+        httpOnly: true,
+        sameSite: 'lax',
+      },
+    }),
+  );
+
+  app.use(
+    helmet.hsts({
+      maxAge: 63072000,
+      includeSubDomains: true,
+      preload: true,
     }),
   );
 
